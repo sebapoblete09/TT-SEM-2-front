@@ -453,7 +453,7 @@ export default function RegisterMaterialPage() {
                 </CardDescription>
               </CardHeader>
               <CardContent className="space-y-4">
-                {recipeSteps.map((step, index) => (
+                {recipeSteps.map((step) => (
                   <div
                     key={step.id}
                     className="border rounded-lg p-4 space-y-4"
