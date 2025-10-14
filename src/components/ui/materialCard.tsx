@@ -1,52 +1,45 @@
-import Image from "next/image";
-import Link from "next/link";
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
-import { Card, CardContent } from "@/components/ui/card";
-import { User } from "lucide-react";
+
+export type Material = {
+  id: string; // uuid
+  nombre: string;
+  descripcion: string;
+  herramientas?: string[] | null;
+  composicion?: string[] | null;
+  derivado_de?: string | null;
+  creador_id?: number | null;
+  creado_en?: string | null;
+  actualizado_en?: string | null;
+};
 
 interface MaterialCardProps {
-  material: {
-    id: number;
-    name: string;
-    creator: string;
-    category: string;
-    image: string;
-    tags: string[];
-  };
+  material: Material;
 }
 
 export function MaterialCard({ material }: MaterialCardProps) {
   return (
-    <Link href={`/material/${material.id}`}>
-      <Card className="overflow-hidden hover:shadow-lg transition-shadow duration-300 h-full">
-        <div className="relative aspect-[4/3] overflow-hidden bg-muted">
-          <Image
-            src={material.image || "/placeholder.svg"}
-            alt={material.name}
-            fill
-            className="object-cover hover:scale-105 transition-transform duration-300"
-          />
-          <Badge className="absolute top-3 right-3 bg-primary">
-            {material.category}
-          </Badge>
-        </div>
-        <CardContent className="p-4">
-          <h3 className="font-semibold text-lg mb-2 line-clamp-2">
-            {material.name}
-          </h3>
-          <div className="flex items-center gap-2 text-sm text-muted-foreground mb-3">
-            <User className="h-4 w-4" />
-            <span>{material.creator}</span>
-          </div>
+    <Card className="hover:shadow-lg transition-shadow">
+      <CardHeader>
+        <CardTitle className="text-lg font-semibold">
+          {material.nombre}
+        </CardTitle>
+      </CardHeader>
+      <CardContent>
+        <p className="text-sm text-muted-foreground mb-3 line-clamp-3">
+          {material.descripcion}
+        </p>
+
+        {material.composicion && material.composicion.length > 0 && (
           <div className="flex flex-wrap gap-2">
-            {material.tags.map((tag) => (
-              <Badge key={tag} variant="outline" className="text-xs">
-                {tag}
+            {material.composicion.slice(0, 3).map((comp, idx) => (
+              <Badge key={idx} variant="secondary">
+                {comp}
               </Badge>
             ))}
           </div>
-        </CardContent>
-      </Card>
-    </Link>
+        )}
+      </CardContent>
+    </Card>
   );
 }
