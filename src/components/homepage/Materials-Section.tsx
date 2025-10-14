@@ -1,7 +1,105 @@
-import materials from "@/const/Materials";
+"use client";
+
+import { useEffect, useState } from "react";
 import { MaterialCard } from "@/components/ui/materialCard";
 
+type Material = {
+  id: string; // uuid
+  nombre: string;
+  descripcion: string;
+  herramientas: string[]; // viene como JSONB, se parsea a array
+  composicion: string[]; // idem
+  derivado_de?: string | null;
+  creador_id?: number | null;
+  creado_en?: string | null;
+  actualizado_en?: string | null;
+};
+
 export default function Materials_Section() {
+  const [materials, setMaterials] = useState<Material[]>([]);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
+
+  useEffect(() => {
+    const fetchMaterials = async () => {
+      try {
+        const res = await fetch("http://localhost:8080/materials", {
+          method: "GET",
+          headers: {
+            "Content-Type": "application/json",
+          },
+          cache: "no-store",
+        });
+
+        if (!res.ok)
+          throw new Error(`Error al obtener materiales (${res.status})`);
+
+        const data = await res.json();
+
+        // Aseguramos que data sea un array antes de mapear
+        const parsedData: Material[] = Array.isArray(data)
+          ? data.map(
+              (mat): Material => ({
+                ...mat,
+                herramientas: Array.isArray(mat.herramientas)
+                  ? mat.herramientas
+                  : JSON.parse(mat.herramientas || "[]"),
+                composicion: Array.isArray(mat.composicion)
+                  ? mat.composicion
+                  : JSON.parse(mat.composicion || "[]"),
+              })
+            )
+          : [];
+
+        setMaterials(parsedData);
+      } catch (err) {
+        if (err instanceof Error) {
+          console.error(err);
+          setError(err.message);
+        } else {
+          console.error("Error desconocido:", err);
+          setError("Error desconocido al cargar materiales");
+        }
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    fetchMaterials();
+  }, []);
+
+  if (loading) {
+    return (
+      <section id="explore" className="py-12 px-4">
+        <div className="container mx-auto max-w-7xl text-center">
+          <p className="text-muted-foreground">Cargando materiales...</p>
+        </div>
+      </section>
+    );
+  }
+
+  if (error) {
+    return (
+      <section id="explore" className="py-12 px-4">
+        <div className="container mx-auto max-w-7xl text-center">
+          <p className="text-red-500">Error: {error}</p>
+        </div>
+      </section>
+    );
+  }
+
+  if (materials.length === 0) {
+    return (
+      <section id="explore" className="py-12 px-4">
+        <div className="container mx-auto max-w-7xl text-center">
+          <p className="text-muted-foreground">
+            No hay materiales registrados aún.
+          </p>
+        </div>
+      </section>
+    );
+  }
+
   return (
     <section id="explore" className="py-12 px-4">
       <div className="container mx-auto max-w-7xl">
@@ -15,7 +113,6 @@ export default function Materials_Section() {
         </div>
 
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-          {/*materials son materiales de prueba */}
           {materials.map((material) => (
             <MaterialCard key={material.id} material={material} />
           ))}
