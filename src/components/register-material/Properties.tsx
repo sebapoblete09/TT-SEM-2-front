@@ -1,140 +1,150 @@
 "use client";
 
-import { Input } from "@/components/ui/input";
-import { Label } from "@/components/ui/label";
 import {
   Card,
-  CardContent,
-  CardDescription,
   CardHeader,
+  CardContent,
   CardTitle,
+  CardDescription,
 } from "@/components/ui/card";
+import { Label } from "@/components/ui/label";
 import {
   Select,
-  SelectContent,
-  SelectItem,
   SelectTrigger,
   SelectValue,
+  SelectContent,
+  SelectItem,
 } from "@/components/ui/select";
+import { Textarea } from "@/components/ui/textarea";
+import { Button } from "@/components/ui/button";
 
-export default function PropertiesForm() {
+export interface PropertiesData {
+  mecanicas: Record<string, string>;
+  perceptivas: Record<string, string>;
+  emocionales: Record<string, string>;
+}
+
+interface PropertiesFormProps {
+  data: PropertiesData;
+  setData: React.Dispatch<React.SetStateAction<PropertiesData>>;
+  onNext: () => void;
+  onBack: () => void;
+}
+
+export default function PropertiesForm({
+  data,
+  setData,
+  onNext,
+  onBack,
+}: PropertiesFormProps) {
+  const opciones = ["Baja", "Media", "Alta"];
+
+  const handleChange = (
+    categoria: keyof PropertiesData,
+    key: string,
+    value: string
+  ) => {
+    setData((prev) => ({
+      ...prev,
+      [categoria]: { ...prev[categoria], [key]: value },
+    }));
+  };
+
+  const renderSelects = (categoria: keyof PropertiesData, props: string[]) =>
+    props.map((p) => (
+      <div key={p} className="space-y-2">
+        <Label>{p}</Label>
+        <Select
+          value={data[categoria]?.[p] || ""}
+          onValueChange={(v) => handleChange(categoria, p, v)}
+        >
+          <SelectTrigger>
+            <SelectValue placeholder="Selecciona" />
+          </SelectTrigger>
+          <SelectContent>
+            {opciones.map((o) => (
+              <SelectItem key={o} value={o.toLowerCase()}>
+                {o}
+              </SelectItem>
+            ))}
+          </SelectContent>
+        </Select>
+      </div>
+    ));
+
+  const renderTextareas = (categoria: keyof PropertiesData, props: string[]) =>
+    props.map((p) => (
+      <div key={p} className="space-y-2">
+        <Label>{p}</Label>
+        <Textarea
+          value={data[categoria]?.[p] || ""}
+          onChange={(e) => handleChange(categoria, p, e.target.value)}
+          placeholder={`Describe la ${p.toLowerCase()} del material...`}
+          rows={2}
+        />
+      </div>
+    ));
+
   return (
-    <div className="space-y-6">
-      {/* Propiedades Mecánicas */}
-      <Card>
-        <CardHeader>
-          <CardTitle>Propiedades Mecánicas</CardTitle>
-          <CardDescription>
-            Define las características físicas del material
-          </CardDescription>
-        </CardHeader>
+    <Card>
+      <CardHeader>
+        <CardTitle>Propiedades del Material</CardTitle>
+        <CardDescription>
+          Define las características mecánicas, perceptivas y emocionales del
+          biomaterial
+        </CardDescription>
+      </CardHeader>
 
-        <CardContent className="grid grid-cols-1 md:grid-cols-2 gap-4">
-          {[
-            { id: "resistencia", label: "Resistencia" },
-            { id: "dureza", label: "Dureza" },
-            { id: "elasticidad", label: "Elasticidad" },
-            { id: "ductilidad", label: "Ductilidad" },
-            { id: "fragilidad", label: "Fragilidad" },
-          ].map((prop) => (
-            <div key={prop.id} className="space-y-2">
-              <Label htmlFor={prop.id}>{prop.label}</Label>
-              <Select>
-                <SelectTrigger id={prop.id} className="w-full">
-                  <SelectValue placeholder="Selecciona una opción" />
-                </SelectTrigger>
-                <SelectContent>
-                  <SelectItem value="baja">Baja</SelectItem>
-                  <SelectItem value="media">Media</SelectItem>
-                  <SelectItem value="alta">Alta</SelectItem>
-                </SelectContent>
-              </Select>
-            </div>
-          ))}
-        </CardContent>
-      </Card>
+      <CardContent className="space-y-6">
+        {/* Propiedades Mecánicas */}
+        <section>
+          <h3 className="font-semibold mb-2">Propiedades Mecánicas</h3>
+          <div className="grid grid-cols-2 gap-4">
+            {renderSelects("mecanicas", [
+              "Resistencia",
+              "Dureza",
+              "Elasticidad",
+              "Ductilidad",
+              "Fragilidad",
+            ])}
+          </div>
+        </section>
 
-      {/* Propiedades Perceptivas */}
-      <Card>
-        <CardHeader>
-          <CardTitle>Propiedades Perceptivas</CardTitle>
-          <CardDescription>
-            Características sensoriales del material
-          </CardDescription>
-        </CardHeader>
-        <CardContent className="grid grid-cols-1 md:grid-cols-2 gap-4">
-          {[
-            {
-              id: "color",
-              label: "Color",
-              placeholder: "Ej: Beige natural, Translúcido",
-            },
-            {
-              id: "brillo",
-              label: "Brillo",
-              placeholder: "Ej: Mate, Satinado, Brillante",
-            },
-            {
-              id: "textura",
-              label: "Textura",
-              placeholder: "Ej: Suave, Rugosa, Lisa",
-            },
-            {
-              id: "transparencia",
-              label: "Transparencia",
-              placeholder: "Ej: Opaco, Translúcido, Transparente",
-            },
-            {
-              id: "sensacion_termica",
-              label: "Sensación Térmica",
-              placeholder: "Ej: Cálido, Frío, Neutro",
-            },
-          ].map((prop) => (
-            <div key={prop.id} className="space-y-2">
-              <Label htmlFor={prop.id}>{prop.label}</Label>
-              <Input id={prop.id} placeholder={prop.placeholder} />
-            </div>
-          ))}
-        </CardContent>
-      </Card>
+        {/* Propiedades Perceptivas */}
+        <section>
+          <h3 className="font-semibold mb-2">Propiedades Perceptivas</h3>
+          <div className="grid grid-cols-2 gap-4">
+            {renderTextareas("perceptivas", [
+              "Color",
+              "Brillo",
+              "Textura",
+              "Transparencia",
+              "Sensación Térmica",
+            ])}
+          </div>
+        </section>
 
-      {/* Propiedades Emocionales */}
-      {/* Propiedades Emocionales */}
-      <Card>
-        <CardHeader>
-          <CardTitle>Propiedades Emocionales</CardTitle>
-          <CardDescription>
-            Aspectos emocionales y perceptuales del material
-          </CardDescription>
-        </CardHeader>
+        {/* Propiedades Emocionales */}
+        <section>
+          <h3 className="font-semibold mb-2">Propiedades Emocionales</h3>
+          <div className="grid grid-cols-2 gap-4">
+            {renderSelects("emocionales", [
+              "Calidez Emocional",
+              "Inspiración",
+              "Sostenibilidad Percibida",
+              "Armonía",
+              "Innovación Emocional",
+            ])}
+          </div>
+        </section>
 
-        <CardContent className="grid grid-cols-1 md:grid-cols-2 gap-4">
-          {[
-            { id: "calidez_emocional", label: "Calidez Emocional" },
-            { id: "inspiracion", label: "Inspiración" },
-            {
-              id: "sostenibilidad_percibida",
-              label: "Sostenibilidad Percibida",
-            },
-            { id: "armonia", label: "Armonía" },
-            { id: "innovacion_emocional", label: "Innovación Emocional" },
-          ].map((prop) => (
-            <div key={prop.id} className="space-y-2">
-              <Label htmlFor={prop.id}>{prop.label}</Label>
-              <Select>
-                <SelectTrigger id={prop.id} className="w-full">
-                  <SelectValue placeholder="Selecciona una opción" />
-                </SelectTrigger>
-                <SelectContent>
-                  <SelectItem value="baja">Baja</SelectItem>
-                  <SelectItem value="media">Media</SelectItem>
-                  <SelectItem value="alta">Alta</SelectItem>
-                </SelectContent>
-              </Select>
-            </div>
-          ))}
-        </CardContent>
-      </Card>
-    </div>
+        <div className="flex justify-between pt-4">
+          <Button variant="outline" onClick={onBack}>
+            Atrás
+          </Button>
+          <Button onClick={onNext}>Siguiente</Button>
+        </div>
+      </CardContent>
+    </Card>
   );
 }

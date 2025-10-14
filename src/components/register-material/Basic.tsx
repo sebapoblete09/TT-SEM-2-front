@@ -1,5 +1,6 @@
 "use client";
 
+import { useState } from "react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -7,60 +8,86 @@ import { Textarea } from "@/components/ui/textarea";
 import {
   Card,
   CardContent,
-  CardDescription,
   CardHeader,
   CardTitle,
+  CardDescription,
 } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
-import { Plus, Upload, X } from "lucide-react";
+import { Plus, X, Upload } from "lucide-react";
+
+export interface BasicInfoData {
+  nombre: string;
+  descripcion: string;
+  herramientas: string[];
+  derivadoDe: string;
+  colaboradores: string[];
+  imagenes: File[];
+}
 
 interface BasicInfoFormProps {
-  herramientas: string[];
-  setHerramientas: React.Dispatch<React.SetStateAction<string[]>>;
-  currentHerramienta: string;
-  setCurrentHerramienta: React.Dispatch<React.SetStateAction<string>>;
-  colaboradores: string[];
-  setColaboradores: React.Dispatch<React.SetStateAction<string[]>>;
-  currentColaborador: string;
-  setCurrentColaborador: React.Dispatch<React.SetStateAction<string>>;
+  data: BasicInfoData;
+  setData: React.Dispatch<React.SetStateAction<BasicInfoData>>;
+  onNext: () => void;
 }
 
 export default function BasicInfoForm({
-  herramientas,
-  setHerramientas,
-  currentHerramienta,
-  setCurrentHerramienta,
-  colaboradores,
-  setColaboradores,
-  currentColaborador,
-  setCurrentColaborador,
+  data,
+  setData,
+  onNext,
 }: BasicInfoFormProps) {
+  const [herramienta, setHerramienta] = useState("");
+  const [colaborador, setColaborador] = useState("");
+
+  // 📸 Manejo de imágenes
+  const handleImageUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const files = e.target.files;
+    if (!files) return;
+    const fileList = Array.from(files);
+    setData((prev) => ({
+      ...prev,
+      imagenes: [...prev.imagenes, ...fileList],
+    }));
+  };
+
+  const removeImage = (index: number) => {
+    setData((prev) => ({
+      ...prev,
+      imagenes: prev.imagenes.filter((_, i) => i !== index),
+    }));
+  };
+
   const addHerramienta = () => {
-    if (
-      currentHerramienta.trim() &&
-      !herramientas.includes(currentHerramienta.trim())
-    ) {
-      setHerramientas([...herramientas, currentHerramienta.trim()]);
-      setCurrentHerramienta("");
+    if (herramienta.trim() && !data.herramientas.includes(herramienta)) {
+      setData((prev) => ({
+        ...prev,
+        herramientas: [...prev.herramientas, herramienta],
+      }));
+      setHerramienta("");
     }
   };
 
-  const removeHerramienta = (herramienta: string) => {
-    setHerramientas(herramientas.filter((h) => h !== herramienta));
+  const removeHerramienta = (item: string) => {
+    setData((prev) => ({
+      ...prev,
+      herramientas: prev.herramientas.filter((h) => h !== item),
+    }));
   };
 
   const addColaborador = () => {
-    if (
-      currentColaborador.trim() &&
-      !colaboradores.includes(currentColaborador.trim())
-    ) {
-      setColaboradores([...colaboradores, currentColaborador.trim()]);
-      setCurrentColaborador("");
+    if (colaborador.trim() && !data.colaboradores.includes(colaborador)) {
+      setData((prev) => ({
+        ...prev,
+        colaboradores: [...prev.colaboradores, colaborador],
+      }));
+      setColaborador("");
     }
   };
 
-  const removeColaborador = (colab: string) => {
-    setColaboradores(colaboradores.filter((c) => c !== colab));
+  const removeColaborador = (item: string) => {
+    setData((prev) => ({
+      ...prev,
+      colaboradores: prev.colaboradores.filter((c) => c !== item),
+    }));
   };
 
   return (
@@ -71,47 +98,52 @@ export default function BasicInfoForm({
           Proporciona los detalles fundamentales de tu biomaterial
         </CardDescription>
       </CardHeader>
-      <CardContent className="space-y-6">
-        <div className="space-y-2">
-          <Label htmlFor="name">Nombre del Material *</Label>
-          <Input id="name" placeholder="Ej: Bioplástico de Almidón de Maíz" />
-        </div>
 
-        <div className="space-y-2">
-          <Label htmlFor="description">Descripción *</Label>
-          <Textarea
-            id="description"
-            placeholder="Describe las características principales y aplicaciones potenciales..."
-            rows={6}
-            className="resize-none"
+      <CardContent className="space-y-6">
+        {/* Nombre */}
+        <div>
+          <Label>Nombre *</Label>
+          <Input
+            value={data.nombre}
+            onChange={(e) =>
+              setData((prev) => ({ ...prev, nombre: e.target.value }))
+            }
+            placeholder="Ej: Bioplástico de almidón de maíz"
           />
         </div>
 
-        <div className="space-y-2">
-          <Label>Herramientas Necesarias</Label>
+        {/* Descripción */}
+        <div>
+          <Label>Descripción *</Label>
+          <Textarea
+            value={data.descripcion}
+            onChange={(e) =>
+              setData((prev) => ({ ...prev, descripcion: e.target.value }))
+            }
+            rows={4}
+            placeholder="Describe las características y aplicaciones del material..."
+          />
+        </div>
+
+        {/* Herramientas */}
+        <div>
+          <Label>Herramientas necesarias</Label>
           <div className="flex gap-2">
             <Input
-              value={currentHerramienta}
-              onChange={(e) => setCurrentHerramienta(e.target.value)}
-              onKeyPress={(e) =>
-                e.key === "Enter" && (e.preventDefault(), addHerramienta())
-              }
-              placeholder="Ej: Olla, Espátula, Termómetro..."
+              value={herramienta}
+              onChange={(e) => setHerramienta(e.target.value)}
+              placeholder="Ej: Espátula, termómetro..."
             />
             <Button type="button" onClick={addHerramienta} variant="secondary">
               <Plus className="h-4 w-4" />
             </Button>
           </div>
-          <div className="flex flex-wrap gap-2 mt-3">
-            {herramientas.map((herramienta) => (
-              <Badge
-                key={herramienta}
-                variant="secondary"
-                className="px-3 py-1"
-              >
-                {herramienta}
+          <div className="flex flex-wrap gap-2 mt-2">
+            {data.herramientas.map((h) => (
+              <Badge key={h} variant="secondary">
+                {h}
                 <button
-                  onClick={() => removeHerramienta(herramienta)}
+                  onClick={() => removeHerramienta(h)}
                   className="ml-2 hover:text-destructive"
                 >
                   <X className="h-3 w-3" />
@@ -121,38 +153,41 @@ export default function BasicInfoForm({
           </div>
         </div>
 
-        <div className="space-y-2">
-          <Label htmlFor="derivado_de">Derivado de (Opcional)</Label>
+        {/* Derivado de */}
+        <div>
+          <Label>Derivado de (opcional)</Label>
           <Input
-            id="derivado_de"
-            placeholder="ID del material base si este es una variación"
+            value={data.derivadoDe}
+            onChange={(e) =>
+              setData((prev) => ({ ...prev, derivadoDe: e.target.value }))
+            }
+            placeholder="ID o nombre del material base, si aplica"
           />
-          <p className="text-xs text-muted-foreground">
-            Si este material es una variación de otro existente, ingresa su ID
+          <p className="text-xs text-muted-foreground mt-1">
+            Si este material es una variación de otro existente, indica su ID o
+            nombre de referencia.
           </p>
         </div>
 
-        <div className="space-y-2">
+        {/* Colaboradores */}
+        <div>
           <Label>Colaboradores</Label>
           <div className="flex gap-2">
             <Input
-              value={currentColaborador}
-              onChange={(e) => setCurrentColaborador(e.target.value)}
-              onKeyPress={(e) =>
-                e.key === "Enter" && (e.preventDefault(), addColaborador())
-              }
-              placeholder="Email del colaborador..."
+              value={colaborador}
+              onChange={(e) => setColaborador(e.target.value)}
+              placeholder="Email o nombre del colaborador"
             />
             <Button type="button" onClick={addColaborador} variant="secondary">
               <Plus className="h-4 w-4" />
             </Button>
           </div>
-          <div className="flex flex-wrap gap-2 mt-3">
-            {colaboradores.map((colab) => (
-              <Badge key={colab} variant="outline" className="px-3 py-1">
-                {colab}
+          <div className="flex flex-wrap gap-2 mt-2">
+            {data.colaboradores.map((c) => (
+              <Badge key={c} variant="outline">
+                {c}
                 <button
-                  onClick={() => removeColaborador(colab)}
+                  onClick={() => removeColaborador(c)}
                   className="ml-2 hover:text-destructive"
                 >
                   <X className="h-3 w-3" />
@@ -162,17 +197,45 @@ export default function BasicInfoForm({
           </div>
         </div>
 
-        <div className="space-y-2">
-          <Label>Galería de Imágenes *</Label>
-          <div className="border-2 border-dashed rounded-lg p-8 text-center hover:border-primary transition-colors cursor-pointer">
-            <Upload className="h-12 w-12 mx-auto mb-4 text-muted-foreground" />
-            <p className="text-sm text-muted-foreground mb-2">
-              Arrastra imágenes aquí o haz clic para seleccionar
-            </p>
-            <p className="text-xs text-muted-foreground">
-              PNG, JPG hasta 10MB (mínimo 3 imágenes)
-            </p>
+        {/* 📸 Imágenes de galería */}
+        <div>
+          <Label>Galería de imágenes</Label>
+          <div className="flex items-center gap-3 mt-2">
+            <Input
+              type="file"
+              multiple
+              accept="image/*"
+              onChange={handleImageUpload}
+              className="cursor-pointer"
+            />
+            <Upload className="h-5 w-5 text-muted-foreground" />
           </div>
+
+          {data.imagenes.length > 0 && (
+            <div className="flex flex-wrap gap-3 mt-3">
+              {data.imagenes.map((img, i) => (
+                <div key={i} className="relative w-20 h-20">
+                  <img
+                    src={URL.createObjectURL(img)}
+                    alt={`Imagen ${i + 1}`}
+                    className="w-20 h-20 object-cover rounded-md border"
+                  />
+                  <button
+                    type="button"
+                    onClick={() => removeImage(i)}
+                    className="absolute top-0 right-0 bg-black/60 text-white rounded-full p-1"
+                  >
+                    <X className="h-3 w-3" />
+                  </button>
+                </div>
+              ))}
+            </div>
+          )}
+        </div>
+
+        {/* Botón siguiente */}
+        <div className="flex justify-end pt-4">
+          <Button onClick={onNext}>Siguiente</Button>
         </div>
       </CardContent>
     </Card>
