@@ -1,19 +1,7 @@
 "use client";
 
 import { useEffect, useState } from "react";
-import { MaterialCard } from "@/components/ui/materialCard";
-
-type Material = {
-  id: string; // uuid
-  nombre: string;
-  descripcion: string;
-  herramientas: string[]; // viene como JSONB, se parsea a array
-  composicion: string[]; // idem
-  derivado_de?: string | null;
-  creador_id?: number | null;
-  creado_en?: string | null;
-  actualizado_en?: string | null;
-};
+import { MaterialCard, Material } from "@/components/ui/materialCard";
 
 export default function Materials_Section() {
   const [materials, setMaterials] = useState<Material[]>([]);
@@ -36,22 +24,8 @@ export default function Materials_Section() {
 
         const data = await res.json();
 
-        // Aseguramos que data sea un array antes de mapear
-        const parsedData: Material[] = Array.isArray(data)
-          ? data.map(
-              (mat): Material => ({
-                ...mat,
-                herramientas: Array.isArray(mat.herramientas)
-                  ? mat.herramientas
-                  : JSON.parse(mat.herramientas || "[]"),
-                composicion: Array.isArray(mat.composicion)
-                  ? mat.composicion
-                  : JSON.parse(mat.composicion || "[]"),
-              })
-            )
-          : [];
-
-        setMaterials(parsedData);
+        // Asumiendo que la API ya devuelve el formato correcto
+        setMaterials(Array.isArray(data) ? data : []);
       } catch (err) {
         if (err instanceof Error) {
           console.error(err);
