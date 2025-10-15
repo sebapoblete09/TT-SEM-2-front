@@ -158,9 +158,9 @@ export default function BasicInfoForm({
           <Label>Derivado de (opcional)</Label>
           <Input
             value={data.derivadoDe}
-            onChange={(e) =>
+            /*onChange={(e) =>
               setData((prev) => ({ ...prev, derivadoDe: e.target.value }))
-            }
+            }*/
             placeholder="ID o nombre del material base, si aplica"
           />
           <p className="text-xs text-muted-foreground mt-1">
@@ -175,7 +175,7 @@ export default function BasicInfoForm({
           <div className="flex gap-2">
             <Input
               value={colaborador}
-              onChange={(e) => setColaborador(e.target.value)}
+              //onChange={(e) => setColaborador(e.target.value)}
               placeholder="Email o nombre del colaborador"
             />
             <Button type="button" onClick={addColaborador} variant="secondary">

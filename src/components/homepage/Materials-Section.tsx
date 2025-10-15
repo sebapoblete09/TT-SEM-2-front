@@ -2,28 +2,17 @@
 
 import { useEffect, useState } from "react";
 import { MaterialCard } from "@/components/ui/materialCard";
-
-type Material = {
-  id: string; // uuid
-  nombre: string;
-  descripcion: string;
-  herramientas: string[]; // viene como JSONB, se parsea a array
-  composicion: string[]; // idem
-  derivado_de?: string | null;
-  creador_id?: number | null;
-  creado_en?: string | null;
-  actualizado_en?: string | null;
-};
+import { Material_Card } from "@/types/materials";
 
 export default function Materials_Section() {
-  const [materials, setMaterials] = useState<Material[]>([]);
+  const [materials, setMaterials] = useState<Material_Card[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
 
   useEffect(() => {
     const fetchMaterials = async () => {
       try {
-        const res = await fetch("http://localhost:8080/materials", {
+        const res = await fetch("http://localhost:8080/materials-summary", {
           method: "GET",
           headers: {
             "Content-Type": "application/json",
@@ -36,22 +25,8 @@ export default function Materials_Section() {
 
         const data = await res.json();
 
-        // Aseguramos que data sea un array antes de mapear
-        const parsedData: Material[] = Array.isArray(data)
-          ? data.map(
-              (mat): Material => ({
-                ...mat,
-                herramientas: Array.isArray(mat.herramientas)
-                  ? mat.herramientas
-                  : JSON.parse(mat.herramientas || "[]"),
-                composicion: Array.isArray(mat.composicion)
-                  ? mat.composicion
-                  : JSON.parse(mat.composicion || "[]"),
-              })
-            )
-          : [];
-
-        setMaterials(parsedData);
+        // Asumiendo que la API ya devuelve el formato correcto
+        setMaterials(Array.isArray(data) ? data : []);
       } catch (err) {
         if (err instanceof Error) {
           console.error(err);
