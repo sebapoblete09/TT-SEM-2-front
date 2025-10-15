@@ -1,7 +1,7 @@
 "use client";
 
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { Material } from "@/components/ui/materialCard";
+import { Material } from "@/types/materials";
 import RecipeTab from "./RecipeTabs";
 import PropertiesTab from "./PropertiesTabs";
 import CompositionTab from "./CompositionTabs";

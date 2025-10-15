@@ -50,21 +50,24 @@ export default function PropertiesForm({
     }));
   };
 
-  const renderSelects = (categoria: keyof PropertiesData, props: string[]) =>
-    props.map((p) => (
-      <div key={p} className="space-y-2">
-        <Label>{p}</Label>
+  const renderSelects = (
+    categoria: keyof PropertiesData,
+    props: { label: string; key: string }[]
+  ) =>
+    props.map((prop) => (
+      <div key={prop.key} className="space-y-2">
+        <Label>{prop.label}</Label>
         <Select
-          value={data[categoria]?.[p] || ""}
-          onValueChange={(v) => handleChange(categoria, p, v)}
+          value={data[categoria]?.[prop.key] || ""}
+          onValueChange={(v) => handleChange(categoria, prop.key, v)}
         >
           <SelectTrigger>
             <SelectValue placeholder="Selecciona" />
           </SelectTrigger>
           <SelectContent>
-            {opciones.map((o) => (
-              <SelectItem key={o} value={o.toLowerCase()}>
-                {o}
+            {opciones.map((op) => (
+              <SelectItem key={op} value={op}>
+                {op}
               </SelectItem>
             ))}
           </SelectContent>
@@ -72,14 +75,17 @@ export default function PropertiesForm({
       </div>
     ));
 
-  const renderTextareas = (categoria: keyof PropertiesData, props: string[]) =>
-    props.map((p) => (
-      <div key={p} className="space-y-2">
-        <Label>{p}</Label>
+  const renderTextareas = (
+    categoria: keyof PropertiesData,
+    props: { label: string; key: string }[]
+  ) =>
+    props.map((prop) => (
+      <div key={prop.key} className="space-y-2">
+        <Label>{prop.label}</Label>
         <Textarea
-          value={data[categoria]?.[p] || ""}
-          onChange={(e) => handleChange(categoria, p, e.target.value)}
-          placeholder={`Describe la ${p.toLowerCase()} del material...`}
+          value={data[categoria]?.[prop.key] || ""}
+          onChange={(e) => handleChange(categoria, prop.key, e.target.value)}
+          placeholder={`Describe la ${prop.label.toLowerCase()} del material...`}
           rows={2}
         />
       </div>
@@ -99,13 +105,13 @@ export default function PropertiesForm({
         {/* Propiedades Mecánicas */}
         <section>
           <h3 className="font-semibold mb-2">Propiedades Mecánicas</h3>
-          <div className="grid grid-cols-2 gap-4">
+          <div className="grid grid-cols-3 gap-4">
             {renderSelects("mecanicas", [
-              "Resistencia",
-              "Dureza",
-              "Elasticidad",
-              "Ductilidad",
-              "Fragilidad",
+              { label: "Resistencia", key: "resistencia" },
+              { label: "Dureza", key: "dureza" },
+              { label: "Elasticidad", key: "elasticidad" },
+              { label: "Ductilidad", key: "ductilidad" },
+              { label: "Fragilidad", key: "fragilidad" },
             ])}
           </div>
         </section>
@@ -113,13 +119,13 @@ export default function PropertiesForm({
         {/* Propiedades Perceptivas */}
         <section>
           <h3 className="font-semibold mb-2">Propiedades Perceptivas</h3>
-          <div className="grid grid-cols-2 gap-4">
+          <div className="grid grid-cols-3 gap-4">
             {renderTextareas("perceptivas", [
-              "Color",
-              "Brillo",
-              "Textura",
-              "Transparencia",
-              "Sensación Térmica",
+              { label: "Color", key: "color" },
+              { label: "Brillo", key: "brillo" },
+              { label: "Textura", key: "textura" },
+              { label: "Transparencia", key: "transparencia" },
+              { label: "Sensación Térmica", key: "sensacion_termica" },
             ])}
           </div>
         </section>
@@ -127,13 +133,16 @@ export default function PropertiesForm({
         {/* Propiedades Emocionales */}
         <section>
           <h3 className="font-semibold mb-2">Propiedades Emocionales</h3>
-          <div className="grid grid-cols-2 gap-4">
+          <div className="grid grid-cols-3 gap-4">
             {renderSelects("emocionales", [
-              "Calidez Emocional",
-              "Inspiración",
-              "Sostenibilidad Percibida",
-              "Armonía",
-              "Innovación Emocional",
+              { label: "Calidez Emocional", key: "calidez_emocional" },
+              { label: "Inspiración", key: "inspiracion" },
+              {
+                label: "Sostenibilidad Percibida",
+                key: "sostenibilidad_percibida",
+              },
+              { label: "Armonía", key: "armonia" },
+              { label: "Innovación Emocional", key: "innovacion_emocional" },
             ])}
           </div>
         </section>

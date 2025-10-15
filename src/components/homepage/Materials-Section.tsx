@@ -1,17 +1,18 @@
 "use client";
 
 import { useEffect, useState } from "react";
-import { MaterialCard, Material } from "@/components/ui/materialCard";
+import { MaterialCard } from "@/components/ui/materialCard";
+import { Material_Card } from "@/types/materials";
 
 export default function Materials_Section() {
-  const [materials, setMaterials] = useState<Material[]>([]);
+  const [materials, setMaterials] = useState<Material_Card[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
 
   useEffect(() => {
     const fetchMaterials = async () => {
       try {
-        const res = await fetch("http://localhost:8080/materials", {
+        const res = await fetch("http://localhost:8080/materials-summary", {
           method: "GET",
           headers: {
             "Content-Type": "application/json",

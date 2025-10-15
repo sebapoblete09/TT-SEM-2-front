@@ -2,11 +2,11 @@
 
 import { useParams } from "next/navigation";
 import { useEffect, useState } from "react";
-import { Material } from "@/components/ui/materialCard";
-import MaterialHeader from "@/components/materialpage/MaterialHeader";
-import MaterialGallery from "@/components/materialpage/MaterialGallery";
-import MaterialTabs from "@/components/materialpage/materialtabs/index";
-import MaterialSidebar from "@/components/materialpage/materialSidebar/index";
+import MaterialHeader from "@/components/material/MaterialHeader";
+import MaterialGallery from "@/components/material/MaterialGallery";
+import MaterialTabs from "@/components/material/materialtabs/index";
+import MaterialSidebar from "@/components/material/materialSidebar/index";
+import { Material } from "@/types/materials";
 
 export default function MaterialDetailPage() {
   const [material, setMaterial] = useState<Material | null>(null);
@@ -41,8 +41,8 @@ export default function MaterialDetailPage() {
     <div className="min-h-screen bg-muted/30">
       <div className="container mx-auto max-w-7xl px-4 py-8">
         <MaterialHeader material={material} />
-        <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
-          <div className="lg:col-span-2 space-y-8">
+        <div className="grid grid-cols-1 lg:grid-cols-3 gap-8 ">
+          <div className="lg:col-span-2 space-y-8 ">
             <MaterialGallery material={material} />
             <MaterialTabs material={material} />
           </div>
