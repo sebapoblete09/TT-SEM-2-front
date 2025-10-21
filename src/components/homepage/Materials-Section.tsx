@@ -4,7 +4,11 @@ import { useEffect, useState } from "react";
 import { MaterialCard } from "@/components/ui/materialCard";
 import { Material_Card } from "@/types/materials";
 
-export default function Materials_Section() {
+export default function Materials_Section({
+  setMaterialCountAction,
+}: {
+  setMaterialCountAction: (count: number) => void;
+}) {
   const [materials, setMaterials] = useState<Material_Card[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
@@ -27,6 +31,7 @@ export default function Materials_Section() {
 
         // Asumiendo que la API ya devuelve el formato correcto
         setMaterials(Array.isArray(data) ? data : []);
+        setMaterialCountAction(data.length);
       } catch (err) {
         if (err instanceof Error) {
           console.error(err);
