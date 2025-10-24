@@ -9,6 +9,8 @@ import PropertiesForm, {
 } from "@/components/register-material/Properties";
 import CompositionForm from "@/components/register-material/Composition";
 import RecipeForm, { Step } from "@/components/register-material/Recipe";
+// *** ¡NUEVA IMPORTACIÓN! ***
+import { crearMaterialAction } from "@/actions/register-actions";
 
 export default function RegisterMaterialPage() {
   const [step, setStep] = useState(1);
@@ -84,12 +86,13 @@ export default function RegisterMaterialPage() {
         formData.append("galeria_images[]", img);
       });
 
-      const res = await fetch("http://localhost:8080/materials", {
-        method: "POST",
-        body: formData,
-      });
+      console.log("Enviando FormData a la Server Action...");
+      const result = await crearMaterialAction(formData);
 
-      if (!res.ok) throw new Error("Error al guardar material");
+      if (!result.success) {
+        // Si la Server Action devuelve un error, lo lanzamos
+        throw new Error(result.error || "Error desconocido desde el servidor");
+      }
 
       alert("✅ Material registrado con éxito");
       console.log("Payload enviado:", Object.fromEntries(formData));

@@ -1,7 +1,5 @@
 // lib/supabase/server.ts
 
-// ¡ELIMINA LA LÍNEA "use server"; DE AQUÍ!
-
 import { createServerClient, type CookieOptions } from "@supabase/ssr";
 import { cookies } from "next/headers";
 

@@ -41,29 +41,41 @@ export async function middleware(request: NextRequest) {
   );
 
   // Refresca la sesión (crucial)
-  await supabase.auth.getSession();
-
-  // OPCIONAL: Proteger rutas
   const {
     data: { user },
   } = await supabase.auth.getUser();
-  if (!user && request.nextUrl.pathname.startsWith("/dashboard")) {
+
+  // --- ¡AQUÍ ESTÁ LA LÓGICA DE PROTECCIÓN! ---
+
+  // 1. Define tus rutas protegidas
+  const protectedRoutes = [
+    "/register-material",
+    "/admin",
+    "/pending-approval",
+    // "/perfil",
+  ];
+
+  // 2. Comprueba si la ruta actual está en las rutas protegidas
+  const isProtectedRoute = protectedRoutes.some((route) =>
+    request.nextUrl.pathname.startsWith(route)
+  );
+
+  // 3. Si no hay usuario Y es una ruta protegida -> Redirige a /login
+  if (!user && isProtectedRoute) {
     return NextResponse.redirect(new URL("/login", request.url));
   }
+
+  // 4. (Opcional) Si hay usuario Y va a /login -> Redirige al inicio
+  if (user && request.nextUrl.pathname === "/login") {
+    return NextResponse.redirect(new URL("/", request.url));
+  }
+
+  // --- FIN DE LA LÓGICA DE PROTECCIÓN ---
 
   return response;
 }
 
-// Asegúrate de que el middleware se ejecute en las rutas correctas
+// Asegúrate de que el matcher NO incluya /login
 export const config = {
-  matcher: [
-    /*
-     * Coincide con todas las rutas de solicitud excepto las de:
-     * - _next/static (archivos estáticos)
-     * - _next/image (optimización de imágenes)
-     * - favicon.ico (archivo de favicon)
-     * - /auth (rutas de autenticación como login, callback)
-     */
-    "/((?!_next/static|_next/image|favicon.ico|auth).*)",
-  ],
+  matcher: ["/register-material", "/admin", "/pending-approval"],
 };
