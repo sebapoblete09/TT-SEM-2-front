@@ -16,7 +16,9 @@ export default function Materials_Section({
   useEffect(() => {
     const fetchMaterials = async () => {
       try {
-        const res = await fetch("http://localhost:8080/materials-summary", {
+        const baseUrl =
+          process.env.NEXT_PUBLIC_BACK_URL || "http://localhost:8080";
+        const res = await fetch(`${baseUrl}/materials-summary`, {
           method: "GET",
           headers: {
             "Content-Type": "application/json",

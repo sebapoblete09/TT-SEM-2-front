@@ -35,19 +35,17 @@ export async function crearMaterialAction(
 
   const googleId = googleIdentity?.id || ""; // El ID real del creador 👤
 
-  // 4. Modificar el FormData: Sobrescribir el 'creador_id'
   // Usamos .set() para reemplazar el "1" que venía del cliente
   formData.set("creador_id", googleId);
 
   // 5. Llamar a tu backend de Go (de servidor a servidor)
   try {
-    const response = await fetch("http://localhost:8080/materials", {
+    const baseUrl = process.env.NEXT_PUBLIC_BACK_URL || "http://localhost:8080";
+    const response = await fetch(`${baseUrl}/materials`, {
       method: "POST",
       headers: {
         // ¡Enviamos el token para la validación de seguridad!
         Authorization: `Bearer ${token}`,
-        // NO establezcas 'Content-Type: multipart/form-data' manualmente.
-        // fetch() lo hace automáticamente cuando el body es FormData.
       },
       body: formData, // Pasamos el FormData directamente
     });

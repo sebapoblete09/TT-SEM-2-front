@@ -20,19 +20,16 @@ export default function Page() {
   const loginWithGoogle = async () => {
     setLoading(true);
 
-    // Obtenemos la URL base (http://localhost:3000)
     const redirectTo = `${window.location.origin}/auth/callback`;
 
     await supabase.auth.signInWithOAuth({
       provider: "google",
       options: {
-        redirectTo: redirectTo, // ¡Clave! Apunta a tu nueva ruta de callback
+        redirectTo: redirectTo,
       },
     });
-    // No necesitamos setLoading(false) porque el usuario será redirigido
   };
 
-  // (El JSX de return sigue igual... no es necesario repetirlo)
   return (
     <div className="min-h-screen grid lg:grid-cols-2">
       {/* Left side - Login Form */}

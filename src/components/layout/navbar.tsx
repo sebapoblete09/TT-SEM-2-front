@@ -72,8 +72,7 @@ export function Navigation() {
     return "??";
   };
 
-  // 4. Lógica de Admin ELIMINADA
-  // const isAdmin = ... (eliminado)
+  // 4. Lógica de Admin
 
   // Datos dinámicos para el perfil
   const userName = user?.user_metadata?.full_name;
@@ -116,8 +115,6 @@ export function Navigation() {
             >
               Comunidad
             </Link>
-
-            {/* Link de Admin ELIMINADO de aquí */}
           </div>
 
           {/* User Menu o Botón de Login */}
@@ -164,8 +161,6 @@ export function Navigation() {
                     <Settings className="mr-2 h-4 w-4" />
                     Configuración
                   </DropdownMenuItem>
-
-                  {/* Bloque de Admin ELIMINADO de aquí */}
 
                   <DropdownMenuSeparator />
                   {/* --- ¡BOTÓN DE LOGOUT FUNCIONAL! --- */}

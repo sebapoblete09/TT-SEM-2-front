@@ -9,7 +9,6 @@ import PropertiesForm, {
 } from "@/components/register-material/Properties";
 import CompositionForm from "@/components/register-material/Composition";
 import RecipeForm, { Step } from "@/components/register-material/Recipe";
-// *** ¡NUEVA IMPORTACIÓN! ***
 import { crearMaterialAction } from "@/actions/register-actions";
 
 export default function RegisterMaterialPage() {

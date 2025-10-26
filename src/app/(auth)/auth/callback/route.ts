@@ -16,7 +16,6 @@ export async function GET(request: Request) {
     const { data, error } = await supabase.auth.exchangeCodeForSession(code);
 
     if (!error && data.session) {
-      // *** ¡AQUÍ ESTÁ LA MAGIA! ***
       // En este punto, el usuario está autenticado en Supabase
       // y la cookie httpOnly está guardada.
       // Ahora, registramos en nuestro backend de Go.
@@ -47,7 +46,9 @@ export async function GET(request: Request) {
       );
 
       try {
-        const response = await fetch("http://localhost:8080/auth/register", {
+        const baseUrl =
+          process.env.NEXT_PUBLIC_BACK_URL || "http://localhost:8080";
+        const response = await fetch(`${baseUrl}/auth/register`, {
           method: "POST",
           headers: { "Content-Type": "application/json" },
           body: JSON.stringify({
@@ -64,13 +65,12 @@ export async function GET(request: Request) {
             "Error registrando en backend Go:",
             await response.text()
           );
-          // Podrías redirigir a una página de error
         }
       } catch (e) {
         console.error("Error de red llamando a backend Go:", e);
       }
 
-      // Redirigir al usuario a la página principal o dashboard
+      // Redirigir al usuario a la página principal
       return NextResponse.redirect(`${origin}/`);
     }
   }

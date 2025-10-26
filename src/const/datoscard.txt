@@ -1,8 +1,0 @@
-material en el card debe mostrar:
-id
-nombre
-descripcion
-composicion
-derivado de
-primera imagen de la galeria
-
