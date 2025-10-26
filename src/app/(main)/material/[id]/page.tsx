@@ -19,7 +19,11 @@ export default function MaterialDetailPage() {
     const fetchMaterial = async () => {
       try {
         setLoading(true);
-        const res = await fetch(`http://localhost:8080/materials/${id}`);
+
+        const baseUrl =
+          process.env.NEXT_PUBLIC_BACK_URL || "http://localhost:8080";
+        const res = await fetch(`${baseUrl}/materials/${id}`);
+
         if (!res.ok) throw new Error(`Error ${res.status}`);
         const data: Material = await res.json();
         setMaterial(data);

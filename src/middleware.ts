@@ -40,14 +40,14 @@ export async function middleware(request: NextRequest) {
     }
   );
 
-  // Refresca la sesión (crucial)
+  // Refresca la sesión
   const {
     data: { user },
   } = await supabase.auth.getUser();
 
   // --- ¡AQUÍ ESTÁ LA LÓGICA DE PROTECCIÓN! ---
 
-  // 1. Define tus rutas protegidas
+  // 1. Definnir rutas protegidas
   const protectedRoutes = [
     "/register-material",
     "/admin",
@@ -75,7 +75,7 @@ export async function middleware(request: NextRequest) {
   return response;
 }
 
-// Asegúrate de que el matcher NO incluya /login
+//Rutas protegidas
 export const config = {
   matcher: ["/register-material", "/admin", "/pending-approval"],
 };
