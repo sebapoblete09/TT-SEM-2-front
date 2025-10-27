@@ -105,7 +105,7 @@ export default function PropertiesForm({
         {/* Propiedades Mecánicas */}
         <section>
           <h3 className="font-semibold mb-2">Propiedades Mecánicas</h3>
-          <div className="grid grid-cols-3 gap-4">
+          <div className="grid grid-cols-2 md:grid-cols-3 gap-6">
             {renderSelects("mecanicas", [
               { label: "Resistencia", key: "resistencia" },
               { label: "Dureza", key: "dureza" },
@@ -119,7 +119,7 @@ export default function PropertiesForm({
         {/* Propiedades Perceptivas */}
         <section>
           <h3 className="font-semibold mb-2">Propiedades Perceptivas</h3>
-          <div className="grid grid-cols-3 gap-4">
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
             {renderTextareas("perceptivas", [
               { label: "Color", key: "color" },
               { label: "Brillo", key: "brillo" },
@@ -133,7 +133,7 @@ export default function PropertiesForm({
         {/* Propiedades Emocionales */}
         <section>
           <h3 className="font-semibold mb-2">Propiedades Emocionales</h3>
-          <div className="grid grid-cols-3 gap-4">
+          <div className="grid grid-cols-2 md:grid-cols-3 gap-6">
             {renderSelects("emocionales", [
               { label: "Calidez Emocional", key: "calidez_emocional" },
               { label: "Inspiración", key: "inspiracion" },
