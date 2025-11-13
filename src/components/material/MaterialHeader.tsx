@@ -32,19 +32,19 @@ export default function MaterialHeader({ material }: { material: Material }) {
           <Avatar className="h-12 w-12">
             <AvatarImage src="/placeholder.svg" />
             <AvatarFallback className="bg-primary text-primary-foreground">
-              {material.Creador.nombre?.[0] ?? "?"}
+              {material.creador.nombre?.[0] ?? "?"}
             </AvatarFallback>
           </Avatar>
           <div>
-            <p className="font-medium">{material.Creador.nombre}</p>
-            <p className="text-muted-foreground">Rol: Estudiante o admin</p>
+            <p className="font-medium">{material.creador.nombre}</p>
+            <p className="text-muted-foreground">{material.creador.rol}</p>
           </div>
         </div>
         <div className="flex items-center gap-2 text-muted-foreground">
           <Calendar className="h-4 w-4" />
           <span>
             Publicado:{" "}
-            {new Date(material.creado_en).toLocaleDateString("es-MX", {
+            {new Date(material.created_at).toLocaleDateString("es-MX", {
               day: "numeric",
               month: "long",
               year: "numeric",
@@ -53,11 +53,11 @@ export default function MaterialHeader({ material }: { material: Material }) {
         </div>
       </div>
 
-      {material.Colaboradores.length > 0 && (
+      {material.colaboradores.length > 0 && (
         <div className="mt-4">
           <p className="text-sm text-muted-foreground mb-2">Colaboradores:</p>
           <div className="flex flex-wrap gap-2">
-            {material.Colaboradores.map((colab) => (
+            {material.colaboradores.map((colab) => (
               <Badge key={colab.ID} variant="outline">
                 {colab.nombre}
               </Badge>

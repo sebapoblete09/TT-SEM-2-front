@@ -9,11 +9,13 @@ import PropertiesForm, {
 } from "@/components/register-material/Properties";
 import CompositionForm from "@/components/register-material/Composition";
 import RecipeForm, { Step } from "@/components/register-material/Recipe";
-import { crearMaterialAction } from "@/actions/register-actions";
+import { createClient } from "@/lib/supabase/client";
 
 export default function RegisterMaterialPage() {
   const [step, setStep] = useState(1);
   const [loading, setLoading] = useState(false);
+
+  const supabase = createClient();
 
   const [basicInfo, setBasicInfo] = useState<BasicInfoData>({
     nombre: "",
@@ -43,6 +45,21 @@ export default function RegisterMaterialPage() {
 
   const handleSubmit = async () => {
     try {
+      // Obténer la sesión (y el token)
+      const {
+        data: { session },
+        error: sessionError,
+      } = await supabase.auth.getSession();
+
+      // Valida que tengas el token
+      if (sessionError || !session?.access_token) {
+        throw new Error(
+          sessionError?.message || "No se encontró sesión. Inicia sesión."
+        );
+      }
+
+      const accessToken = session.access_token;
+
       setLoading(true);
 
       // Convertir las propiedades en objetos planos (stringificados)
@@ -85,16 +102,26 @@ export default function RegisterMaterialPage() {
         formData.append("galeria_images[]", img);
       });
 
-      console.log("Enviando FormData a la Server Action...");
-      const result = await crearMaterialAction(formData);
+      console.log("Enviando FormData al backend (localhost:8080)...");
+      const response = await fetch("http://localhost:8080/materials", {
+        method: "POST",
+        headers: {
+          Authorization: `Bearer ${accessToken}`,
+        },
+        body: formData,
+      });
 
-      if (!result.success) {
-        // Si la Server Action devuelve un error, lo lanzamos
-        throw new Error(result.error || "Error desconocido desde el servidor");
+      if (!response.ok) {
+        // Manejar el error si el backend de tu compañero falla
+        const errorData = await response.json(); // O .text()
+        throw new Error(errorData.message || "Error en el backend");
       }
 
+      const result = await response.json();
       alert("✅ Material registrado con éxito");
+      console.log("Respuesta del backend:", result);
       console.log("Payload enviado:", Object.fromEntries(formData));
+      console.log("Respuesta del backend:", response);
       setStep(1);
     } catch (err) {
       console.error(err);

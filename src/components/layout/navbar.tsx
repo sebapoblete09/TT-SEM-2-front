@@ -153,9 +153,12 @@ export function Navigation() {
                     </div>
                   </DropdownMenuLabel>
                   <DropdownMenuSeparator />
-                  <DropdownMenuItem>
-                    <User className="mr-2 h-4 w-4" />
-                    Mi Perfil
+                  <DropdownMenuItem asChild>
+                    <Link href="/user">
+                      {" "}
+                      <User className="mr-2 h-4 w-4" />
+                      Mi Perfil
+                    </Link>
                   </DropdownMenuItem>
                   <DropdownMenuItem>
                     <Settings className="mr-2 h-4 w-4" />

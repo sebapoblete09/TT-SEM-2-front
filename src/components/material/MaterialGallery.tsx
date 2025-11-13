@@ -3,19 +3,19 @@
 import Image from "next/image";
 import { useState, useEffect } from "react";
 import { Card, CardContent } from "@/components/ui/card";
-import { Material, GaleriaItem } from "@/types/materials";
+import { Material, galeriaItem } from "@/types/materials";
 import { cn } from "@/lib/utils";
 
 export default function MaterialGallery({ material }: { material: Material }) {
-  const [selectedImage, setSelectedImage] = useState<GaleriaItem | null>(null);
+  const [selectedImage, setSelectedImage] = useState<galeriaItem | null>(null);
 
   useEffect(() => {
-    if (material.Galeria && material.Galeria.length > 0) {
-      setSelectedImage(material.Galeria[0]);
+    if (material.galeria && material.galeria.length > 0) {
+      setSelectedImage(material.galeria[0]);
     }
-  }, [material.Galeria]);
+  }, [material.galeria]);
 
-  if (!material.Galeria || material.Galeria.length === 0) {
+  if (!material.galeria || material.galeria.length === 0) {
     return (
       <Card>
         <CardContent className="p-0">
@@ -45,7 +45,7 @@ export default function MaterialGallery({ material }: { material: Material }) {
           </div>
         )}
         <div className="grid grid-cols-5 gap-2 p-4">
-          {material.Galeria.map((item) => (
+          {material.galeria.map((item) => (
             <button
               key={item.ID}
               className={cn(

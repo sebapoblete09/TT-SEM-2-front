@@ -1,12 +1,14 @@
 // Placeholder para el tipo Creador/Colaborador
-export type Creador = {
+export type creador = {
   ID: number;
   CreatedAt: string;
   UpdatedAt: string;
   DeletedAt: string | null;
+  Supabase_id: string;
   google_id: string;
   nombre: string;
   email: string;
+  rol: string;
 };
 
 export type Paso = {
@@ -21,7 +23,7 @@ export type Paso = {
   url_video: string;
 };
 
-export type GaleriaItem = {
+export type galeriaItem = {
   ID: number;
   CreatedAt: string;
   UpdatedAt: string;
@@ -31,7 +33,7 @@ export type GaleriaItem = {
   caption: string;
 };
 
-export type PropiedadesMecanicas = {
+export type prop_mecanicas = {
   material_id: string;
   resistencia: string;
   dureza: string;
@@ -40,7 +42,7 @@ export type PropiedadesMecanicas = {
   fragilidad: string;
 };
 
-export type PropiedadesPerceptivas = {
+export type prop_perceptivas = {
   material_id: string;
   color: string;
   brillo: string;
@@ -49,7 +51,7 @@ export type PropiedadesPerceptivas = {
   sensacion_termica: string;
 };
 
-export type PropiedadesEmocionales = {
+export type prop_emocionales = {
   material_id: string;
   calidez_emocional: string;
   inspiracion: string;
@@ -65,16 +67,16 @@ export type Material = {
   herramientas: string[];
   composicion: string[];
   derivado_de: string;
-  creador_id: number;
+  created_at: number;
   creado_en: string;
   actualizado_en: string;
-  Creador: Creador;
-  Colaboradores: Creador[];
-  Pasos: Paso[];
-  Galeria: GaleriaItem[];
-  PropiedadesMecanicas: PropiedadesMecanicas;
-  PropiedadesPerceptivas: PropiedadesPerceptivas;
-  PropiedadesEmocionales: PropiedadesEmocionales;
+  creador: creador;
+  colaboradores: creador[];
+  pasos: Paso[];
+  galeria: galeriaItem[];
+  prop_mecanicas: prop_mecanicas;
+  prop_perceptivas: prop_perceptivas;
+  prop_emocionales: prop_emocionales;
 };
 
 export type Material_Card = {

@@ -105,14 +105,14 @@ export default function Page() {
               </div>
             </div>
 
-            <div className="rounded-lg bg-muted p-4 text-sm">
+            {/*<div className="rounded-lg bg-muted p-4 text-sm">
               <p className="text-muted-foreground">
                 <strong className="text-foreground">Nota:</strong> El acceso a
                 la plataforma requiere aprobación administrativa. Después de
                 iniciar sesión con tu cuenta institucional, tu solicitud será
                 revisada por el equipo de administración.
               </p>
-            </div>
+            </div>*/}
           </CardContent>
         </Card>
       </div>
