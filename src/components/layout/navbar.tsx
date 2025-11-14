@@ -160,10 +160,10 @@ export function Navigation() {
                       Mi Perfil
                     </Link>
                   </DropdownMenuItem>
-                  <DropdownMenuItem>
+                  {/*<DropdownMenuItem>
                     <Settings className="mr-2 h-4 w-4" />
                     Configuración
-                  </DropdownMenuItem>
+                  </DropdownMenuItem>*/}
 
                   <DropdownMenuSeparator />
                   {/* --- ¡BOTÓN DE LOGOUT FUNCIONAL! --- */}

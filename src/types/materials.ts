@@ -77,6 +77,7 @@ export type Material = {
   prop_mecanicas: prop_mecanicas;
   prop_perceptivas: prop_perceptivas;
   prop_emocionales: prop_emocionales;
+  estado: boolean;
 };
 
 export type Material_Card = {
@@ -86,4 +87,5 @@ export type Material_Card = {
   composicion: string[];
   derivado_de: string;
   primera_imagen_galeria: string;
+  estado?: boolean;
 };

@@ -3,14 +3,13 @@ import { redirect } from "next/navigation";
 import { headers } from "next/headers"; // Para evitar caché estática
 
 import { MaterialCard } from "@/components/ui/materialCard";
-//import { ProfileHeader } from "@/components/profile/ProfileHeader";
-//import { ProfileStats } from "@/components/profile/ProfileStats";
 
 //importacion de tipos
 import { usuario, estadisticas } from "@/types/user";
 import { Material_Card, Material } from "@/types/materials";
 import { ProfileHeader } from "@/components/profile/ProfileHeader";
 import { ProfileStats } from "@/components/profile/ProfileStats";
+import Materials_Profile from "@/components/profile/ProfileMaterials";
 
 export default async function ProfilePage() {
   const supabase = createClient();
@@ -23,6 +22,7 @@ export default async function ProfilePage() {
   if (!session) {
     redirect("/login");
   }
+  const userAvatar = session?.user?.user_metadata?.avatar_url;
 
   // Para asegurar que la data se pida en cada visita y no se quede en caché
   const headersList = headers();
@@ -61,6 +61,7 @@ export default async function ProfilePage() {
         // Usamos "optional chaining" (?.) para evitar errores si 'galeria' está vacío.
         // Obtenemos la url_imagen del primer (0) item, o un string vacío si no existe.
         primera_imagen_galeria: material.galeria?.[0]?.url_imagen || "",
+        estado: material.estado,
       };
     }
   );
@@ -69,22 +70,15 @@ export default async function ProfilePage() {
       <div className="flex gap-10 p-5 m-auto justify-center">
         {/* --- SECCIÓN 1: PERFIL DE USUARIO --- */}
         {/* Componente 1: Muestra la info del usuario */}
-        <ProfileHeader usuario={usuario} />
+        <ProfileHeader usuario={usuario} userAvatar={userAvatar} />
 
         {/* Componente 2: Muestra las estadísticas */}
         <ProfileStats estadisticas={estadisticas} />
       </div>
+      <div></div>
 
-      <hr className="my-8" />
-      <section>
-        <h2 className="text-2xl font-bold mb-4">Mis Materiales Creados</h2>
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-          {materiales_creados.map((material) => (
-            // ¡Ahora 'material' tiene el tipo Material_Card y calza!
-            <MaterialCard key={material.id} material={material} />
-          ))}
-        </div>
-      </section>
+      <hr className="my-8 " />
+      <Materials_Profile initialMaterials={materiales_creados} />
     </div>
   );
 }
