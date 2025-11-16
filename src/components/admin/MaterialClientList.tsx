@@ -47,10 +47,25 @@ export function MaterialClientList({
   // 4. Lógica para llamar a tu API de "Eliminar"
   const handleDelete = async (id: string) => {
     console.log("Eliminando material:", id);
-    // Aquí harías tu fetch DELETE
-    // await fetch(`${baseUrl}/materials/${id}`, { method: 'DELETE', ... });
-
+    try {
+      const baseUrl =
+        process.env.NEXT_PUBLIC_BACK_URL || "http://localhost:8080";
+      const response = await fetch(`${baseUrl}/materials/${id}/reject`, {
+        method: "POST",
+        headers: {
+          Authorization: `Bearer ${access_token}`,
+        },
+      });
+      if (!response.ok) {
+        // Manejar error del backend de Go
+        console.error("Error rechazando material", await response.text());
+      }
+    } catch (e) {
+      console.error("Error al aprobar material", e);
+    }
     // Actualiza la UI
+    window.alert("Material Rechazado exitosamente");
+    // Actualiza la UI para que el material desaparezca de la lista
     setMaterials(materials.filter((m) => m.id !== id));
   };
 
