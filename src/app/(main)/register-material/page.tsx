@@ -103,7 +103,9 @@ export default function RegisterMaterialPage() {
       });
 
       console.log("Enviando FormData al backend (localhost:8080)...");
-      const response = await fetch("http://localhost:8080/materials", {
+      const baseUrl =
+        process.env.NEXT_PUBLIC_BACK_URL || "http://localhost:8080";
+      const response = await fetch(`${baseUrl}materials`, {
         method: "POST",
         headers: {
           Authorization: `Bearer ${accessToken}`,
