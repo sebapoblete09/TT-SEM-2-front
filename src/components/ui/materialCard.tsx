@@ -18,7 +18,7 @@ export function MaterialCard({ material }: MaterialCardProps) {
             src={material.primera_imagen_galeria}
             alt={`Imagen de ${material.nombre}`}
             fill
-            className="object-cover"
+            className="object-cover rounded-xl"
             sizes="(max-width: 768px) 100vw, (max-width: 1200px) 50vw, 33vw"
             priority={false} // Cambiar a true para las primeras imágenes que se cargan en la página
           />

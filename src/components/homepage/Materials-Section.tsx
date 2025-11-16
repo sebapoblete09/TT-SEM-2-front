@@ -1,8 +1,10 @@
 "use client";
 
-import { useEffect, useState } from "react";
 import { MaterialCard } from "@/components/ui/materialCard";
 import { Material_Card } from "@/types/materials";
+import { LuSearch } from "react-icons/lu";
+import { Input } from "@/components/ui/input";
+import { useEffect, useState } from "react";
 
 export default function Materials_Section({
   setMaterialCountAction,
@@ -12,6 +14,8 @@ export default function Materials_Section({
   const [materials, setMaterials] = useState<Material_Card[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
+  // 2. SOLO necesitas el estado para el filtro
+  const [searchTerm, setSearchTerm] = useState("");
 
   useEffect(() => {
     const fetchMaterials = async () => {
@@ -82,6 +86,16 @@ export default function Materials_Section({
     );
   }
 
+  // 4. Lógica de filtrado
+  const materialsFiltrados = materials.filter((material) => {
+    const busqueda = searchTerm.toLowerCase();
+    return (
+      material.nombre.toLowerCase().includes(busqueda) ||
+      material.descripcion.toLowerCase().includes(busqueda) ||
+      material.composicion.some((comp) => comp.toLowerCase().includes(busqueda))
+    );
+  });
+
   return (
     <section id="explore" className="py-12 px-4">
       <div className="container mx-auto max-w-7xl">
@@ -93,12 +107,31 @@ export default function Materials_Section({
             </p>
           </div>
         </div>
-
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-          {materials.map((material) => (
-            <MaterialCard key={material.id} material={material} />
-          ))}
+        <div className="flex-1 relative w-full md:max-w-md">
+          <LuSearch className="absolute left-3 top-1/2 -translate-y-1/2 h-5 w-5 text-muted-foreground" />
+          <Input
+            placeholder="Buscar en mis materiales..."
+            className="pl-10 h-12 w-full"
+            value={searchTerm}
+            onChange={(e) => setSearchTerm(e.target.value)}
+          />
         </div>
+
+        {materialsFiltrados.length === 0 ? (
+          <div className="text-center py-10 ">
+            <p className="text-muted-foreground">
+              {materials.length > 0
+                ? "No se encontraron materiales con ese término."
+                : "No has creado materiales aún."}
+            </p>
+          </div>
+        ) : (
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6  pt-5">
+            {materialsFiltrados.map((material) => (
+              <MaterialCard key={material.id} material={material} />
+            ))}
+          </div>
+        )}
       </div>
     </section>
   );

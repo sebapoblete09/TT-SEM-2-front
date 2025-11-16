@@ -20,14 +20,14 @@ export default function MaterialTabsContainer({
       </TabsList>
 
       <TabsContent value="recipe">
-        <RecipeTab pasos={material.Pasos} />
+        <RecipeTab pasos={material.pasos} />
       </TabsContent>
 
       <TabsContent value="properties">
         <PropertiesTab
-          mecanicas={material.PropiedadesMecanicas}
-          perceptivas={material.PropiedadesPerceptivas}
-          emocionales={material.PropiedadesEmocionales}
+          mecanicas={material.prop_mecanicas}
+          perceptivas={material.prop_perceptivas}
+          emocionales={material.prop_emocionales}
         />
       </TabsContent>
 

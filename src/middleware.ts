@@ -52,7 +52,8 @@ export async function middleware(request: NextRequest) {
     "/register-material",
     "/admin",
     "/pending-approval",
-    // "/perfil",
+    "/user",
+    "/admin",
   ];
 
   // 2. Comprueba si la ruta actual está en las rutas protegidas
@@ -77,5 +78,11 @@ export async function middleware(request: NextRequest) {
 
 //Rutas protegidas
 export const config = {
-  matcher: ["/register-material", "/admin", "/pending-approval"],
+  matcher: [
+    "/register-material",
+    "/admin",
+    "/pending-approval",
+    "/user",
+    "/admin",
+  ],
 };
