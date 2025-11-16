@@ -27,21 +27,27 @@ export function ProfileHeader({ usuario, userAvatar }: ProfileHeaderProps) {
   return (
     <section className="flex items-center gap-6 mb-10">
       {/* AVATAR */}
-      <Avatar className="h-24 w-24">
-        <AvatarImage
-          src={userAvatar || ""} // Dato dinámico
-          alt={userName || "Usuario"}
-        />
-        <AvatarFallback className="bg-primary text-primary-foreground">
-          {getInitials(userName)} {/* Dato dinámico */}
-        </AvatarFallback>
-      </Avatar>
+      <div>
+        <Avatar className="h-22 w-22">
+          <AvatarImage
+            src={userAvatar || ""} // Dato dinámico
+            alt={userName || "Usuario"}
+          />
+          <AvatarFallback className="bg-primary text-primary-foreground">
+            {getInitials(userName)} {/* Dato dinámico */}
+          </AvatarFallback>
+        </Avatar>
+      </div>
 
       {/* INFO */}
-      <div>
-        <h1 className="text-2xl font-bold">{userName}</h1>
+      <div className="flex flex-col">
+        {usuario.rol === "administrador" ? (
+          <Badge className="mt-2  bg-accent text-sm">{usuario.rol}</Badge>
+        ) : (
+          <Badge className="mt-2  bg-primary text-sm">{usuario.rol}</Badge>
+        )}
+        <h1 className="text-xl font-bold">{userName}</h1>
         <p className="text-lg text-muted-foreground">{usuario.email}</p>
-        <Badge className="mt-2 capitalize">{usuario.rol}</Badge>
       </div>
     </section>
   );

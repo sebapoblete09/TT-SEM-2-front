@@ -24,6 +24,7 @@ export async function GET(request: Request) {
       );
       const googleId = googleIdentity?.id || "";
       const nombre = user.user_metadata?.full_name || user.email?.split("@")[0];
+      console.log(JSON.stringify(data.session, null, 2));
       console.log("Inicio de sesion exitoso");
 
       try {

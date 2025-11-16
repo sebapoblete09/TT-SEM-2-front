@@ -62,7 +62,7 @@ export default function Materials_Profile({
         <div className="flex flex-col md:flex-row items-center justify-between mb-8 gap-4">
           <div>
             <h2 className="text-3xl font-bold mb-2">
-              Mis Materiales: {materialsFiltrados.length}
+              N° Materiales: {materialsFiltrados.length}
             </h2>
             <p className="text-muted-foreground">
               {/* Texto dinámico según el filtro */}

@@ -1,4 +1,5 @@
 export type usuario = {
+  id?: number;
   email: string;
   nombre: string;
   rol: string;

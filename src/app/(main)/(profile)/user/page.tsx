@@ -2,14 +2,14 @@ import { createClient } from "@/lib/supabase/server";
 import { redirect } from "next/navigation";
 import { headers } from "next/headers"; // Para evitar caché estática
 
-import { MaterialCard } from "@/components/ui/materialCard";
-
 //importacion de tipos
 import { usuario, estadisticas } from "@/types/user";
 import { Material_Card, Material } from "@/types/materials";
 import { ProfileHeader } from "@/components/profile/ProfileHeader";
 import { ProfileStats } from "@/components/profile/ProfileStats";
 import Materials_Profile from "@/components/profile/ProfileMaterials";
+import { Button } from "@/components/ui/button";
+import Link from "next/link";
 
 export default async function ProfilePage() {
   const supabase = createClient();
@@ -70,14 +70,24 @@ export default async function ProfilePage() {
       <div className="flex gap-10 p-5 m-auto justify-center">
         {/* --- SECCIÓN 1: PERFIL DE USUARIO --- */}
         {/* Componente 1: Muestra la info del usuario */}
-        <ProfileHeader usuario={usuario} userAvatar={userAvatar} />
-
+        <div className="flex flex-col">
+          <ProfileHeader usuario={usuario} userAvatar={userAvatar} />
+          {usuario.rol === "administrador" ? (
+            <div>
+              <Button asChild size="lg" variant="secondary">
+                <Link href="/admin">Panel de Administracion</Link>
+              </Button>
+            </div>
+          ) : (
+            <div></div>
+          )}
+        </div>
         {/* Componente 2: Muestra las estadísticas */}
         <ProfileStats estadisticas={estadisticas} />
+        {/*Si es Admin, tendra acceso a un dashboard para aprobar */}
       </div>
-      <div></div>
-
       <hr className="my-8 " />
+
       <Materials_Profile initialMaterials={materiales_creados} />
     </div>
   );
