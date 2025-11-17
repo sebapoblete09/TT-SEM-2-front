@@ -1,18 +1,19 @@
 "use client";
 
-import { useState } from "react";
 import Hero from "@/components/homepage/Hero";
-import Stats from "@/components/homepage/Stats-Section";
-import Materials_Section from "@/components/homepage/Materials-Section";
+import InnovationSection from "@/components/homepage/InnovationArea";
+import JoinUs from "@/components/homepage/JoinUs";
+import Steps from "@/components/homepage/Steps";
+import WhyBiomaterials from "@/components/homepage/WhyBiomaterials";
 
 export default function Home() {
-  const [materialCount, setMaterialCount] = useState(0);
-
   return (
     <main>
       <Hero />
-      <Materials_Section setMaterialCountAction={setMaterialCount} />
-      <Stats count={materialCount} />
+      <WhyBiomaterials />
+      <Steps />
+      <InnovationSection />
+      <JoinUs />
     </main>
   );
 }

@@ -21,7 +21,7 @@ export default async function MaterialPending() {
 
   // ... (Tu lógica de fetch es perfecta) ...
   const baseUrl = process.env.NEXT_PUBLIC_BACK_URL || "http://localhost:8080";
-  const res = await fetch(`${baseUrl}/materials/pending`, {
+  /*const res = await fetch(`${baseUrl}/materials/pending`, {
     method: "GET",
     headers: {
       Authorization: `Bearer ${session.access_token}`,
@@ -31,10 +31,10 @@ export default async function MaterialPending() {
 
   if (!res.ok) {
     return <p>Error al cargar los materiales pendientes.</p>;
-  }
+  }*/
 
-  const data = await res.json();
-  const Pending_Materials: Material[] = data.materiales || [];
+  //const data = await res.json();
+  //const Pending_Materials: Material[] = data.materiales || [];
 
   // 2. Renderiza el wrapper y pasa los datos al cliente
   return (
@@ -45,7 +45,7 @@ export default async function MaterialPending() {
 
       {/* 3. Pasa los datos al componente cliente */}
       <MaterialClientList
-        initialMaterials={Pending_Materials}
+        initialMaterials={[]}
         access_token={session.access_token}
       />
     </TabsContent>

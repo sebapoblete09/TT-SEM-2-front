@@ -30,9 +30,6 @@ export default function RootLayout({
       >
         <Navigation />
         <main>{children}</main>
-        <footer className="py-8 text-center text-sm text-muted-foreground">
-          © 2025 Plataforma de Biomateriales UTEM
-        </footer>
       </body>
     </html>
   );
