@@ -46,7 +46,7 @@ export default function Hero() {
           </p>
           <div className="flex flex-col sm:flex-row gap-4">
             <Button asChild size="lg" variant="default">
-              <Link href="#explore">Explorar Materiales</Link>
+              <Link href="/materials">Explorar Materiales</Link>
             </Button>
             <Button asChild size="lg" variant="outline-primary">
               <Link href="/register-material ">+ Registrar Material </Link>

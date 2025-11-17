@@ -2,7 +2,7 @@
 
 export default function Stats({ count }: { count: number }) {
   return (
-    <section className="py-16 px-4 bg-secondary text-secondary-foreground">
+    <section className="py-20 px-4 bg-gradient-to-br from-primary via-primary to-secondary text-primary-foreground">
       <div className="container mx-auto max-w-7xl">
         <div className="grid grid-cols-1 md:grid-cols-3 gap-8 text-center">
           <div>

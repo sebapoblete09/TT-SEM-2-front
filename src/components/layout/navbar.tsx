@@ -98,7 +98,7 @@ export function Navigation() {
           {/* Navigation Links */}
           <div className="hidden md:flex items-center gap-6">
             <Link
-              href="/"
+              href="/Materials"
               className="text-sm font-medium hover:text-primary transition-colors"
             >
               Descubrir
