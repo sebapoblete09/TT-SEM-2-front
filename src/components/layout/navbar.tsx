@@ -16,7 +16,9 @@ import {
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
-import { User, LogOut, Settings } from "lucide-react"; // Se quitó 'Shield'
+import { User, LogOut } from "lucide-react";
+
+import NotificationBell from "../ui/notificationBel";
 
 export function Navigation() {
   const [user, setUser] = useState<SupabaseUser | null>(null);
@@ -72,12 +74,13 @@ export function Navigation() {
     return "??";
   };
 
-  // 4. Lógica de Admin
-
   // Datos dinámicos para el perfil
   const userName = user?.user_metadata?.full_name;
   const userEmail = user?.email;
   const userAvatar = user?.user_metadata?.avatar_url;
+
+  // LÓGICA PARA OBTENER EL GOOGLE_ID
+  const googleId = user?.identities?.find((id) => id.provider === "google")?.id;
 
   return (
     <nav className="sticky top-0 z-50 bg-background border-b">
@@ -123,59 +126,64 @@ export function Navigation() {
               // Esqueleto mientras carga
               <div className="h-10 w-10 rounded-full bg-muted animate-pulse" />
             ) : user ? (
-              // --- ESTADO LOGUEADO ---
-              <DropdownMenu>
-                <DropdownMenuTrigger asChild>
-                  <Button
-                    variant="ghost"
-                    className="relative h-10 w-10 rounded-full"
-                  >
-                    <Avatar>
-                      <AvatarImage
-                        src={userAvatar || ""} // Dato dinámico
-                        alt={userName || userEmail || "Usuario"}
-                      />
-                      <AvatarFallback className="bg-primary text-primary-foreground">
-                        {getInitials(userName, userEmail)} {/* Dato dinámico */}
-                      </AvatarFallback>
-                    </Avatar>
-                  </Button>
-                </DropdownMenuTrigger>
-                <DropdownMenuContent align="end" className="w-56 bg-white">
-                  <DropdownMenuLabel>
-                    <div className="flex flex-col space-y-1">
-                      <p className="text-sm font-medium">
-                        {userName || "Usuario"} {/* Dato dinámico */}
-                      </p>
-                      <p className="text-xs text-muted-foreground">
-                        {userEmail} {/* Dato dinámico */}
-                      </p>
-                    </div>
-                  </DropdownMenuLabel>
-                  <DropdownMenuSeparator />
-                  <DropdownMenuItem asChild>
-                    <Link href="/user">
-                      {" "}
-                      <User className="mr-2 h-4 w-4" />
-                      Mi Perfil
-                    </Link>
-                  </DropdownMenuItem>
-                  {/*<DropdownMenuItem>
+              <>
+                {/* 3. RENDERIZAR LA CAMPANA AQUÍ */}
+                {/* Solo la mostramos si tenemos el googleId, que es necesario para la DB */}
+                {googleId && <NotificationBell googleId={googleId} />}
+                <DropdownMenu>
+                  <DropdownMenuTrigger asChild>
+                    <Button
+                      variant="ghost"
+                      className="relative h-10 w-10 rounded-full"
+                    >
+                      <Avatar>
+                        <AvatarImage
+                          src={userAvatar || ""} // Dato dinámico
+                          alt={userName || userEmail || "Usuario"}
+                        />
+                        <AvatarFallback className="bg-primary text-primary-foreground">
+                          {getInitials(userName, userEmail)}{" "}
+                          {/* Dato dinámico */}
+                        </AvatarFallback>
+                      </Avatar>
+                    </Button>
+                  </DropdownMenuTrigger>
+                  <DropdownMenuContent align="end" className="w-56 bg-white">
+                    <DropdownMenuLabel>
+                      <div className="flex flex-col space-y-1">
+                        <p className="text-sm font-medium">
+                          {userName || "Usuario"} {/* Dato dinámico */}
+                        </p>
+                        <p className="text-xs text-muted-foreground">
+                          {userEmail} {/* Dato dinámico */}
+                        </p>
+                      </div>
+                    </DropdownMenuLabel>
+                    <DropdownMenuSeparator />
+                    <DropdownMenuItem asChild>
+                      <Link href="/user">
+                        {" "}
+                        <User className="mr-2 h-4 w-4" />
+                        Mi Perfil
+                      </Link>
+                    </DropdownMenuItem>
+                    {/*<DropdownMenuItem>
                     <Settings className="mr-2 h-4 w-4" />
                     Configuración
                   </DropdownMenuItem>*/}
 
-                  <DropdownMenuSeparator />
-                  {/* --- ¡BOTÓN DE LOGOUT FUNCIONAL! --- */}
-                  <DropdownMenuItem
-                    className="text-destructive cursor-pointer"
-                    onClick={handleLogout}
-                  >
-                    <LogOut className="mr-2 h-4 w-4" />
-                    Cerrar Sesión
-                  </DropdownMenuItem>
-                </DropdownMenuContent>
-              </DropdownMenu>
+                    <DropdownMenuSeparator />
+                    {/* --- ¡BOTÓN DE LOGOUT FUNCIONAL! --- */}
+                    <DropdownMenuItem
+                      className="text-destructive cursor-pointer"
+                      onClick={handleLogout}
+                    >
+                      <LogOut className="mr-2 h-4 w-4" />
+                      Cerrar Sesión
+                    </DropdownMenuItem>
+                  </DropdownMenuContent>
+                </DropdownMenu>
+              </>
             ) : (
               // --- ESTADO NO LOGUEADO ---
               <Button asChild>
