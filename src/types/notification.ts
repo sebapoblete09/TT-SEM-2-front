@@ -8,4 +8,5 @@ export interface Notificacion {
   leido: boolean;
   tipo: "aprobado" | "rechazado" | "info" | "success" | "error";
   material_id?: string;
+  link?: string;
 }

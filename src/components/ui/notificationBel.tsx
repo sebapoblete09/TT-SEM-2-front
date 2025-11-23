@@ -2,13 +2,14 @@
 "use client";
 
 import { useState, useRef, useEffect } from "react";
+import { useRouter } from "next/navigation"; // Importante para la redirección
 import { Bell, Info, XCircle, CheckCircle } from "lucide-react";
 import { useNotifications } from "@/lib/hooks/useNotification";
 import { formatDistanceToNow } from "date-fns";
 import { es } from "date-fns/locale";
 
 interface Props {
-  googleId: string; // Necesitamos pasarle el ID del usuario logueado
+  googleId: string;
 }
 
 export default function NotificationBell({ googleId }: Props) {
@@ -16,8 +17,9 @@ export default function NotificationBell({ googleId }: Props) {
     useNotifications(googleId);
   const [isOpen, setIsOpen] = useState(false);
   const dropdownRef = useRef<HTMLDivElement>(null);
+  const router = useRouter(); // Inicializamos el router
 
-  // Cerrar dropdown al hacer clic fuera
+  // Cerrar al hacer clic fuera
   useEffect(() => {
     function handleClickOutside(event: MouseEvent) {
       if (
@@ -31,7 +33,6 @@ export default function NotificationBell({ googleId }: Props) {
     return () => document.removeEventListener("mousedown", handleClickOutside);
   }, []);
 
-  // Helper para iconos según tipo
   const getIcon = (tipo: string) => {
     switch (tipo) {
       case "aprobado":
@@ -43,9 +44,20 @@ export default function NotificationBell({ googleId }: Props) {
     }
   };
 
+  // --- LÓGICA DE REDIRECCIÓN ---
+  // Esta función maneja todo. No importa si es admin o usuario normal,
+  // el "link" trae la ruta correcta (/admin o /materials/id) desde el Backend.
+  const handleNotificationClick = (id: string, link?: string) => {
+    marcarComoLeida(id);
+    setIsOpen(false); // Cerramos el menú
+
+    if (link) {
+      router.push(link); // ¡Redirección automática!
+    }
+  };
+
   return (
     <div className="relative" ref={dropdownRef}>
-      {/* Botón Campana */}
       <button
         onClick={() => setIsOpen(!isOpen)}
         className="relative p-2 rounded-full hover:bg-gray-100 transition-colors"
@@ -55,8 +67,6 @@ export default function NotificationBell({ googleId }: Props) {
             unreadCount > 0 ? "text-gray-800" : "text-gray-500"
           }`}
         />
-
-        {/* Badge Rojo */}
         {unreadCount > 0 && (
           <span className="absolute top-0 right-0 flex h-5 w-5 items-center justify-center rounded-full bg-red-500 text-[10px] font-bold text-white border-2 border-white">
             {unreadCount}
@@ -64,7 +74,6 @@ export default function NotificationBell({ googleId }: Props) {
         )}
       </button>
 
-      {/* Dropdown */}
       {isOpen && (
         <div className="absolute right-0 mt-2 w-80 sm:w-96 bg-white rounded-xl shadow-2xl border border-gray-100 overflow-hidden z-50 origin-top-right animate-in fade-in zoom-in-95 duration-200">
           <div className="p-4 border-b bg-gray-50 flex justify-between items-center">
@@ -90,7 +99,10 @@ export default function NotificationBell({ googleId }: Props) {
                     className={`p-4 border-b last:border-0 hover:bg-gray-50 transition-colors cursor-pointer ${
                       !notif.leido ? "bg-blue-50/50" : ""
                     }`}
-                    onClick={() => marcarComoLeida(notif.id)}
+                    // AQUÍ ESTÁ EL CAMBIO IMPORTANTE:
+                    onClick={() =>
+                      handleNotificationClick(notif.id, notif.link)
+                    }
                   >
                     <div className="flex gap-3">
                       <div className="mt-1 flex-shrink-0">
@@ -117,6 +129,11 @@ export default function NotificationBell({ googleId }: Props) {
                         <p className="text-xs text-gray-500 leading-snug">
                           {notif.mensaje}
                         </p>
+                        {notif.link && (
+                          <p className="text-[10px] text-blue-600 font-medium mt-1 hover:underline">
+                            Ir al detalle →
+                          </p>
+                        )}
                       </div>
                     </div>
                   </li>

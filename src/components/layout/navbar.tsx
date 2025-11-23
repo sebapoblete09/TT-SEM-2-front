@@ -101,7 +101,7 @@ export function Navigation() {
           {/* Navigation Links */}
           <div className="hidden md:flex items-center gap-6">
             <Link
-              href="/Materials"
+              href="/materials"
               className="text-sm font-medium hover:text-primary transition-colors"
             >
               Descubrir
@@ -111,12 +111,6 @@ export function Navigation() {
               className="text-sm font-medium hover:text-primary transition-colors"
             >
               Registrar Material
-            </Link>
-            <Link
-              href="#"
-              className="text-sm font-medium hover:text-primary transition-colors"
-            >
-              Comunidad
             </Link>
           </div>
 
