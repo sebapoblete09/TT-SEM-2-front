@@ -3,8 +3,10 @@
 
 import { useState } from "react";
 import { Button } from "@/components/ui/button";
-import { Check, Trash2 } from "lucide-react";
+import { Check, X } from "lucide-react"; // Quité Trash2 que no se usaba
 import { Material } from "@/types/materials";
+import { Card, CardContent } from "../ui/card";
+import { MaterialCardItem } from "./MaterialDetail";
 
 // 1. Define las props que recibe
 type MaterialListProps = {
@@ -21,7 +23,6 @@ export function MaterialClientList({
   // 3. Lógica para llamar a tu API de "Aprobar"
   const handleApprove = async (id: string) => {
     console.log("Aprobando material:", id);
-    // Aquí harías tu fetch POST/PATCH para aprobar
     try {
       const baseUrl =
         process.env.NEXT_PUBLIC_BACK_URL || "http://localhost:8080";
@@ -32,7 +33,6 @@ export function MaterialClientList({
         },
       });
       if (!response.ok) {
-        // Manejar error del backend de Go
         console.error("Error aprobando material", await response.text());
       }
     } catch (e) {
@@ -40,7 +40,6 @@ export function MaterialClientList({
     }
 
     window.alert("Material aprobado exitosamente");
-    // Actualiza la UI para que el material desaparezca de la lista
     setMaterials(materials.filter((m) => m.id !== id));
   };
 
@@ -57,17 +56,19 @@ export function MaterialClientList({
         },
       });
       if (!response.ok) {
-        // Manejar error del backend de Go
         console.error("Error rechazando material", await response.text());
       }
     } catch (e) {
       console.error("Error al aprobar material", e);
     }
-    // Actualiza la UI
     window.alert("Material Rechazado exitosamente");
-    // Actualiza la UI para que el material desaparezca de la lista
     setMaterials(materials.filter((m) => m.id !== id));
   };
+
+  // Esta función ya no es necesaria, la eliminamos.
+  // const SeeMore = (id: string) => {
+  //   <Link href={`/material/${id}`}></Link>;
+  // };
 
   return (
     <div className="border rounded-lg p-4">
@@ -77,36 +78,16 @@ export function MaterialClientList({
             No hay materiales pendientes.
           </li>
         ) : (
+          // --- RENDERIZADO SIMPLIFICADO ---
           materials.map((material) => (
-            <li
+            // Pasamos el 'key' aquí, que es donde se genera la lista
+            <MaterialCardItem
               key={material.id}
-              className="flex flex-col sm:flex-row justify-between items-start sm:items-center p-4 border rounded-lg gap-4"
-            >
-              <div>
-                <p className="font-bold">{material.nombre}</p>
-                <p className="text-sm text-muted-foreground">
-                  {material.descripcion}
-                </p>
-                <span>Material id: {material.id}</span>
-              </div>
-              <div className="flex gap-x-2 flex-shrink-0">
-                {/* 5. Botones con onClick funcionales */}
-                <Button
-                  variant="ghost"
-                  size="sm"
-                  onClick={() => handleApprove(material.id)}
-                >
-                  <Check className="mr-2 h-4 w-4" /> Aprobar
-                </Button>
-                <Button
-                  variant="destructive"
-                  size="sm"
-                  onClick={() => handleDelete(material.id)}
-                >
-                  <Trash2 className="mr-2 h-4 w-4" /> Eliminar
-                </Button>
-              </div>
-            </li>
+              material={material}
+              // Pasamos las funciones de lógica como props
+              onApprove={handleApprove}
+              onDelete={handleDelete}
+            />
           ))
         )}
       </ul>

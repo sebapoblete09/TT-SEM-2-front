@@ -10,8 +10,10 @@ import PropertiesForm, {
 import CompositionForm from "@/components/register-material/Composition";
 import RecipeForm, { Step } from "@/components/register-material/Recipe";
 import { createClient } from "@/lib/supabase/client";
+import { useRouter } from "next/navigation";
 
 export default function RegisterMaterialPage() {
+  const router = useRouter();
   const [step, setStep] = useState(1);
   const [loading, setLoading] = useState(false);
 
@@ -105,7 +107,7 @@ export default function RegisterMaterialPage() {
       console.log("Enviando FormData al backend (localhost:8080)...");
       const baseUrl =
         process.env.NEXT_PUBLIC_BACK_URL || "http://localhost:8080";
-      const response = await fetch(`${baseUrl}materials`, {
+      const response = await fetch(`${baseUrl}/materials`, {
         method: "POST",
         headers: {
           Authorization: `Bearer ${accessToken}`,
@@ -124,6 +126,8 @@ export default function RegisterMaterialPage() {
       console.log("Respuesta del backend:", result);
       console.log("Payload enviado:", Object.fromEntries(formData));
       console.log("Respuesta del backend:", response);
+      router.push("/");
+      router.refresh();
       setStep(1);
     } catch (err) {
       console.error(err);
