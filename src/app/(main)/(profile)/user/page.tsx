@@ -67,26 +67,13 @@ export default async function ProfilePage() {
   );
   return (
     <div className="container mx-auto max-w-full py-10 px-4">
-      <div className="flex gap-10 p-5 m-auto justify-center">
-        {/* --- SECCIÓN 1: PERFIL DE USUARIO --- */}
-        {/* Componente 1: Muestra la info del usuario */}
-        <div className="flex flex-col">
-          <ProfileHeader usuario={usuario} userAvatar={userAvatar} />
-          {usuario.rol === "administrador" ? (
-            <div>
-              <Button asChild size="lg" variant="secondary">
-                <Link href="/admin">Panel de Administracion</Link>
-              </Button>
-            </div>
-          ) : (
-            <div></div>
-          )}
-        </div>
-        {/* Componente 2: Muestra las estadísticas */}
-        <ProfileStats estadisticas={estadisticas} />
-        {/*Si es Admin, tendra acceso a un dashboard para aprobar */}
-      </div>
-      <hr className="my-8 " />
+      {/* --- SECCIÓN 1: PERFIL DE USUARIO --- */}
+      {/* Componente 1: Muestra la info del usuario */}
+      <ProfileHeader usuario={usuario} userAvatar={userAvatar} />
+
+      {/* Componente 2: Muestra las estadísticas */}
+      <ProfileStats estadisticas={estadisticas} />
+      {/*Si es Admin, tendra acceso a un dashboard para aprobar */}
 
       <Materials_Profile initialMaterials={materiales_creados} />
     </div>

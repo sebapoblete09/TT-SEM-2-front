@@ -89,3 +89,12 @@ export type Material_Card = {
   primera_imagen_galeria: string;
   estado?: boolean;
 };
+
+export type BasicInfoData = {
+  nombre: string;
+  descripcion: string;
+  herramientas: string[];
+  derivadoDe: string;
+  colaboradores: string[];
+  imagenes: File[];
+};
