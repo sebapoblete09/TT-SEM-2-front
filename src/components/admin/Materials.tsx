@@ -39,7 +39,7 @@ export default async function MaterialPending() {
   // 2. Renderiza el wrapper y pasa los datos al cliente
   return (
     <TabsContent value="materiales" className="mt-4">
-      <p className="text-muted-foreground mb-4">
+      <p className="text-muted-foreground mb-4 px-4">
         Aprueba o elimina los materiales enviados por la comunidad.
       </p>
 

@@ -2,10 +2,7 @@
 "use client"; // <-- ¡CLAVE!
 
 import { useState } from "react";
-import { Button } from "@/components/ui/button";
-import { Check, X } from "lucide-react"; // Quité Trash2 que no se usaba
 import { Material } from "@/types/materials";
-import { Card, CardContent } from "../ui/card";
 import { MaterialCardItem } from "./MaterialDetail";
 
 // 1. Define las props que recibe
@@ -71,7 +68,7 @@ export function MaterialClientList({
   // };
 
   return (
-    <div className="border rounded-lg p-4">
+    <div className="rounded-lg p-4">
       <ul className="space-y-4">
         {materials.length === 0 ? (
           <li className="text-center text-muted-foreground p-4">

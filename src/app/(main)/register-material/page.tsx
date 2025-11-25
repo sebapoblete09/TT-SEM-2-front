@@ -1,9 +1,7 @@
 "use client";
 
 import { useState } from "react";
-import BasicInfoForm, {
-  BasicInfoData,
-} from "@/components/register-material/Basic";
+import BasicInfoForm from "@/components/register-material/Basic";
 import PropertiesForm, {
   PropertiesData,
 } from "@/components/register-material/Properties";
@@ -11,6 +9,7 @@ import CompositionForm from "@/components/register-material/Composition";
 import RecipeForm, { Step } from "@/components/register-material/Recipe";
 import { createClient } from "@/lib/supabase/client";
 import { useRouter } from "next/navigation";
+import { BasicInfoData } from "@/types/materials";
 
 export default function RegisterMaterialPage() {
   const router = useRouter();
