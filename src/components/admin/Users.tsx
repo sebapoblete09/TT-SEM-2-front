@@ -26,11 +26,12 @@ export default async function UsersSection() {
 
   if (!res.ok) {
     // Manejar error (ej. mostrar una página de error)
-    return <p>Error al cargar los materiales pendientes.</p>;
+    return <p>Error al cargar la lista de usuarios</p>;
   }
 
   const data = await res.json();
   const users: usuario[] = data;
+  const token = session.access_token;
 
-  return <UsersList initialUsers={users} />;
+  return <UsersList initialUsers={users} access_token={token} />;
 }

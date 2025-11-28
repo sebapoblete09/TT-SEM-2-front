@@ -1,7 +1,13 @@
 import { Clock, FileCheck, Users, AlertCircle } from "lucide-react";
 import { Card, CardContent } from "../ui/card";
 
-export default function Stats() {
+interface StatsProps {
+  pendientes: number;
+  aprobados: number;
+  usuarios: number;
+}
+
+export default function Stats({ pendientes, aprobados, usuarios }: StatsProps) {
   return (
     <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-8">
       {/* TARJETA 1: PENDIENTES (Lo más importante para el admin) */}
@@ -15,7 +21,7 @@ export default function Stats() {
             <p className="text-sm font-medium text-slate-500">
               Recetas Pendientes
             </p>
-            <h3 className="text-3xl font-bold text-slate-900">4</h3>
+            <h3 className="text-3xl font-bold text-slate-900">{pendientes}</h3>
             <p className="text-xs text-amber-600 font-medium flex items-center gap-1 mt-1">
               <AlertCircle className="w-3 h-3" /> Requieren revisión
             </p>
@@ -34,7 +40,7 @@ export default function Stats() {
             <p className="text-sm font-medium text-slate-500">
               Recetas Aprobadas
             </p>
-            <h3 className="text-3xl font-bold text-slate-900">3</h3>
+            <h3 className="text-3xl font-bold text-slate-900">{aprobados}</h3>
             <p className="text-xs text-green-600 font-medium mt-1">
               Publicadas en catálogo
             </p>
@@ -51,7 +57,7 @@ export default function Stats() {
           </div>
           <div>
             <p className="text-sm font-medium text-slate-500">Comunidad</p>
-            <h3 className="text-3xl font-bold text-slate-900">7</h3>
+            <h3 className="text-3xl font-bold text-slate-900">{usuarios}</h3>
             <p className="text-xs text-blue-600 font-medium mt-1">
               Usuarios registrados
             </p>

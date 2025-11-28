@@ -2,6 +2,7 @@
 "use client"; // <-- ¡CLAVE!
 
 import { useState } from "react";
+import { useRouter } from "next/navigation";
 import { Material } from "@/types/materials";
 import { MaterialCardItem } from "./MaterialDetail";
 
@@ -12,8 +13,9 @@ type MaterialListProps = {
 };
 export function MaterialClientList({
   initialMaterials,
-  access_token, // <-- Ahora es parte del primer argumento
+  access_token,
 }: MaterialListProps) {
+  const router = useRouter();
   // 2. Estado para que la lista sea interactiva (desaparezcan al borrarlos)
   const [materials, setMaterials] = useState(initialMaterials);
 
@@ -36,8 +38,13 @@ export function MaterialClientList({
       console.error("Error al aprobar material", e);
     }
 
-    window.alert("Material aprobado exitosamente");
+    // ÉXITO
+    // A. Actualizamos la lista visualmente (inmediato)
+    alert("Material Aprovado exitosamente");
     setMaterials(materials.filter((m) => m.id !== id));
+
+    // B. REFRESCAMOS LOS DATOS DEL SERVIDOR (Esto actualiza los números de arriba)
+    router.refresh();
   };
 
   // 4. Lógica para llamar a tu API de "Eliminar"
@@ -58,14 +65,12 @@ export function MaterialClientList({
     } catch (e) {
       console.error("Error al aprobar material", e);
     }
-    window.alert("Material Rechazado exitosamente");
+    // ÉXITO
     setMaterials(materials.filter((m) => m.id !== id));
-  };
 
-  // Esta función ya no es necesaria, la eliminamos.
-  // const SeeMore = (id: string) => {
-  //   <Link href={`/material/${id}`}></Link>;
-  // };
+    // REFRESCAR DATOS DEL PADRE
+    router.refresh();
+  };
 
   return (
     <div className="rounded-lg p-4">
@@ -77,11 +82,9 @@ export function MaterialClientList({
         ) : (
           // --- RENDERIZADO SIMPLIFICADO ---
           materials.map((material) => (
-            // Pasamos el 'key' aquí, que es donde se genera la lista
             <MaterialCardItem
               key={material.id}
               material={material}
-              // Pasamos las funciones de lógica como props
               onApprove={handleApprove}
               onDelete={handleDelete}
             />
