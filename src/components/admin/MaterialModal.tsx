@@ -5,7 +5,14 @@ import { Badge } from "@/components/ui/badge";
 import { TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { Avatar, AvatarFallback } from "@/components/ui/avatar";
-import { Hammer, FlaskConical, Layers, Image as ImageIcon } from "lucide-react";
+import {
+  Hammer,
+  FlaskConical,
+  Layers,
+  Image as ImageIcon,
+  Heart,
+  Eye,
+} from "lucide-react";
 import Image from "next/image";
 
 // Helper para iniciales
@@ -96,50 +103,82 @@ export function MaterialModalContent({ material }: { material: Material }) {
         </TabsContent>
 
         {/* --- TAB 2: PROPIEDADES --- */}
-        <TabsContent value="propiedades" className="mt-0 grid gap-6">
-          <div className="bg-blue-50/50 p-4 rounded-xl border border-blue-100">
-            <h4 className="font-bold text-blue-700 mb-3 flex items-center gap-2">
-              <Layers className="w-4 h-4" /> Mecánicas
-            </h4>
-            <div className="grid grid-cols-2 gap-4">
-              {Object.entries(material.prop_mecanicas || {}).map(([k, v]) => (
-                <div key={k}>
-                  <p className="text-xs uppercase text-blue-400 font-bold">
-                    {k}
-                  </p>
-                  <p className="text-sm text-slate-700">{v as string}</p>
-                </div>
-              ))}
+        <TabsContent
+          value="propiedades"
+          className="mt-0 focus-visible:ring-0 max-h-[55vh] overflow-y-auto"
+        >
+          {/* Agregamos pb-20 para dar espacio al final del scroll */}
+          <div className="space-y-6 pb-20 ">
+            {/* 1. MECÁNICAS */}
+            <div className="bg-blue-50/50 p-4 rounded-xl border border-blue-100">
+              <h4 className="font-bold text-blue-700 mb-3 flex items-center gap-2">
+                <Layers className="w-4 h-4" /> Mecánicas
+              </h4>
+              <div className="grid grid-cols-2 sm:grid-cols-3 gap-4">
+                {Object.entries(material.prop_mecanicas || {})
+                  .slice(1)
+                  .map(([k, v]) => (
+                    <div
+                      key={k}
+                      className="bg-white p-3 rounded-lg border border-blue-100/50"
+                    >
+                      <p className="text-[10px] uppercase text-blue-400 font-bold tracking-wide mb-1 break-words">
+                        {k.replace(/_/g, " ")}
+                      </p>
+                      <p className="text-sm font-medium text-slate-800 capitalize">
+                        {v as string}
+                      </p>
+                    </div>
+                  ))}
+              </div>
             </div>
-          </div>
-          <div className="bg-blue-50/50 p-4 rounded-xl border border-blue-100">
-            <h4 className="font-bold text-blue-700 mb-3 flex items-center gap-2">
-              <Layers className="w-4 h-4" /> Perceptivas
-            </h4>
-            <div className="grid grid-cols-2 gap-4">
-              {Object.entries(material.prop_perceptivas || {}).map(([k, v]) => (
-                <div key={k}>
-                  <p className="text-xs uppercase text-blue-400 font-bold">
-                    {k}
-                  </p>
-                  <p className="text-sm text-slate-700">{v as string}</p>
-                </div>
-              ))}
+
+            {/* 2. PERCEPTIVAS */}
+            <div className="bg-purple-50/50 p-4 rounded-xl border border-purple-100">
+              <h4 className="font-bold text-purple-700 mb-3 flex items-center gap-2">
+                <Eye className="w-4 h-4" /> Sensoriales
+              </h4>
+              <div className="grid grid-cols-1 gap-3">
+                {Object.entries(material.prop_perceptivas || {})
+                  .slice(1)
+                  .map(([k, v]) => (
+                    <div
+                      key={k}
+                      className="bg-white p-3 rounded-lg border border-purple-100/50"
+                    >
+                      <p className="text-[10px] uppercase text-purple-400 font-bold tracking-wide mb-1">
+                        {k.replace(/_/g, " ")}
+                      </p>
+                      <p className="text-sm text-slate-700 leading-snug">
+                        {v as string}
+                      </p>
+                    </div>
+                  ))}
+              </div>
             </div>
-          </div>
-          <div className="bg-blue-50/50 p-4 rounded-xl border border-blue-100">
-            <h4 className="font-bold text-blue-700 mb-3 flex items-center gap-2">
-              <Layers className="w-4 h-4" /> Emocionales
-            </h4>
-            <div className="grid grid-cols-2 gap-4">
-              {Object.entries(material.prop_emocionales || {}).map(([k, v]) => (
-                <div key={k}>
-                  <p className="text-xs uppercase text-blue-400 font-bold">
-                    {k}
-                  </p>
-                  <p className="text-sm text-slate-700">{v as string}</p>
-                </div>
-              ))}
+
+            {/* 3. EMOCIONALES (Esta era la que no se veía) */}
+            <div className="bg-rose-50/50 p-4 rounded-xl border border-rose-100">
+              <h4 className="font-bold text-rose-700 mb-3 flex items-center gap-2">
+                <Heart className="w-4 h-4" /> Emocionales
+              </h4>
+              <div className="grid grid-cols-2 sm:grid-cols-3 gap-4">
+                {Object.entries(material.prop_emocionales || {})
+                  .slice(1)
+                  .map(([k, v]) => (
+                    <div
+                      key={k}
+                      className="bg-white p-3 rounded-lg border border-rose-100/50"
+                    >
+                      <p className="text-[10px] uppercase text-rose-400 font-bold tracking-wide mb-1 break-words">
+                        {k.replace(/_/g, " ")}
+                      </p>
+                      <p className="text-sm font-medium text-slate-800 capitalize">
+                        {v as string}
+                      </p>
+                    </div>
+                  ))}
+              </div>
             </div>
           </div>
         </TabsContent>

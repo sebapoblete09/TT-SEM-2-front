@@ -7,10 +7,9 @@ import { createClient } from "@/lib/supabase/server";
 import { redirect } from "next/navigation";
 import { MaterialClientList } from "./MaterialClientList"; // <-- 1. Importa el nuevo componente
 
-export default async function MaterialPending() {
+export default async function MaterialAprove() {
   const supabase = createClient();
 
-  // ... (Tu lógica de getSession y redirect es perfecta) ...
   const {
     data: { session },
   } = await supabase.auth.getSession();
@@ -19,12 +18,11 @@ export default async function MaterialPending() {
     redirect("/login");
   }
 
-  // ... (Tu lógica de fetch es perfecta) ...
   const baseUrl = process.env.NEXT_PUBLIC_BACK_URL || "http://localhost:8080";
-  const res = await fetch(`${baseUrl}/materials/pending`, {
+  const res = await fetch(`${baseUrl}/materials`, {
     method: "GET",
     headers: {
-      Authorization: `Bearer ${session.access_token}`,
+      "Content-Type": "application/json",
     },
     cache: "no-store",
   });
@@ -34,18 +32,18 @@ export default async function MaterialPending() {
   }
 
   const data = await res.json();
-  const Pending_Materials: Material[] = data.materiales || [];
+  const Aprove_Material: Material[] = Array.isArray(data)
+    ? data
+    : data.materiales || [];
 
   // 2. Renderiza el wrapper y pasa los datos al cliente
   return (
-    <TabsContent value="materiales" className="mt-4">
+    <TabsContent value="aprove" className="mt-4">
       <p className="text-muted-foreground mb-4 px-4">
         Aprueba o elimina los materiales enviados por la comunidad.
       </p>
-
-      {/* 3. Pasa los datos al componente cliente */}
       <MaterialClientList
-        initialMaterials={Pending_Materials}
+        initialMaterials={Aprove_Material}
         access_token={session.access_token}
       />
     </TabsContent>

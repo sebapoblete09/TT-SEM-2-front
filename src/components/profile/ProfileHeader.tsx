@@ -1,7 +1,7 @@
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button"; // Importamos Button
-import { Settings, ShieldCheck } from "lucide-react"; // Iconos
+import { CaseLower, Settings, ShieldCheck } from "lucide-react"; // Iconos
 import Link from "next/link";
 import { usuario } from "@/types/user";
 
@@ -20,7 +20,7 @@ const getInitials = (name: string) => {
 
 export function ProfileHeader({ usuario, userAvatar }: ProfileHeaderProps) {
   const userName = usuario.nombre || "Usuario";
-  const isAdmin = usuario.rol === "administrador";
+  const isAdmin = usuario.rol.toLowerCase() === "administrador";
 
   return (
     <div className="w-full bg-white rounded-2xl shadow-sm border border-slate-200 overflow-hidden mb-8">

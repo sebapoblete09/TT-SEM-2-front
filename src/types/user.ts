@@ -1,5 +1,6 @@
 export type usuario = {
-  id?: number;
+  id: number;
+  google_id: number;
   email: string;
   nombre: string;
   rol: string;
