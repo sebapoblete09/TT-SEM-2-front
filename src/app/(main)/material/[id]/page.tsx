@@ -4,9 +4,11 @@ import { useParams } from "next/navigation";
 import { useEffect, useState } from "react";
 import MaterialHeader from "@/components/material/MaterialHeader";
 import MaterialGallery from "@/components/material/MaterialGallery";
-import MaterialTabs from "@/components/material/materialtabs/index";
-import MaterialSidebar from "@/components/material/materialSidebar/index";
 import { Material } from "@/types/materials";
+import LoadingCard from "@/components/ui/loading";
+import CompositionsTools from "@/components/material/Section2/index";
+import Properties from "@/components/material/Section3/index";
+import RecipeTab from "@/components/material/Section4/RecipeTabs";
 
 export default function MaterialDetailPage() {
   const [material, setMaterial] = useState<Material | null>(null);
@@ -36,22 +38,23 @@ export default function MaterialDetailPage() {
     fetchMaterial();
   }, [id]);
 
-  if (loading)
-    return <div className="container py-8">Cargando material...</div>;
+  if (loading) return <LoadingCard />;
   if (error) return <div className="container py-8 text-red-500">{error}</div>;
   if (!material) return <div className="container py-8">No encontrado.</div>;
 
   return (
     <div className="min-h-screen bg-muted/30">
-      <div className="container mx-auto max-w-7xl px-4 py-8">
-        <MaterialHeader material={material} />
-        <div className="grid grid-cols-1 lg:grid-cols-3 gap-8 ">
-          <div className="lg:col-span-2 space-y-8 ">
-            <MaterialGallery material={material} />
-            <MaterialTabs material={material} />
-          </div>
-          <MaterialSidebar material={material} />
+      <div className="container flex flex-col  mx-auto max-w-100vh  px-4 py-8">
+        {/*Informacion basica + Galeria */}
+        <div className="grid grid-cols-2 p-5 gap-10 border-2 max-w-7xl m-auto border-slate-500/50 rounded-2xl bg-white">
+          <MaterialGallery material={material} />
+          <MaterialHeader material={material} />
         </div>
+
+        {/*Composicion + propiedades */}
+        <CompositionsTools material={material} />
+        <Properties material={material} />
+        <RecipeTab pasos={material.pasos} />
       </div>
     </div>
   );
