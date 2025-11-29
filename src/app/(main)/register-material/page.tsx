@@ -140,14 +140,6 @@ export default function RegisterMaterialPage() {
 
   return (
     <div className="min-h-screen bg-slate-50/50 pb-20 relative">
-      {/* Barra de progreso superior 
-      <div className="w-full h-2 bg-slate-200 fixed top-0 left-0 z-40">
-        <div
-          className="h-full bg-green-600 transition-all duration-500 ease-out"
-          style={{ width: `${(step / 4) * 100}%` }}
-        />
-      </div>
-*/}
       <div className="container mx-auto max-w-5xl px-4 py-12">
         <h1 className="text-3xl md:text-4xl font-bold mb-2 text-slate-900">
           Registrar Nuevo Biomaterial
