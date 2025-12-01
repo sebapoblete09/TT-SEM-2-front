@@ -1,65 +1,106 @@
 // components/ui/FilterSection.tsx
 "use client";
 
-import { Badge } from "@/components/ui/badge";
-import categories from "@/const/Categories";
-import { LuSearch } from "react-icons/lu";
+import { Search, Filter, X, Check } from "lucide-react";
 import { Input } from "@/components/ui/input";
+import { Button } from "@/components/ui/button";
+import categories from "@/const/Categories";
 
-// 1. Importa los hooks de Next.js para manejar la URL
-import { useSearchParams, useRouter, usePathname } from "next/navigation";
-import { useDebouncedCallback } from "use-debounce"; // (Recuerda: npm install use-debounce)
+// Definimos las props
+interface FilterSectionProps {
+  searchTerm: string;
+  setSearchTerm: (term: string) => void;
+  selectedCategory: string | null;
+  setSelectedCategory: (category: string | null) => void;
+}
 
-export default function FilterSection() {
-  // 2. Inicializa los hooks
-  const searchParams = useSearchParams();
-  const router = useRouter();
-  const pathname = usePathname();
-
-  // 3. Obtiene los valores actuales de la URL (o usa valores por defecto)
-  const currentSearch = searchParams.get("search") || "";
-  const currentCategory = searchParams.get("category") || "Todos";
-
-  // 4. Handler para el input de BÚSQUEDA (con debounce)
-  const handleSearch = useDebouncedCallback((term: string) => {
-    const params = new URLSearchParams(searchParams);
-    if (term) {
-      params.set("search", term);
-    } else {
-      params.delete("search");
-    }
-    // Reemplaza la URL actual con los nuevos parámetros
-    router.replace(`${pathname}?${params.toString()}`);
-  }, 300); // Espera 300ms después de dejar de teclear
-
-  // 5. Handler para los clics de CATEGORÍA (instantáneo)
-  const handleCategoryClick = (category: string) => {
-    const params = new URLSearchParams(searchParams);
-    if (category === "Todos") {
-      params.delete("category");
-    } else {
-      params.set("category", category);
-    }
-    // Reemplaza la URL actual con los nuevos parámetros
-    router.replace(`${pathname}?${params.toString()}`);
+export default function FilterSection({
+  searchTerm,
+  setSearchTerm,
+  selectedCategory,
+  setSelectedCategory,
+}: FilterSectionProps) {
+  // Limpiar todo
+  const clearFilters = () => {
+    setSearchTerm("");
+    setSelectedCategory(null);
   };
 
   return (
-    <section className="py-8 px-4 bg-background border-b">
-      <div className="container mx-auto max-w-7xl">
-        {/* 6. Reemplazamos <Filter /> por el Input funcional */}
-        <div className="flex-1 relative">
-          <LuSearch className="absolute left-3 top-1/2 -translate-y-1/2 h-5 w-5 text-muted-foreground" />
+    <div className="bg-white p-5 rounded-2xl border border-slate-200 shadow-sm">
+      {/* Header */}
+      <div className="flex items-center justify-between mb-6">
+        <div className="flex items-center gap-2 text-slate-800">
+          <Filter className="w-5 h-5 text-green-600" />
+          <h3 className="font-bold text-lg">Filtros</h3>
+        </div>
+
+        {(searchTerm || selectedCategory) && (
+          <Button
+            variant="ghost"
+            size="sm"
+            onClick={clearFilters}
+            className="h-auto p-0 text-xs text-red-500 hover:text-red-700 hover:bg-transparent"
+          >
+            Limpiar todo
+          </Button>
+        )}
+      </div>
+
+      {/* Buscador INSTANTÁNEO */}
+      <div className="mb-8">
+        <label className="text-xs font-bold text-slate-400 uppercase tracking-wider mb-2 block">
+          Búsqueda
+        </label>
+        <div className="relative group">
+          <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-slate-400 group-focus-within:text-green-600 transition-colors" />
           <Input
-            placeholder="Buscar biomateriales..."
-            className="pl-10 h-12"
-            // Asigna el valor de la URL al cargar
-            defaultValue={currentSearch}
-            // Llama al handler 'debounced'
-            onChange={(e) => handleSearch(e.target.value)}
+            placeholder="Nombre, material..."
+            className="pl-9 bg-slate-50 border-slate-200 focus-visible:ring-green-500 transition-all"
+            value={searchTerm} // Controlado por el estado del padre
+            onChange={(e) => setSearchTerm(e.target.value)} // Actualización instantánea
           />
         </div>
       </div>
-    </section>
+
+      {/* Categorías */}
+      <div>
+        <label className="text-xs font-bold text-slate-400 uppercase tracking-wider mb-3 block">
+          Categorías
+        </label>
+
+        <div className="flex flex-col gap-2">
+          <button
+            onClick={() => setSelectedCategory(null)}
+            className={`flex items-center justify-between p-2 rounded-lg text-sm transition-all ${
+              !selectedCategory
+                ? "bg-green-50 text-green-700 font-medium"
+                : "text-slate-600 hover:bg-slate-50"
+            }`}
+          >
+            <span>Todas</span>
+            {!selectedCategory && <Check className="w-4 h-4" />}
+          </button>
+
+          {categories.map((cat) => {
+            const isActive = selectedCategory === cat;
+            return (
+              <button
+                key={cat}
+                onClick={() => setSelectedCategory(isActive ? null : cat)}
+                className={`flex items-center justify-between p-2 rounded-lg text-sm transition-all text-left ${
+                  isActive
+                    ? "bg-green-50 text-green-700 font-medium ring-1 ring-green-200"
+                    : "text-slate-600 hover:bg-slate-50"
+                }`}
+              >
+                <span>{cat}</span>
+                {isActive && <Check className="w-4 h-4" />}
+              </button>
+            );
+          })}
+        </div>
+      </div>
+    </div>
   );
 }
