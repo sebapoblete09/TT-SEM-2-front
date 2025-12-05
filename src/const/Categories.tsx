@@ -1,4 +1,5 @@
 const categories = [
+  "Derivados",
   "Bioplásticos",
   "Textiles",
   "Compuestos",
