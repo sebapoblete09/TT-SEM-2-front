@@ -6,7 +6,7 @@ import { Calendar, Download, Share2, Leaf, Users } from "lucide-react";
 import { Material } from "@/types/materials";
 import { format } from "date-fns";
 import { es } from "date-fns/locale";
-
+import Link from "next/link";
 export default function MaterialHeader({ material }: { material: Material }) {
   return (
     <div className="animate-in fade-in slide-in-from-bottom-4 duration-500">
@@ -59,7 +59,9 @@ export default function MaterialHeader({ material }: { material: Material }) {
             </p>
             <div className="flex items-center gap-2">
               <p className="font-semibold text-slate-800 text-sm">
-                {material.creador.nombre}
+                <Link href={`/profile/${material.creador.google_id}`}>
+                  {material.creador.nombre}
+                </Link>
               </p>
               <Badge
                 variant="secondary"

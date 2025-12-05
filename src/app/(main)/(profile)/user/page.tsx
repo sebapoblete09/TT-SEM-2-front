@@ -8,8 +8,6 @@ import { Material_Card, Material } from "@/types/materials";
 import { ProfileHeader } from "@/components/profile/ProfileHeader";
 import { ProfileStats } from "@/components/profile/ProfileStats";
 import Materials_Profile from "@/components/profile/ProfileMaterials";
-import { Button } from "@/components/ui/button";
-import Link from "next/link";
 
 export default async function ProfilePage() {
   const supabase = createClient();
@@ -66,16 +64,30 @@ export default async function ProfilePage() {
     }
   );
   return (
-    <div className="container mx-auto max-w-full py-10 px-4">
+    <div className="container mx-auto max-w-7xl py-10 px-4 space-y-10">
       {/* --- SECCIÓN 1: PERFIL DE USUARIO --- */}
-      {/* Componente 1: Muestra la info del usuario */}
-      <ProfileHeader usuario={usuario} userAvatar={userAvatar} />
+      {/* SECCIÓN SUPERIOR: Banner + Stats en Grid */}
+      <div className="grid grid-cols-1 lg:grid-cols-3 gap-6 items-stretch">
+        {/* Columna Izquierda (2/3): Perfil Header */}
+        <div className="lg:col-span-2 h-full">
+          {/* Asegúrate de que ProfileHeader tenga 'h-full' si es necesario, o que se adapte */}
+          <ProfileHeader usuario={usuario} userAvatar={userAvatar} />
+        </div>
 
-      {/* Componente 2: Muestra las estadísticas */}
-      <ProfileStats estadisticas={estadisticas} />
-      {/*Si es Admin, tendra acceso a un dashboard para aprobar */}
+        {/* Columna Derecha (1/3): Stats Verticales */}
+        <div className="lg:col-span-1 h-full">
+          <ProfileStats estadisticas={estadisticas} />
+        </div>
+      </div>
 
-      <Materials_Profile initialMaterials={materiales_creados} />
+      {/* SECCIÓN INFERIOR: Materiales */}
+      <div className="space-y-6">
+        <div className="flex items-center gap-4">
+          <div className="h-px flex-1 bg-slate-200" />
+        </div>
+
+        <Materials_Profile initialMaterials={materiales_creados} />
+      </div>
     </div>
   );
 }

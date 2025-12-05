@@ -1,71 +1,60 @@
-// components/Materials_Profile.tsx
 "use client";
 
 import { useState } from "react";
 import { MaterialCard } from "@/components/ui/materialCard";
 import { Material_Card } from "@/types/materials";
+import { Search, FlaskConical, Users, LayoutGrid } from "lucide-react";
 import { Input } from "@/components/ui/input";
-import { CheckCircle2, Clock, LayoutGrid, Search } from "lucide-react";
 
 type MaterialsProfileProps = {
-  initialMaterials: Material_Card[];
+  initialMaterials: Material_Card[]; // Lista 1: Creados por mí
+  colaboraciones?: Material_Card[]; // Lista 2: Donde soy colaborador
 };
 
 export default function Materials_Profile({
-  initialMaterials,
+  initialMaterials = [],
+  colaboraciones = [],
 }: MaterialsProfileProps) {
   const [searchTerm, setSearchTerm] = useState("");
+  const [activeTab, setActiveTab] = useState<
+    "todos" | "creados" | "colaboraciones"
+  >("todos");
 
-  // 1. Cambiamos el estado para manejar TRES opciones
-  const [status, setStatus] = useState<"todos" | "aprobados" | "pendientes">(
-    "todos" // <-- "Todos" es el estado por defecto
-  );
+  // 1. SELECCIÓN DE LISTA BASE
+  // Dependiendo del Tab, elegimos qué array vamos a filtrar
+  let listaBase: Material_Card[] = [];
 
-  // 2. Lógica de filtrado ENCADENADA
-  const materialsFiltrados = initialMaterials
-    .filter((material) => {
-      // --- PRIMER FILTRO: Por Estado ---
-      if (status === "todos") {
-        return true; // Mantiene todos
-      }
-      if (status === "aprobados") {
-        return material.estado === true;
-      }
-      if (status === "pendientes") {
-        return material.estado === false;
-      }
-      return true; // Fallback por si acaso
-    })
-    .filter((material) => {
-      // --- SEGUNDO FILTRO: Por Búsqueda (sobre la lista ya filtrada) ---
-      const busqueda = searchTerm.toLowerCase();
-      return (
-        material.nombre.toLowerCase().includes(busqueda) ||
-        material.descripcion.toLowerCase().includes(busqueda) ||
-        material.composicion.some((comp) =>
-          comp.toLowerCase().includes(busqueda)
-        )
-      );
-    });
+  if (activeTab === "todos") {
+    listaBase = [...initialMaterials, ...colaboraciones];
+  } else if (activeTab === "creados") {
+    listaBase = initialMaterials;
+  } else if (activeTab === "colaboraciones") {
+    listaBase = colaboraciones;
+  }
 
-  // 3. Función para obtener el texto del placeholder
-  const getPlaceholder = () => {
-    if (status === "todos") return "Buscar en todos mis materiales...";
-    if (status === "aprobados") return "Buscar en Aprobados...";
-    if (status === "pendientes") return "Buscar en Pendientes...";
-  };
+  // 2. FILTRADO POR BÚSQUEDA (Sobre la lista base seleccionada)
+  const materialsFiltrados = listaBase.filter((material) => {
+    const term = searchTerm.toLowerCase();
+    return (
+      material.nombre.toLowerCase().includes(term) ||
+      material.descripcion.toLowerCase().includes(term)
+    );
+  });
 
   return (
-    <section id="explore" className="py-8 animate-in fade-in duration-500">
+    <section
+      id="mis-materiales"
+      className="py-8 animate-in fade-in duration-500"
+    >
       <div className="container mx-auto max-w-7xl">
         {/* --- HEADER Y CONTROLES --- */}
         <div className="flex flex-col md:flex-row md:items-center justify-between gap-6 mb-8">
           {/* Título Dinámico */}
           <div>
             <h2 className="text-2xl font-bold text-slate-800 flex items-center gap-2">
-              {status === "todos" && "Todos mis Materiales"}
-              {status === "aprobados" && "Materiales Aprobados"}
-              {status === "pendientes" && "Materiales Pendientes"}
+              {activeTab === "todos" && "Todos mis Materiales"}
+              {activeTab === "creados" && "Materiales Creados"}
+              {activeTab === "colaboraciones" && "Colaboraciones"}
 
               <span className="text-sm font-normal text-slate-500 bg-slate-100 px-2 py-0.5 rounded-full ml-1">
                 {materialsFiltrados.length}
@@ -86,12 +75,12 @@ export default function Materials_Profile({
               />
             </div>
 
-            {/* TABS DE ESTADO (Segmented Control) */}
+            {/* Tabs (Segmented Control) */}
             <div className="flex p-1 bg-slate-100 rounded-lg border border-slate-200 overflow-x-auto">
               <button
-                onClick={() => setStatus("todos")}
+                onClick={() => setActiveTab("todos")}
                 className={`px-3 py-1.5 text-sm font-medium rounded-md transition-all flex items-center gap-2 whitespace-nowrap ${
-                  status === "todos"
+                  activeTab === "todos"
                     ? "bg-white text-slate-800 shadow-sm"
                     : "text-slate-500 hover:text-slate-700"
                 }`}
@@ -99,29 +88,34 @@ export default function Materials_Profile({
                 <LayoutGrid className="w-4 h-4" />
                 <span className="hidden sm:inline">Todos</span>
               </button>
-
               <button
-                onClick={() => setStatus("aprobados")}
+                onClick={() => setActiveTab("creados")}
                 className={`px-3 py-1.5 text-sm font-medium rounded-md transition-all flex items-center gap-2 whitespace-nowrap ${
-                  status === "aprobados"
+                  activeTab === "creados"
                     ? "bg-white text-green-700 shadow-sm"
                     : "text-slate-500 hover:text-slate-700"
                 }`}
               >
-                <CheckCircle2 className="w-4 h-4" />
-                <span className="hidden sm:inline">Aprobados</span>
+                <FlaskConical className="w-4 h-4" />
+                <span className="hidden sm:inline">Creados</span>
+                {/* Badge pequeño con cantidad */}
+                <span className="text-[10px] bg-slate-200/50 px-1.5 rounded-full">
+                  {initialMaterials.length}
+                </span>
               </button>
-
               <button
-                onClick={() => setStatus("pendientes")}
+                onClick={() => setActiveTab("colaboraciones")}
                 className={`px-3 py-1.5 text-sm font-medium rounded-md transition-all flex items-center gap-2 whitespace-nowrap ${
-                  status === "pendientes"
-                    ? "bg-white text-amber-700 shadow-sm"
+                  activeTab === "colaboraciones"
+                    ? "bg-white text-blue-700 shadow-sm"
                     : "text-slate-500 hover:text-slate-700"
                 }`}
               >
-                <Clock className="w-4 h-4" />
-                <span className="hidden sm:inline">Pendientes</span>
+                <Users className="w-4 h-4" />
+                <span className="hidden sm:inline">Colaboraciones</span>
+                <span className="text-[10px] bg-slate-200/50 px-1.5 rounded-full">
+                  {colaboraciones.length}
+                </span>
               </button>
             </div>
           </div>
@@ -139,7 +133,7 @@ export default function Materials_Profile({
             <p className="text-slate-500 text-sm mt-1">
               {searchTerm
                 ? "Intenta con otra búsqueda."
-                : `No tienes materiales ${status !== "todos" ? status : ""}.`}
+                : "Esta lista está vacía."}
             </p>
           </div>
         ) : (

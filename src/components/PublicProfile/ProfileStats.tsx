@@ -1,35 +1,21 @@
 import { estadisticas } from "@/types/user";
-import {
-  FileText,
-  CheckCircle,
-  Clock,
-  Users,
-  LayoutDashboard,
-} from "lucide-react";
+import { FileText, CheckCircle, Users, LayoutDashboard } from "lucide-react";
 
 export function ProfileStats({ estadisticas }: { estadisticas: estadisticas }) {
-  // Definimos la lista de datos para iterar limpiamente
   const statsList = [
     {
       label: "Total Materiales",
-      value: estadisticas.materiales_creados ?? 0, // Total creados
+      value: estadisticas.total_materiales ?? 0,
       icon: FileText,
       color: "text-blue-600",
       bg: "bg-blue-50",
     },
     {
       label: "Aprobados",
-      value: estadisticas.materiales_aprobados ?? 0,
+      value: estadisticas.materiales_creados ?? 0, // Asumo que esto son los aprobados/creados
       icon: CheckCircle,
       color: "text-green-600",
       bg: "bg-green-50",
-    },
-    {
-      label: "Pendientes",
-      value: estadisticas.materiales_pendientes ?? 0,
-      icon: Clock,
-      color: "text-amber-600",
-      bg: "bg-amber-50",
     },
     {
       label: "Colaboraciones",
@@ -42,37 +28,34 @@ export function ProfileStats({ estadisticas }: { estadisticas: estadisticas }) {
 
   return (
     <div className="bg-white rounded-2xl border border-slate-200 shadow-sm h-full overflow-hidden">
-      {/* Encabezado */}
+      {/* Encabezado de la tarjeta de stats */}
       <div className="bg-slate-50/50 px-6 py-4 border-b border-slate-100 flex items-center gap-2">
         <LayoutDashboard className="w-4 h-4 text-slate-400" />
-        <h3 className="text-xs font-bold text-slate-500 uppercase tracking-wider">
-          Resumen de Actividad
+        <h3 className="text-sm font-bold text-slate-500 uppercase tracking-wider">
+          Resumen
         </h3>
       </div>
 
       {/* Lista de filas */}
-      <div className="p-2 flex flex-col gap-1">
+      <div className="p-2">
         {statsList.map((stat, index) => (
           <div
             key={index}
-            className="flex items-center justify-between p-4 hover:bg-slate-50 rounded-xl transition-colors group cursor-default"
+            className="flex items-center justify-between p-4 hover:bg-slate-50 rounded-xl transition-colors group"
           >
             <div className="flex items-center gap-4">
-              {/* Icono con fondo de color */}
+              {/* Icono */}
               <div
-                className={`p-3 rounded-xl ${stat.bg} ${stat.color} group-hover:scale-110 transition-transform duration-300`}
+                className={`p-3 rounded-xl ${stat.bg} ${stat.color} group-hover:scale-110 transition-transform`}
               >
                 <stat.icon className="w-5 h-5" />
               </div>
-
               {/* Label */}
-              <span className="font-medium text-slate-600 text-sm">
-                {stat.label}
-              </span>
+              <span className="font-medium text-slate-600">{stat.label}</span>
             </div>
 
             {/* Valor */}
-            <span className="text-xl font-bold text-slate-900">
+            <span className="text-2xl font-bold text-slate-900">
               {stat.value}
             </span>
           </div>
