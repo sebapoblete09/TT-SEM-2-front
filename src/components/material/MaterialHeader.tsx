@@ -59,7 +59,7 @@ export default function MaterialHeader({ material }: { material: Material }) {
             </p>
             <div className="flex items-center gap-2">
               <p className="font-semibold text-slate-800 text-sm">
-                <Link href={`/perfilpublico/${material.creador.google_id}`}>
+                <Link href={`/profile/${material.creador.google_id}`}>
                   {material.creador.nombre}
                 </Link>
               </p>
