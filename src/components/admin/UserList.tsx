@@ -113,7 +113,7 @@ export function UsersList({ initialUsers, access_token }: UserListProps) {
               <div className="flex items-center gap-4 w-full sm:w-auto">
                 <div className="flex flex-col">
                   <span className="font-semibold text-slate-800 text-base">
-                    {user.nombre || user.email.split("@")[0]}
+                    {user.nombre || user.email?.split("@")[0]}
                   </span>
                   <span className="text-xs text-slate-500 font-mono">
                     {user.email}
