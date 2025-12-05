@@ -16,9 +16,12 @@ const getInitials = (name: string) => {
 };
 
 export function ProfileHeader({ usuario }: ProfileHeaderProps) {
-  const userName = usuario.nombre || "Usuario";
-  const isAdmin = usuario.rol?.toLowerCase() === "administrador";
+  if (!usuario) return null;
 
+  const userName = usuario?.nombre || "Usuario";
+  const isAdmin = usuario?.rol?.toLowerCase() === "administrador";
+
+  if (!usuario) return null;
   return (
     <div className="w-full bg-white rounded-2xl shadow-sm border border-slate-200 overflow-hidden mb-8">
       {/* 1. BANNER DE FONDO */}
