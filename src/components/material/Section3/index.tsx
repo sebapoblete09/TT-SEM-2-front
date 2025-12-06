@@ -1,24 +1,21 @@
 "use client";
 
 import { Material } from "@/types/materials";
-// Asegúrate de importar desde tu componente UI configurado, no directo de radix si usas shadcn
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import PropertiesCard from "./PropertiesTabs"; // O la ruta correcta a tu PropertiesCard
+import PropertiesCard from "./PropertiesTabs";
 import { Eye, Heart, Layers } from "lucide-react";
 
 export default function Properties({ material }: { material: Material }) {
   return (
     <section>
-      {/* 1. defaultValue debe coincidir con el primer trigger */}
       <Tabs defaultValue="mecanicas" className="w-full ">
-        {/* 2. Definimos los IDs (values) de cada pestaña */}
         <TabsList className="grid w-full grid-cols-3 bg-white">
           <TabsTrigger value="mecanicas">Mecánicas</TabsTrigger>
           <TabsTrigger value="perceptivas">Perceptivas</TabsTrigger>
           <TabsTrigger value="emocionales">Emocionales</TabsTrigger>
         </TabsList>
 
-        {/* 3. Contenido A: Mecánicas */}
+        {/* Contenido A: Mecánicas */}
         <TabsContent value="mecanicas" className="mt-4 focus-visible:ring-0">
           <PropertiesCard
             title="Propiedades Mecánicas"
@@ -28,7 +25,7 @@ export default function Properties({ material }: { material: Material }) {
           />
         </TabsContent>
 
-        {/* 4. Contenido B: Perceptivas */}
+        {/*  Contenido B: Perceptivas */}
         <TabsContent value="perceptivas" className="mt-4 focus-visible:ring-0">
           <PropertiesCard
             title="Propiedades Sensoriales"
@@ -38,7 +35,7 @@ export default function Properties({ material }: { material: Material }) {
           />
         </TabsContent>
 
-        {/* 5. Contenido C: Emocionales (Este te faltaba envolver) */}
+        {/*  Contenido C: Emocionales  */}
         <TabsContent value="emocionales" className="mt-4 focus-visible:ring-0">
           <PropertiesCard
             title="Propiedades Emocionales"

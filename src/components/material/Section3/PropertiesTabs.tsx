@@ -17,7 +17,7 @@ export default function PropertiesCard({
   icon: Icon,
   iconColorClass,
 }: PropertiesCardProps) {
-  // Si no hay datos, no renderizamos nada (o podrías retornar un mensaje vacío)
+  // Si no hay datos, no renderizamos nada
   if (!data || Object.keys(data).length === 0) return null;
 
   return (

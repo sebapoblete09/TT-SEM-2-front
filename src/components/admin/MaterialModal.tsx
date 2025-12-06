@@ -23,8 +23,6 @@ export function MaterialModalContent({ material }: { material: Material }) {
   return (
     <div className="flex flex-col h-[60vh] sm:h-[500px]">
       {" "}
-      {/* Altura fija controlada */}
-      {/* Tabs Header */}
       <div className="px-6 border-b border-slate-200">
         <TabsList className="grid w-full grid-cols-4">
           <TabsTrigger value="general">General</TabsTrigger>
@@ -107,7 +105,6 @@ export function MaterialModalContent({ material }: { material: Material }) {
           value="propiedades"
           className="mt-0 focus-visible:ring-0 max-h-[55vh] overflow-y-auto"
         >
-          {/* Agregamos pb-20 para dar espacio al final del scroll */}
           <div className="space-y-6 pb-20 ">
             {/* 1. MECÁNICAS */}
             <div className="bg-blue-50/50 p-4 rounded-xl border border-blue-100">
@@ -157,7 +154,7 @@ export function MaterialModalContent({ material }: { material: Material }) {
               </div>
             </div>
 
-            {/* 3. EMOCIONALES (Esta era la que no se veía) */}
+            {/* 3. EMOCIONALES  */}
             <div className="bg-rose-50/50 p-4 rounded-xl border border-rose-100">
               <h4 className="font-bold text-rose-700 mb-3 flex items-center gap-2">
                 <Heart className="w-4 h-4" /> Emocionales

@@ -45,8 +45,6 @@ export async function middleware(request: NextRequest) {
     data: { user },
   } = await supabase.auth.getUser();
 
-  // --- ¡AQUÍ ESTÁ LA LÓGICA DE PROTECCIÓN! ---
-
   // 1. Definnir rutas protegidas
   const protectedRoutes = [
     "/register-material",

@@ -2,11 +2,10 @@
 
 import { Card, CardContent } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
-import { ImageIcon, Video } from "lucide-react";
+import { ImageIcon } from "lucide-react";
 import Image from "next/image";
 import { Step } from "@/components/register-material/Recipe";
 
-// Mantenemos tu tipo flexible para que funcione con datos de BD y de Formularios
 type StepLike = Omit<Step, "id" | "url_imagen" | "url_video"> & {
   id?: number | string;
   url_imagen?: string | File | null;
@@ -96,7 +95,6 @@ export default function MaterialSteps({ pasos }: { pasos: StepLike[] }) {
                           className="w-full h-full object-contain"
                           src={videoUrl}
                         />
-                        {/* Nota: Los controles nativos suelen tapar badges, así que a veces es mejor no poner badge sobre video o ponerlo fuera */}
                       </div>
                     )}
                   </div>

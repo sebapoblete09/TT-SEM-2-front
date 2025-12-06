@@ -19,7 +19,6 @@ import { formatDistanceToNow } from "date-fns";
 import { es } from "date-fns/locale";
 import { Tabs } from "@/components/ui/tabs";
 
-// Importamos el componente de contenido que ya separaste
 import { MaterialModalContent } from "./MaterialModal";
 
 type MaterialCardItemProps = {
@@ -177,11 +176,8 @@ export function MaterialCardItem({
         </DialogHeader>
 
         {/* 2. CUERPO SCROLLABLE */}
-        {/* flex-1 toma el espacio sobrante, overflow-hidden evita que rompa el contenedor */}
         <div className="flex-1 overflow-hidden bg-slate-50/50 relative">
           <Tabs defaultValue="general" className="h-full flex flex-col">
-            {/* Aquí incrustamos tu componente de contenido complejo */}
-            {/* IMPORTANTE: Este componente debe manejar su propio ScrollArea internamente */}
             <MaterialModalContent material={material} />
           </Tabs>
         </div>

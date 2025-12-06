@@ -1,48 +1,82 @@
 "use client";
+
+/**
+ * @file page.tsx
+ * @description Página de inicio de sesión (Login) principal.
+ * Implementa autenticación OAuth con Google mediante Supabase Auth.
+ * Diseño optimizado para mostrar la propuesta de valor y roles de usuario antes del acceso.
+ */
+
 import { useState } from "react";
-import { createClient } from "@/lib/supabase/client"; // ¡El cliente de CLIENTE!
+
 import { Button } from "@/components/ui/button";
-import {
-  Card,
-  CardContent,
-  CardDescription,
-  CardHeader,
-  CardTitle,
-} from "@/components/ui/card";
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+
 import Image from "next/image";
 import { ArrowRight, BookOpen, FlaskConical } from "lucide-react";
 
+import { createClient } from "@/lib/supabase/client";
+
 export default function Page() {
+  // Estado local para feedback visual durante el proceso de autenticación
   const [loading, setLoading] = useState(false);
-  // ¡Importante! Usamos el nuevo cliente del PASO 1
+
+  // Instancia del cliente Supabase para el navegador
   const supabase = createClient();
 
-  // Función para manejar el login
+  /**
+   * Maneja el flujo de inicio de sesión con Google.
+   * Redirige al endpoint /auth/callback para procesar el código de intercambio.
+   */
   const loginWithGoogle = async () => {
-    setLoading(true);
+    try {
+      setLoading(true);
 
-    const redirectTo = `${window.location.origin}/auth/callback`;
+      // Construimos la URL de callback dinámicamente basada en el origen actual.
+      // Esto asegura que funcione tanto en localhost como en producción (Vercel).
+      const redirectTo = `${window.location.origin}/auth/callback`;
+      const { error } = await supabase.auth.signInWithOAuth({
+        provider: "google",
+        options: {
+          redirectTo: redirectTo,
+          // Forzamos el prompt de consentimiento para asegurar que Google entregue
+          // un refresh token si es necesario en el futuro.
+          queryParams: {
+            access_type: "offline",
+            prompt: "consent",
+          },
+        },
+      });
 
-    await supabase.auth.signInWithOAuth({
-      provider: "google",
-      options: {
-        redirectTo: redirectTo,
-      },
-    });
+      if (error) {
+        console.error("Error iniciando OAuth:", error.message);
+        // Aquí se podría implementar un Toast de error
+      }
+    } catch (error) {
+      console.error("Error inesperado en login:", error);
+    } finally {
+      // Nota: No reseteamos setLoading(false) aquí porque la redirección
+      // de OAuth navegará fuera de la página, y queremos mantener el estado de carga.
+    }
   };
 
   return (
     <div className="min-h-screen grid lg:grid-cols-2">
-      {/* IZQUIERDA - Formulario */}
+      {/* ==================================================================
+          SECCIÓN IZQUIERDA: Formulario y Propuesta de Valor
+          Diseño: Fondo claro con elementos decorativos sutiles
+      ================================================================== */}
       <div className="flex items-center justify-center p-8 relative overflow-hidden bg-slate-50">
-        {/* Decoración de fondo sutil */}
+        {/* Elementos decorativos de fondo (Blobs) para dar profundidad visual */}
         <div className="absolute inset-0 pointer-events-none overflow-hidden">
           <div className="absolute top-0 left-0 w-[500px] h-[500px] bg-green-100/40 rounded-full blur-[100px] -translate-x-1/2 -translate-y-1/2" />
           <div className="absolute bottom-0 right-0 w-[500px] h-[500px] bg-blue-100/40 rounded-full blur-[100px] translate-x-1/2 translate-y-1/2" />
         </div>
 
+        {/* Tarjeta Principal con efecto Glassmorphism */}
         <Card className="w-full max-w-md shadow-2xl shadow-slate-200/50 border-none bg-white/80 backdrop-blur-xl relative z-10">
           <CardHeader className="space-y-2 text-center pb-2">
+            {/* Logo Institucional */}
             <div className="mx-auto mb-4 bg-white p-3 rounded-2xl shadow-sm border border-slate-100 w-fit">
               <Image
                 src="/images/Utem.webp"
@@ -50,6 +84,7 @@ export default function Page() {
                 width={56}
                 height={56}
                 className="h-14 w-auto"
+                priority // Carga prioritaria para evitar layout shift (LCP)
               />
             </div>
             <CardTitle className="text-2xl font-bold text-slate-900">
@@ -61,13 +96,14 @@ export default function Page() {
           </CardHeader>
 
           <CardContent className="space-y-8 pt-6">
-            {/* === NUEVA SECCIÓN: Explicación de Roles === */}
+            {/* --- Explicación de Roles y Permisos --- */}
+            {/* Se muestra explícitamente para gestionar las expectativas del usuario nuevo */}
             <div className="bg-slate-50/80 border border-slate-100 rounded-xl p-4 space-y-3">
               <p className="text-xs font-semibold text-slate-400 uppercase tracking-wider mb-2">
                 Tu nivel de acceso
               </p>
 
-              {/* Rol Lector */}
+              {/* Rol 1: Lector (Default) */}
               <div className="flex items-start gap-3">
                 <div className="p-2 bg-green-100 text-green-700 rounded-lg mt-0.5">
                   <BookOpen className="w-4 h-4" />
@@ -80,14 +116,13 @@ export default function Page() {
                     Podrás explorar todo el catálogo, ver recetas detalladas
                     ademas de sus propiedades.
                   </p>
-                  {/*Quisas descargar alguna ficha tecnica */}
                 </div>
               </div>
 
-              {/* Separador visual */}
+              {/* Separador visual sutil */}
               <div className="w-full h-px bg-slate-200/50 my-2" />
 
-              {/* Rol Colaborador */}
+              {/* Rol 2: Colaborador (Requiere solicitud) */}
               <div className="flex items-start gap-3 opacity-75">
                 <div className="p-2 bg-blue-50 text-blue-600 rounded-lg mt-0.5">
                   <FlaskConical className="w-4 h-4" />
@@ -107,7 +142,7 @@ export default function Page() {
               </div>
             </div>
 
-            {/* Botón de Login */}
+            {/* --- Botón de Acción Principal (CTA) --- */}
             <div className="space-y-4">
               <Button
                 className="w-full h-12 text-base font-medium bg-white border border-slate-200 text-slate-700 hover:bg-slate-50 hover:border-slate-300 hover:text-slate-900 transition-all shadow-sm group"
@@ -119,7 +154,7 @@ export default function Page() {
                   <span className="animate-pulse">Conectando...</span>
                 ) : (
                   <>
-                    {/* Icono Google SVG simplificado */}
+                    {/* Icono Google (SVG inline para rendimiento) */}
                     <svg className="mr-3 h-5 w-5" viewBox="0 0 24 24">
                       <path
                         fill="currentColor"
@@ -144,6 +179,7 @@ export default function Page() {
                 )}
               </Button>
 
+              {/* Etiqueta de acceso restringido */}
               <div className="relative">
                 <div className="absolute inset-0 flex items-center">
                   <span className="w-full border-t border-slate-200" />
@@ -159,7 +195,10 @@ export default function Page() {
         </Card>
       </div>
 
-      {/* DERECHA - Imagen Inspiracional */}
+      {/* ==================================================================
+          SECCIÓN DERECHA: Imagen Inspiracional (Solo Desktop)
+          Diseño: Imagen full-height con overlay oscuro y copy persuasivo
+      ================================================================== */}
       <div className="hidden lg:block relative bg-slate-900">
         <Image
           src="/images/Innova.webp"
@@ -168,16 +207,19 @@ export default function Page() {
           className="object-cover opacity-90"
           priority
         />
-        {/* Degradado más cinematográfico */}
+        {/* Degradado cinematográfico para mejorar legibilidad del texto blanco */}
         <div className="absolute inset-0 bg-gradient-to-t from-slate-900 via-slate-900/40 to-transparent" />
 
         <div className="absolute bottom-0 left-0 right-0 p-16 text-white">
+          {/* Línea decorativa de marca */}
           <div className="w-16 h-1 bg-green-500 mb-6 rounded-full" />
+
           <h2 className="text-5xl font-bold mb-6 leading-tight">
             Donde la ciencia
             <br />
             encuentra la naturaleza
           </h2>
+
           <p className="text-xl text-slate-300 max-w-lg leading-relaxed">
             Forma parte del repositorio vivo de conocimiento en biomateriales
             más grande de la universidad.

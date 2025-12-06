@@ -1,4 +1,4 @@
-import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
+import { Avatar, AvatarFallback } from "@/components/ui/avatar";
 import { Badge } from "@/components/ui/badge";
 
 import { usuario } from "@/types/user";
@@ -25,7 +25,6 @@ export function ProfileHeader({ usuario }: ProfileHeaderProps) {
   return (
     <div className="w-full bg-white rounded-2xl shadow-sm border border-slate-200 overflow-hidden mb-8">
       {/* 1. BANNER DE FONDO */}
-      {/* Usamos un gradiente bonito relacionado con biomateriales (verdes/azules) */}
       <div className="h-32 md:h-48 w-full bg-gradient-to-r from-emerald-500 to-teal-600 relative"></div>
 
       <div className="px-6 md:px-10 pb-8">

@@ -2,7 +2,7 @@
 "use client";
 
 import { useEffect, useState } from "react";
-import { createClient } from "@/lib/supabase/client"; // <--- Ajusta esta ruta a tu cliente de supabase
+import { createClient } from "@/lib/supabase/client";
 import { Notificacion } from "@/types/notification";
 
 export const useNotifications = (userGoogleId: string | undefined) => {

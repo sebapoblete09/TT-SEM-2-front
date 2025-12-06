@@ -1,16 +1,27 @@
 "use client";
+
+/**
+ * @file page.tsx
+ * @description Página de Perfil Público de Usuario (Client Component).
+ * Permite visualizar la información de un investigador, sus estadísticas
+ * y su portafolio de materiales (tanto propios como colaborativos).
+ * Utiliza una estrategia de carga asíncrona (useEffect) para obtener los datos.
+ */
+import { useEffect, useState } from "react";
 import { useParams } from "next/navigation";
 
-//importacion de tipos
+// Tipos e Interfaces
 import { usuario, estadisticas } from "@/types/user";
 import { Material_Card, Material } from "@/types/materials";
+
+// Componentes de UI
 import { ProfileStats } from "@/components/PublicProfile/ProfileStats";
 import Materials_Profile from "@/components/PublicProfile/ProfileMaterials";
-import { useEffect, useState } from "react";
 import { ProfileHeader } from "@/components/PublicProfile/ProfileHeader";
 import LoadingCard from "@/components/ui/loading";
 
 export default function ProfilePage() {
+  // --- ESTADOS DE DATOS ---
   const [usuario, setUsuario] = useState<usuario | null>(null);
   const [materiales_creados, setMaterialesCreados] = useState<Material_Card[]>(
     []
@@ -25,6 +36,10 @@ export default function ProfilePage() {
   const [error, setError] = useState<string | null>(null);
   const { id } = useParams();
 
+  /**
+   * Efecto principal de carga de datos.
+   * Se ejecuta al montar el componente o cambiar el ID de usuario.
+   */
   useEffect(() => {
     if (!id) return;
     const fetchProfile = async () => {
@@ -42,9 +57,13 @@ export default function ProfilePage() {
           // Manejar error (ej. mostrar una página de error)
           return <p>Error al cargar el perfil. Intenta de nuevo.</p>;
         }
+
+        // Asignación de datos principales
         const data = await res.json();
         setUsuario(data.perfil);
         setEstadisticas(data.estadisticas);
+
+        // Mapeamos los materiales creados
         setMaterialesCreados(
           data.materiales_creados.map((material: Material) => {
             return {
@@ -62,6 +81,8 @@ export default function ProfilePage() {
             };
           })
         );
+
+        // Mapeamos las colaboraciones
         setMaterialesColaboraciones(
           data.materiales_colaborador.map((material: Material) => {
             return {
@@ -76,7 +97,10 @@ export default function ProfilePage() {
           })
         );
       } catch (err) {
-        setError(err instanceof Error ? err.message : "Error desconocido");
+        const message =
+          err instanceof Error ? err.message : "Error desconocido";
+        console.error(message);
+        setError(message);
       } finally {
         setLoading(false);
       }
@@ -88,7 +112,6 @@ export default function ProfilePage() {
     return <LoadingCard />;
   }
 
-  // 2. SI TERMINÓ DE CARGAR PERO NO HAY USUARIO (ERROR)
   if (!usuario) {
     return (
       <div className="container py-10 text-center text-red-500">
@@ -99,26 +122,26 @@ export default function ProfilePage() {
 
   return (
     <div className="container mx-auto max-w-7xl py-10 px-4 space-y-10">
-      {/* SECCIÓN SUPERIOR: Banner + Stats en Grid */}
+      {/* SECCIÓN SUPERIOR: Resumen del Investigador */}
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-6 items-stretch">
-        {/* Columna Izquierda (2/3): Perfil Header */}
+        {/* Izquierda: Identidad (Foto, Nombre, Rol) */}
         <div className="lg:col-span-2 h-full">
-          {/* Asegúrate de que ProfileHeader tenga 'h-full' si es necesario, o que se adapte */}
           <ProfileHeader usuario={usuario} />
         </div>
 
-        {/* Columna Derecha (1/3): Stats Verticales */}
+        {/* Derecha: Métricas de Impacto */}
         <div className="lg:col-span-1 h-full">
           <ProfileStats estadisticas={estadisticas} />
         </div>
       </div>
 
-      {/* SECCIÓN INFERIOR: Materiales */}
+      {/* SECCIÓN INFERIOR: Portafolio de Materiales */}
       <div className="space-y-6">
         <div className="flex items-center gap-4">
           <div className="h-px flex-1 bg-slate-200" />
         </div>
 
+        {/* Componente de lista con filtros integrados (Creados vs Colaboraciones) */}
         <Materials_Profile
           initialMaterials={materiales_creados}
           colaboraciones={materiales_colaboraciones}

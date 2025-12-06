@@ -1,13 +1,36 @@
-import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import MaterialPending from "@/components/admin/Pending";
-import UsersSection from "@/components/admin/Users";
-import { ShieldCheck } from "lucide-react";
-import Stats from "@/components/admin/Stats";
-import { DashboardCounts } from "@/types/dashboard";
+/**
+ * @file page.tsx
+ * @description Dashboard de Administración (Server Component).
+ * Este es el centro de control para los administradores de la plataforma.
+ * Permite visualizar métricas clave, moderar materiales pendientes y gestionar usuarios.
+ *
+ * Características Técnicas:
+ * - Server-Side Rendering: Los datos iniciales se cargan en el servidor para mejorar el rendimiento y SEO.
+ * - Protección de Ruta: Redirección automática si no hay sesión válida.
+ * - Optimización de Datos: Utiliza un endpoint unificado de estadísticas para minimizar el tráfico de red.
+ */
+
 import { createClient } from "@/lib/supabase/server";
 import { redirect } from "next/navigation";
-import MaterialAprove from "@/components/admin/Aprove";
 
+// Componentes UI y Layout
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import { ShieldCheck } from "lucide-react";
+
+// Componentes de Módulos Administrativos
+import UsersSection from "@/components/admin/Users";
+import MaterialPending from "@/components/admin/Pending";
+import MaterialAprove from "@/components/admin/Aprove";
+import Stats from "@/components/admin/Stats";
+
+//tipos
+import { DashboardCounts } from "@/types/dashboard";
+
+/**
+ * Función auxiliar para obtener las estadísticas del dashboard.
+ * Realiza una única llamada al backend optimizado en lugar de múltiples requests.
+ * @returns {Promise<DashboardCounts>} Objeto con los contadores (pendientes, aprobados, usuarios).
+ */
 async function getDashboardStats(): Promise<DashboardCounts> {
   const supabase = await createClient();
   const {
@@ -17,7 +40,6 @@ async function getDashboardStats(): Promise<DashboardCounts> {
 
   const baseUrl = process.env.NEXT_PUBLIC_BACK_URL || "http://localhost:8080";
 
-  // ¡AHORA SOLO ES UNA LLAMADA!
   const res = await fetch(`${baseUrl}/users/stats`, {
     headers: { Authorization: `Bearer ${session.access_token}` },
     cache: "no-store",
@@ -32,6 +54,7 @@ async function getDashboardStats(): Promise<DashboardCounts> {
 }
 
 export default async function AdminPage() {
+  // Carga inicial de datos en el servidor (SSR)
   const stats = await getDashboardStats();
   return (
     <div className="min-h-screen bg-slate-50/50 pb-20">
@@ -54,16 +77,19 @@ export default async function AdminPage() {
         </div>
       </div>
 
+      {/* --- CONTENIDO PRINCIPAL --- */}
       <div className="container mx-auto max-w-7xl px-4">
-        {/* Pasamos los datos limpios */}
+        {/* 1. Tarjetas de Estadísticas (KPIs) */}
         <Stats
           pendientes={stats.pendientes}
           aprobados={stats.aprobados}
           usuarios={stats.usuarios}
         />
 
-        {/* Tabs Mejorados */}
+        {/* 2. Pestañas de Gestión */}
+        {/* 'defaultValue="pending"' asegura que lo primero que vea el admin sea lo urgente */}
         <Tabs defaultValue="pending" className="space-y-6">
+          {/* Barra de Navegación de Tabs */}
           <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
             <TabsList className="grid w-full sm:w-auto grid-cols-3 h-12 p-1 bg-white border border-slate-200 rounded-xl shadow-sm">
               <TabsTrigger
@@ -87,7 +113,7 @@ export default async function AdminPage() {
             </TabsList>
           </div>
 
-          {/* --- Contenido: Materiales --- */}
+          {/* --- CONTENIDO: MATERIALES PENDIENTES --- */}
           <TabsContent
             value="pending"
             className="animate-in fade-in-50 duration-300 slide-in-from-bottom-2"
@@ -97,6 +123,7 @@ export default async function AdminPage() {
             </div>
           </TabsContent>
 
+          {/* --- CONTENIDO: MATERIALES APROBADOS --- */}
           <TabsContent
             value="aprove"
             className="animate-in fade-in-50 duration-300 slide-in-from-bottom-2"
@@ -106,7 +133,7 @@ export default async function AdminPage() {
             </div>
           </TabsContent>
 
-          {/* --- Contenido: Usuarios --- */}
+          {/* --- CONTENIDO: GESTIÓN DE USUARIOS --- */}
           <TabsContent
             value="users"
             className="animate-in fade-in-50 duration-300 slide-in-from-bottom-2"

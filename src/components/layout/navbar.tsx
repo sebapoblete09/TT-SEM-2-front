@@ -22,7 +22,7 @@ import {
   SheetTitle,
   SheetTrigger,
   SheetClose,
-} from "@/components/ui/sheet"; // Asegúrate de tener este componente instalado
+} from "@/components/ui/sheet";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { User, LogOut, Menu, PlusCircle } from "lucide-react";
 
@@ -35,7 +35,6 @@ export function Navigation() {
   const router = useRouter();
   const pathname = usePathname();
 
-  // Detectar scroll
   useEffect(() => {
     const handleScroll = () => setIsScrolled(window.scrollY > 10);
     window.addEventListener("scroll", handleScroll);
@@ -134,7 +133,6 @@ export function Navigation() {
           </div>
 
           {/* ACCIONES DESKTOP (Derecha) */}
-          {/* CAMBIO CLAVE: 'hidden md:flex' oculta todo esto en móvil */}
           <div className="hidden md:flex items-center gap-3">
             <Button
               asChild
@@ -168,7 +166,6 @@ export function Navigation() {
                       </Avatar>
                     </Button>
                   </DropdownMenuTrigger>
-                  {/* AQUI ESTA EL ARREGLO DEL FONDO BLANCO */}
                   <DropdownMenuContent
                     align="end"
                     className="w-60 p-2 bg-white border border-slate-200 shadow-xl rounded-xl z-50"
@@ -219,7 +216,6 @@ export function Navigation() {
 
           {/* ---------------- MOBILE MENU TRIGGER ---------------- */}
           <div className="md:hidden flex items-center gap-2">
-            {/* Opcional: Dejar la campana visible en móvil fuera del menú si quieres */}
             {user && googleId && (
               <div className="mr-2">
                 <NotificationBell googleId={googleId} />
@@ -242,7 +238,6 @@ export function Navigation() {
               >
                 <SheetHeader className="text-left border-b border-slate-100 pb-4 mb-4">
                   {user ? (
-                    // Header del menú móvil si está logueado: Muestra el perfil aquí
                     <SheetTitle className="flex items-center gap-3">
                       <Avatar className="h-10 w-10 border border-slate-200">
                         <AvatarImage src={userAvatar} alt={userName} />
@@ -252,7 +247,6 @@ export function Navigation() {
                       </Avatar>
                       <div className="flex flex-col overflow-hidden text-left">
                         {" "}
-                        {/* text-left importante aquí */}
                         <span className="font-bold text-sm truncate">
                           {userName}
                         </span>

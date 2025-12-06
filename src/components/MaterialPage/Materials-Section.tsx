@@ -1,10 +1,9 @@
 "use client";
 
 import { useState, useEffect, useMemo } from "react";
-import { useSearchParams } from "next/navigation";
 import { MaterialCard } from "@/components/ui/materialCard";
 import { Material_Card } from "@/types/materials";
-import FilterSection from "./Filter-Section"; // Tu nuevo sidebar
+import FilterSection from "./Filter-Section";
 import { Loader2, SearchX } from "lucide-react";
 
 export default function Materials_Section() {
@@ -15,8 +14,6 @@ export default function Materials_Section() {
   // ESTADOS LOCALES PARA FILTRADO INSTANTÁNEO
   const [searchTerm, setSearchTerm] = useState("");
   const [selectedCategory, setSelectedCategory] = useState<string | null>(null);
-  // Hook para leer la URL (ej: ?search=algas&category=bioplastico)
-  const searchParams = useSearchParams();
 
   // 1. Cargar TODOS los materiales al inicio
   useEffect(() => {
@@ -64,7 +61,7 @@ export default function Materials_Section() {
 
       return matchesSearch && matchesCategory;
     });
-  }, [materials, searchTerm, selectedCategory]); // Se recalcula instantáneamente al escribir
+  }, [materials, searchTerm, selectedCategory]);
 
   return (
     <div className="min-h-screen bg-slate-50/50 animate-in fade-in duration-500">
