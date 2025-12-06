@@ -40,11 +40,9 @@ export default function Hero() {
       </div>
 
       {/* Contenido Principal */}
-      {/* pb-32 asegura que en móvil el texto no toque los puntos del carrusel */}
       <div className="container mx-auto max-w-7xl px-4 relative z-20 pt-24 pb-32 md:pt-20 md:pb-0">
         <div className="max-w-4xl mx-auto md:mx-0">
           {" "}
-          {/* Centrado en móvil si quieres, o izquierda */}
           <h1 className="text-3xl sm:text-4xl md:text-6xl lg:text-7xl font-extrabold mb-6 text-white tracking-tight drop-shadow-lg text-balance">
             Plataforma de <br />
             <span className="text-transparent bg-clip-text bg-gradient-to-r from-green-400 to-emerald-200">
@@ -57,9 +55,7 @@ export default function Hero() {
             para un futuro más verde.
           </p>
           {/* BOTONES RESPONSIVE */}
-          {/* Flex-col en móvil (uno abajo del otro), Flex-row en tablet (al lado) */}
           <div className="flex flex-col sm:flex-row gap-4 w-full sm:w-auto">
-            {/* Botón 1: Principal (Verde) */}
             <Button
               asChild
               size="lg"
@@ -69,7 +65,6 @@ export default function Hero() {
               <Link href="/materials">Explorar Materiales</Link>
             </Button>
 
-            {/* Botón 2: Secundario (Glass) */}
             <Button
               asChild
               size="lg"

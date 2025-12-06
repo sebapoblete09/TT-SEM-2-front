@@ -8,8 +8,9 @@ import { cn } from "@/lib/utils";
 import { ImageIcon } from "lucide-react";
 
 export default function MaterialGallery({ material }: { material: Material }) {
-  const [selectedImage, setSelectedImage] = useState<galeriaItem | null>(null);
   // Estado para manejar la transición de opacidad al cambiar imagen
+  const [selectedImage, setSelectedImage] = useState<galeriaItem | null>(null);
+
   const [isAnimating, setIsAnimating] = useState(false);
 
   useEffect(() => {

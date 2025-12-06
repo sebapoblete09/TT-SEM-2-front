@@ -3,9 +3,7 @@ import benefits from "@/const/HomeSection1";
 
 export default function WhyBiomaterials() {
   return (
-    // CAMBIO 1: Fondo un poco más oscuro (bg-slate-50) en lugar de transparente/blanco
     <section className="py-16 md:py-24 px-4 bg-slate-50 relative overflow-hidden">
-      {/* Fondo decorativo: Intensifiqué un poco la opacidad para que se note sobre el gris */}
       <div className="absolute top-0 left-1/2 -translate-x-1/2 w-full h-full max-w-7xl pointer-events-none">
         <div className="absolute top-0 left-0 w-96 h-96 bg-green-200/30 rounded-full blur-3xl mix-blend-multiply" />
         <div className="absolute bottom-0 right-0 w-96 h-96 bg-blue-200/30 rounded-full blur-3xl mix-blend-multiply" />

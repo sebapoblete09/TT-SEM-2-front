@@ -11,8 +11,8 @@ export function ProfileStats({ estadisticas }: { estadisticas: estadisticas }) {
       bg: "bg-blue-50",
     },
     {
-      label: "Aprobados",
-      value: estadisticas.materiales_creados ?? 0, // Asumo que esto son los aprobados/creados
+      label: "Creados",
+      value: estadisticas.materiales_creados ?? 0,
       icon: CheckCircle,
       color: "text-green-600",
       bg: "bg-green-50",

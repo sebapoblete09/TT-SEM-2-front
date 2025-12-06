@@ -1,5 +1,5 @@
 // components/admin/UsersList.tsx
-"use client"; // <-- 1. ¡Esto es lo más importante!
+"use client";
 
 import { useState } from "react";
 import { TabsContent } from "@/components/ui/tabs";
@@ -10,27 +10,26 @@ import {
   SelectItem,
   SelectTrigger,
   SelectValue,
-} from "@/components/ui/select"; // 2. Importa los componentes Select
+} from "@/components/ui/select";
 import { usuario } from "@/types/user";
 import { BookOpen, Edit2, ShieldCheck, UserCog, X } from "lucide-react";
 import { Badge } from "../ui/badge";
 
-// 3. Define las props que recibirá
 type UserListProps = {
   initialUsers: usuario[];
   access_token: string;
 };
 
 export function UsersList({ initialUsers, access_token }: UserListProps) {
-  // 4. Estado para manejar la lista de usuarios (para futuras actualizaciones)
+  // Estado para manejar la lista de usuarios (para futuras actualizaciones)
   const [users, setUsers] = useState(initialUsers);
 
-  // 5. Estado para saber qué usuario estamos editando
+  // Estado para saber qué usuario estamos editando
   const [editingUserId, setEditingUserId] = useState<number | null>(null);
 
   const [loading, setLoading] = useState(false);
 
-  // 6. (Lógica futura) Aquí pondrías tu función para llamar a la API y guardar el rol
+  // funcion para cambiar el rol de un usuario
   const handleRoleChange = async (userId: number, newRole: string) => {
     console.log(`Cambiando rol para ${userId} a ${newRole}`);
 

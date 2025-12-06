@@ -1,4 +1,4 @@
-import { Lightbulb, Plus } from "lucide-react"; // Importamos Plus para el conector
+import { Lightbulb, Plus } from "lucide-react";
 import { Card, CardContent } from "../ui/card";
 import Image from "next/image";
 

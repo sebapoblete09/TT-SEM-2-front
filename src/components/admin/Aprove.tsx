@@ -1,11 +1,10 @@
 // components/admin/MaterialPending.tsx
-// (Sigue siendo un Server Component, sin "use client")
 
 import { TabsContent } from "@/components/ui/tabs";
 import { Material } from "@/types/materials";
 import { createClient } from "@/lib/supabase/server";
 import { redirect } from "next/navigation";
-import { MaterialClientList } from "./MaterialClientList"; // <-- 1. Importa el nuevo componente
+import { MaterialClientList } from "./MaterialClientList";
 
 export default async function MaterialAprove() {
   const supabase = await createClient();

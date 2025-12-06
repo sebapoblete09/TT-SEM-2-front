@@ -26,7 +26,6 @@ export default function CompositionCard({
       {/* CONTENIDO */}
       <CardContent className="p-6">
         {composicion && composicion.length > 0 ? (
-          // Usamos grid-cols-1 para que se vea bien en el sidebar (lista vertical)
           <div className="grid grid-cols-2 gap-4">
             {composicion.map((item, i) => (
               <div

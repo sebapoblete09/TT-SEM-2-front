@@ -12,7 +12,7 @@ export function ProfileStats({ estadisticas }: { estadisticas: estadisticas }) {
   const statsList = [
     {
       label: "Total Materiales",
-      value: estadisticas.materiales_creados ?? 0, // Total creados
+      value: estadisticas.materiales_creados ?? 0,
       icon: FileText,
       color: "text-blue-600",
       bg: "bg-blue-50",

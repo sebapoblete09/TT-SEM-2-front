@@ -1,7 +1,7 @@
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Badge } from "@/components/ui/badge";
-import { Button } from "@/components/ui/button"; // Importamos Button
-import { CaseLower, Settings, ShieldCheck } from "lucide-react"; // Iconos
+import { Button } from "@/components/ui/button";
+import { ShieldCheck } from "lucide-react";
 import Link from "next/link";
 import { usuario } from "@/types/user";
 
@@ -25,7 +25,6 @@ export function ProfileHeader({ usuario, userAvatar }: ProfileHeaderProps) {
   return (
     <div className="w-full bg-white rounded-2xl shadow-sm border border-slate-200 overflow-hidden mb-8">
       {/* 1. BANNER DE FONDO */}
-      {/* Usamos un gradiente bonito relacionado con biomateriales (verdes/azules) */}
       <div className="h-32 md:h-48 w-full bg-gradient-to-r from-emerald-500 to-teal-600 relative">
         {/* Botón de Admin flotante en la esquina del banner */}
         {isAdmin && (
@@ -59,8 +58,6 @@ export function ProfileHeader({ usuario, userAvatar }: ProfileHeaderProps) {
                 {getInitials(userName)}
               </AvatarFallback>
             </Avatar>
-            {/* Indicador de estado online (opcional) */}
-            <span className="absolute bottom-2 right-2 w-4 h-4 bg-green-500 border-2 border-white rounded-full"></span>
           </div>
 
           {/* 3. INFORMACIÓN DE TEXTO */}

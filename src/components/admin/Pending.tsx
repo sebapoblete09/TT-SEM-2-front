@@ -5,12 +5,11 @@ import { TabsContent } from "@/components/ui/tabs";
 import { Material } from "@/types/materials";
 import { createClient } from "@/lib/supabase/server";
 import { redirect } from "next/navigation";
-import { MaterialClientList } from "./MaterialClientList"; // <-- 1. Importa el nuevo componente
+import { MaterialClientList } from "./MaterialClientList";
 
 export default async function MaterialPending() {
   const supabase = await createClient();
 
-  // ... (Tu lógica de getSession y redirect es perfecta) ...
   const {
     data: { session },
   } = await supabase.auth.getSession();
@@ -19,7 +18,6 @@ export default async function MaterialPending() {
     redirect("/login");
   }
 
-  // ... (Tu lógica de fetch es perfecta) ...
   const baseUrl = process.env.NEXT_PUBLIC_BACK_URL || "http://localhost:8080";
   const res = await fetch(`${baseUrl}/materials/pending`, {
     method: "GET",

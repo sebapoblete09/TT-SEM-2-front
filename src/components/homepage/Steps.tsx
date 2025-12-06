@@ -17,15 +17,11 @@ export default function Steps() {
 
         {/* Grid de Pasos */}
         <div className="grid grid-cols-1 md:grid-cols-3 gap-12 relative">
-          {/* --- CORRECCIÓN AQUÍ --- */}
-          {/* LÍNEA CONECTORA: Quitamos el -z-10 y ajustamos el color para que se vea */}
-          {/* LÍNEA CONECTORA (Degradado Sólido) */}
           <div className="hidden md:block absolute top-12 left-[16%] right-[16%] h-[3px] bg-gradient-to-r from-green-200 via-teal-200 to-blue-200 rounded-full" />
 
           {/* PASO 1 */}
           <div className="relative flex flex-col items-center text-center group z-10">
             <div className="relative mb-6">
-              {/* Agregamos bg-white al contenedor del círculo para tapar la línea si pasa por detrás */}
               <div className="w-24 h-24 rounded-full bg-green-50 flex items-center justify-center shadow-sm group-hover:scale-110 group-hover:bg-green-100 transition-all duration-300 relative z-20">
                 <Search className="h-10 w-10 text-green-600" />
               </div>

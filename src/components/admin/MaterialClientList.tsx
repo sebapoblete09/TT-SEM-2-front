@@ -1,5 +1,5 @@
 // components/admin/MaterialClientList.tsx
-"use client"; // <-- ¡CLAVE!
+"use client";
 
 import { useState } from "react";
 import { useRouter } from "next/navigation";
@@ -19,7 +19,7 @@ export function MaterialClientList({
   // 2. Estado para que la lista sea interactiva (desaparezcan al borrarlos)
   const [materials, setMaterials] = useState(initialMaterials);
 
-  // 3. Lógica para llamar a tu API de "Aprobar"
+  // 3. Lógica para llamar a la API de "Aprobar"
   const handleApprove = async (id: string) => {
     console.log("Aprobando material:", id);
     try {
@@ -47,7 +47,7 @@ export function MaterialClientList({
     router.refresh();
   };
 
-  // 4. Lógica para llamar a tu API de "Eliminar"
+  // 4. Lógica para llamar a la API de "Eliminar"
   const handleDelete = async (id: string) => {
     console.log("Eliminando material:", id);
     try {
