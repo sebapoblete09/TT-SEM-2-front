@@ -8,7 +8,7 @@ import { redirect } from "next/navigation";
 import { MaterialClientList } from "./MaterialClientList"; // <-- 1. Importa el nuevo componente
 
 export default async function MaterialPending() {
-  const supabase = createClient();
+  const supabase = await createClient();
 
   // ... (Tu lógica de getSession y redirect es perfecta) ...
   const {

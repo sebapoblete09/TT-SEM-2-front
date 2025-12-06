@@ -4,7 +4,7 @@ import { usuario } from "@/types/user";
 import { UsersList } from "./UserList";
 
 export default async function UsersSection() {
-  const supabase = createClient();
+  const supabase = await createClient();
 
   //Inicializar la session
   const {

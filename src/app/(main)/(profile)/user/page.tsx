@@ -10,7 +10,7 @@ import { ProfileStats } from "@/components/profile/ProfileStats";
 import Materials_Profile from "@/components/profile/ProfileMaterials";
 
 export default async function ProfilePage() {
-  const supabase = createClient();
+  const supabase = await createClient();
 
   //Inicializar la session
   const {

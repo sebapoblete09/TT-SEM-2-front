@@ -7,14 +7,14 @@ export const dynamic = "force-dynamic";
 export async function GET(request: Request) {
   const { searchParams, origin } = new URL(request.url);
   const code = searchParams.get("code");
-  // Si hay un error, redirigir a una página de error
   const error = searchParams.get("error");
+
   if (error) {
     return NextResponse.redirect(`${origin}/auth/error`);
   }
 
   if (code) {
-    const supabase = createClient();
+    const supabase = await createClient();
     const { data, error } = await supabase.auth.exchangeCodeForSession(code);
 
     if (!error && data.session) {
