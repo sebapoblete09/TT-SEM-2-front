@@ -2,7 +2,7 @@
 
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
-import { Calendar, Download, Share2, Leaf, Users } from "lucide-react";
+import { Calendar, Download, Share2, Leaf, Users, GitFork } from "lucide-react";
 import { Material } from "@/types/materials";
 import { format } from "date-fns";
 import { es } from "date-fns/locale";
@@ -20,6 +20,18 @@ export default function MaterialHeader({ material }: { material: Material }) {
           Biomaterial
         </Badge>
 
+        {material.derivado_de != "00000000-0000-0000-0000-000000000000" && (
+          <Badge
+            variant="secondary"
+            className="bg-white cursor-pointer text-purple-700 hover:bg-purple-200 transition-colors px-3 py-1 text-sm font-medium flex gap-2 items-center w-fit border-purple-200"
+          >
+            <GitFork className="w-3 h-3" />
+            <Link href={`/material/${material.derivado_de}`}>
+              {" "}
+              Material Derivado:
+            </Link>
+          </Badge>
+        )}
         <div className="flex gap-2">
           <Button
             variant="outline"

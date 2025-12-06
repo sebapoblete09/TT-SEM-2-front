@@ -9,51 +9,41 @@ import { CheckCircle2, Clock, LayoutGrid, Search } from "lucide-react";
 
 type MaterialsProfileProps = {
   initialMaterials: Material_Card[];
+  colaboraciones: Material_Card[]; // Lista 2: Donde soy colaborador
 };
 
 export default function Materials_Profile({
   initialMaterials,
+  colaboraciones, // Lista 2: Donde soy colaborador
 }: MaterialsProfileProps) {
   const [searchTerm, setSearchTerm] = useState("");
 
-  // 1. Cambiamos el estado para manejar TRES opciones
-  const [status, setStatus] = useState<"todos" | "aprobados" | "pendientes">(
-    "todos" // <-- "Todos" es el estado por defecto
-  );
+  const [activeTab, setActiveTab] = useState<
+    "todos" | "aprobados" | "pendientes" | "colaboraciones"
+  >("todos");
 
-  // 2. Lógica de filtrado ENCADENADA
-  const materialsFiltrados = initialMaterials
-    .filter((material) => {
-      // --- PRIMER FILTRO: Por Estado ---
-      if (status === "todos") {
-        return true; // Mantiene todos
-      }
-      if (status === "aprobados") {
-        return material.estado === true;
-      }
-      if (status === "pendientes") {
-        return material.estado === false;
-      }
-      return true; // Fallback por si acaso
-    })
-    .filter((material) => {
-      // --- SEGUNDO FILTRO: Por Búsqueda (sobre la lista ya filtrada) ---
-      const busqueda = searchTerm.toLowerCase();
-      return (
-        material.nombre.toLowerCase().includes(busqueda) ||
-        material.descripcion.toLowerCase().includes(busqueda) ||
-        material.composicion.some((comp) =>
-          comp.toLowerCase().includes(busqueda)
-        )
-      );
-    });
+  // 1. SELECCIÓN DE LISTA BASE
+  // Dependiendo del Tab, elegimos qué array vamos a filtrar
+  let listaBase: Material_Card[] = [];
 
-  // 3. Función para obtener el texto del placeholder
-  const getPlaceholder = () => {
-    if (status === "todos") return "Buscar en todos mis materiales...";
-    if (status === "aprobados") return "Buscar en Aprobados...";
-    if (status === "pendientes") return "Buscar en Pendientes...";
-  };
+  if (activeTab === "todos") {
+    listaBase = [...initialMaterials, ...colaboraciones];
+  } else if (activeTab === "aprobados") {
+    listaBase = initialMaterials.filter((mat) => mat.estado);
+  } else if (activeTab === "pendientes") {
+    listaBase = initialMaterials.filter((mat) => !mat.estado);
+  } else if (activeTab === "colaboraciones") {
+    listaBase = colaboraciones;
+  }
+
+  // 2. FILTRADO POR BÚSQUEDA (Sobre la lista base seleccionada)
+  const materialsFiltrados = listaBase.filter((material) => {
+    const term = searchTerm.toLowerCase();
+    return (
+      material.nombre.toLowerCase().includes(term) ||
+      material.descripcion.toLowerCase().includes(term)
+    );
+  });
 
   return (
     <section id="explore" className="py-8 animate-in fade-in duration-500">
@@ -63,16 +53,16 @@ export default function Materials_Profile({
           {/* Título Dinámico */}
           <div>
             <h2 className="text-2xl font-bold text-slate-800 flex items-center gap-2">
-              {status === "todos" && "Todos mis Materiales"}
-              {status === "aprobados" && "Materiales Aprobados"}
-              {status === "pendientes" && "Materiales Pendientes"}
+              {activeTab === "todos" && "Todos mis Materiales"}
+              {activeTab === "aprobados" && "Materiales Aprobados"}
+              {activeTab === "pendientes" && "Materiales Pendientes"}
+              {activeTab === "colaboraciones" && "Colaboraciones"}
 
               <span className="text-sm font-normal text-slate-500 bg-slate-100 px-2 py-0.5 rounded-full ml-1">
                 {materialsFiltrados.length}
               </span>
             </h2>
           </div>
-
           {/* Barra de Herramientas */}
           <div className="flex flex-col sm:flex-row gap-3 w-full md:w-auto">
             {/* Buscador */}
@@ -89,9 +79,9 @@ export default function Materials_Profile({
             {/* TABS DE ESTADO (Segmented Control) */}
             <div className="flex p-1 bg-slate-100 rounded-lg border border-slate-200 overflow-x-auto">
               <button
-                onClick={() => setStatus("todos")}
+                onClick={() => setActiveTab("todos")}
                 className={`px-3 py-1.5 text-sm font-medium rounded-md transition-all flex items-center gap-2 whitespace-nowrap ${
-                  status === "todos"
+                  activeTab === "todos"
                     ? "bg-white text-slate-800 shadow-sm"
                     : "text-slate-500 hover:text-slate-700"
                 }`}
@@ -101,9 +91,9 @@ export default function Materials_Profile({
               </button>
 
               <button
-                onClick={() => setStatus("aprobados")}
+                onClick={() => setActiveTab("aprobados")}
                 className={`px-3 py-1.5 text-sm font-medium rounded-md transition-all flex items-center gap-2 whitespace-nowrap ${
-                  status === "aprobados"
+                  activeTab === "aprobados"
                     ? "bg-white text-green-700 shadow-sm"
                     : "text-slate-500 hover:text-slate-700"
                 }`}
@@ -113,9 +103,21 @@ export default function Materials_Profile({
               </button>
 
               <button
-                onClick={() => setStatus("pendientes")}
+                onClick={() => setActiveTab("colaboraciones")}
                 className={`px-3 py-1.5 text-sm font-medium rounded-md transition-all flex items-center gap-2 whitespace-nowrap ${
-                  status === "pendientes"
+                  activeTab === "colaboraciones"
+                    ? "bg-white text-blue-700 shadow-sm"
+                    : "text-slate-500 hover:text-slate-700"
+                }`}
+              >
+                <Clock className="w-4 h-4" />
+                <span className="hidden sm:inline">Colaboraciones</span>
+              </button>
+
+              <button
+                onClick={() => setActiveTab("pendientes")}
+                className={`px-3 py-1.5 text-sm font-medium rounded-md transition-all flex items-center gap-2 whitespace-nowrap ${
+                  activeTab === "pendientes"
                     ? "bg-white text-amber-700 shadow-sm"
                     : "text-slate-500 hover:text-slate-700"
                 }`}
@@ -139,7 +141,9 @@ export default function Materials_Profile({
             <p className="text-slate-500 text-sm mt-1">
               {searchTerm
                 ? "Intenta con otra búsqueda."
-                : `No tienes materiales ${status !== "todos" ? status : ""}.`}
+                : `No tienes materiales ${
+                    activeTab !== "todos" ? activeTab : ""
+                  }.`}
             </p>
           </div>
         ) : (

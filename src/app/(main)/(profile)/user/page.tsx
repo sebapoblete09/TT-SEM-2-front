@@ -10,7 +10,6 @@
 
 import { createClient } from "@/lib/supabase/server";
 import { redirect } from "next/navigation";
-import { headers } from "next/headers"; // Para evitar caché estática
 
 //importacion de tipos
 import { usuario, estadisticas } from "@/types/user";
@@ -41,7 +40,6 @@ export default async function ProfilePage() {
 
   // Forzamos la lectura de headers para que esta página sea dinámica (Dynamic Rendering)
   // y no se genere estáticamente en tiempo de build.
-  const headersList = headers();
 
   //Llamar al back para obtener el perfil del usaurio
   const baseUrl = process.env.NEXT_PUBLIC_BACK_URL || "http://localhost:8080";
@@ -89,6 +87,23 @@ export default async function ProfilePage() {
     }
   );
 
+  const materiales_colaboraciones: Material_Card[] =
+    data.materiales_colaborador?.map((material: Material) => {
+      return {
+        id: material.id,
+        nombre: material.nombre,
+        descripcion: material.descripcion,
+        composicion: material.composicion, // La API ya lo da como string[]
+        derivado_de: material.derivado_de,
+
+        // Lógica clave para la imagen:
+        // Usamos "optional chaining" (?.) para evitar errores si 'galeria' está vacío.
+        // Obtenemos la url_imagen del primer (0) item, o un string vacío si no existe.
+        primera_imagen_galeria: material.galeria?.[0]?.url_imagen || "",
+        estado: material.estado,
+      };
+    });
+
   // 5. Renderizado del Layout
   return (
     <div className="container mx-auto max-w-7xl py-10 px-4 space-y-10">
@@ -118,7 +133,10 @@ export default async function ProfilePage() {
         </div>
 
         {/* Lista de tarjetas filtrable */}
-        <Materials_Profile initialMaterials={materiales_creados} />
+        <Materials_Profile
+          initialMaterials={materiales_creados}
+          colaboraciones={materiales_colaboraciones}
+        />
       </div>
     </div>
   );

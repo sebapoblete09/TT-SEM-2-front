@@ -275,7 +275,7 @@ export default function RegisterMaterialPage() {
 
                 <Button
                   onClick={handleReset}
-                  variant="outline"
+                  variant="secondary"
                   size="lg"
                   className="w-full"
                 >
