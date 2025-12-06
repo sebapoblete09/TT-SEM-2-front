@@ -8,7 +8,7 @@ import { redirect } from "next/navigation";
 import { MaterialClientList } from "./MaterialClientList"; // <-- 1. Importa el nuevo componente
 
 export default async function MaterialAprove() {
-  const supabase = createClient();
+  const supabase = await createClient();
 
   const {
     data: { session },

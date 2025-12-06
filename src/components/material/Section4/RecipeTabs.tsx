@@ -31,7 +31,7 @@ export default function MaterialSteps({ pasos }: { pasos: StepLike[] }) {
   };
 
   return (
-    <section className="space-y-8 relative py-4 max-w-5xl m-auto">
+    <section className="space-y-8 relative py-4 ">
       <div className="absolute left-[19px] top-4 bottom-10 w-0.5 bg-slate-200 hidden md:block" />
 
       {pasos.map((p, i) => {

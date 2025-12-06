@@ -9,7 +9,7 @@ import { redirect } from "next/navigation";
 import MaterialAprove from "@/components/admin/Aprove";
 
 async function getDashboardStats(): Promise<DashboardCounts> {
-  const supabase = createClient();
+  const supabase = await createClient();
   const {
     data: { session },
   } = await supabase.auth.getSession();
