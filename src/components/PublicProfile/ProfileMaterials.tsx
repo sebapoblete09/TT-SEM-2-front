@@ -76,7 +76,7 @@ export default function Materials_Profile({
             </div>
 
             {/* Tabs (Segmented Control) */}
-            <div className="flex p-1 bg-slate-100 rounded-lg border border-slate-200 overflow-x-auto">
+            <div className="flex p-1 bg-slate-100 rounded-lg border border-slate-200 overflow-x-auto w-fit mx-auto">
               <button
                 onClick={() => setActiveTab("todos")}
                 className={`px-3 py-1.5 text-sm font-medium rounded-md transition-all flex items-center gap-2 whitespace-nowrap ${
@@ -98,10 +98,6 @@ export default function Materials_Profile({
               >
                 <FlaskConical className="w-4 h-4" />
                 <span className="hidden sm:inline">Creados</span>
-                {/* Badge pequeño con cantidad */}
-                <span className="text-[10px] bg-slate-200/50 px-1.5 rounded-full">
-                  {initialMaterials.length}
-                </span>
               </button>
               <button
                 onClick={() => setActiveTab("colaboraciones")}
@@ -113,9 +109,6 @@ export default function Materials_Profile({
               >
                 <Users className="w-4 h-4" />
                 <span className="hidden sm:inline">Colaboraciones</span>
-                <span className="text-[10px] bg-slate-200/50 px-1.5 rounded-full">
-                  {colaboraciones.length}
-                </span>
               </button>
             </div>
           </div>

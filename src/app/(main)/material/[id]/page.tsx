@@ -77,7 +77,7 @@ export default function MaterialDetailPage() {
           Nota: En móvil se colapsa a 1 columna automáticamente.
         */}
 
-        <div className="grid grid-cols-2 p-5 gap-10 border-2 max-w-7xl m-auto border-slate-500/50 rounded-2xl bg-white">
+        <div className="grid grid-cols-1 lg:grid-cols-2 p-5 gap-10 border-2 max-w-7xl m-auto border-slate-500/50 rounded-2xl bg-white">
           {/* Columna Izquierda: Galería de Imágenes */}
           <MaterialGallery material={material} />
           {/* Columna Derecha: Título, Autor, Descripción corta */}

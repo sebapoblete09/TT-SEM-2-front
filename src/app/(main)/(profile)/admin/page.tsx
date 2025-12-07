@@ -90,23 +90,23 @@ export default async function AdminPage() {
         {/* 'defaultValue="pending"' asegura que lo primero que vea el admin sea lo urgente */}
         <Tabs defaultValue="pending" className="space-y-6">
           {/* Barra de Navegación de Tabs */}
-          <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
-            <TabsList className="grid w-full sm:w-auto grid-cols-3 h-12 p-1 bg-white border border-slate-200 rounded-xl shadow-sm">
+          <div className="flex flex-col justify-between gap-4">
+            <TabsList className="grid w-full grid-cols-1 sm:grid-cols-3 h-auto sm:h-12 p-1 bg-white border border-slate-200 rounded-xl shadow-sm">
               <TabsTrigger
                 value="pending"
-                className="rounded-lg data-[state=active]:bg-slate-100 data-[state=active]:text-slate-900 data-[state=active]:shadow-none h-10"
+                className="rounded-lg data-[state=active]:bg-slate-100 data-[state=active]:text-slate-900 data-[state=active]:shadow-none h-10 px-2"
               >
                 Materiales Pendientes
               </TabsTrigger>
               <TabsTrigger
                 value="aprove"
-                className="rounded-lg data-[state=active]:bg-slate-100 data-[state=active]:text-slate-900 data-[state=active]:shadow-none h-10"
+                className="rounded-lg data-[state=active]:bg-slate-100 data-[state=active]:text-slate-900 data-[state=active]:shadow-none h-10 px-2"
               >
                 Materiales Aprobados
               </TabsTrigger>
               <TabsTrigger
                 value="users"
-                className="rounded-lg data-[state=active]:bg-slate-100 data-[state=active]:text-slate-900 data-[state=active]:shadow-none h-10"
+                className="rounded-lg data-[state=active]:bg-slate-100 data-[state=active]:text-slate-900 data-[state=active]:shadow-none h-10 px-2"
               >
                 Gestionar Usuarios
               </TabsTrigger>
