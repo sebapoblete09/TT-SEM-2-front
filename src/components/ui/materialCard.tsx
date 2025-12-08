@@ -4,33 +4,40 @@ import { Card, CardContent } from "@/components/ui/card";
 import Image from "next/image";
 import { Badge } from "@/components/ui/badge";
 import Link from "next/link";
-import { Material_Card } from "@/types/materials";
+import { Material_Card, Material } from "@/types/materials";
 import { FlaskConical, ArrowRight, GitFork, Lock } from "lucide-react";
+import { EditMaterialDialog } from "../profile/EditMaterialDialog"; // <--- Importamos el modal
 
 interface MaterialCardProps {
   material: Material_Card;
+  material_data?: Material;
+  from: "private" | "public";
 }
 
-export function MaterialCard({ material }: MaterialCardProps) {
-  // Verificaciones seguras
+export function MaterialCard({
+  material,
+  from,
+  material_data,
+}: MaterialCardProps) {
   const hasComposition =
     material.composicion && material.composicion.length > 0;
+
   const isDerived =
     material.derivado_de &&
     material.derivado_de !== "" &&
     material.derivado_de !== "00000000-0000-0000-0000-000000000000";
 
-  // Contenido de la tarjeta (extraído para reutilizar dentro o fuera del Link)
+  // --- CUERPO DE LA TARJETA ---
   const CardContentBody = (
     <Card
       className={`group h-full border-none shadow-lg bg-white rounded-2xl overflow-hidden flex flex-col relative transition-all duration-300 ${
         material.estado
           ? "hover:shadow-2xl hover:shadow-green-900/10 hover:-translate-y-1"
-          : "opacity-90"
+          : "opacity-90" // Quitamos hover effect si está pendiente para diferenciarlo
       }`}
     >
-      {/* 0. CAPA DE BLOQUEO (Solo si no está aprobado) */}
-      {!material.estado && (
+      {/* 0. CAPA DE BLOQUEO (Solo visual, para el usuario público) */}
+      {!material.estado && from === "public" && (
         <div className="absolute inset-0 z-20 bg-slate-100/50 backdrop-blur-[1px] flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity duration-200">
           <div className="bg-amber-100 text-amber-800 px-4 py-2 rounded-lg shadow-md flex items-center gap-2 font-medium text-sm">
             <Lock className="w-4 h-4" />
@@ -67,9 +74,13 @@ export function MaterialCard({ material }: MaterialCardProps) {
 
         <div className="absolute inset-0 bg-gradient-to-t from-black/20 to-transparent opacity-40" />
 
-        {/* Badge Derivado */}
+        {/* Badge Derivado (Ajustado si estamos en modo privado para no chocar con editar) */}
         {isDerived && (
-          <Badge className="absolute top-3 right-3 bg-white/90 text-purple-700 backdrop-blur-sm border-none shadow-sm gap-1.5 px-2">
+          <Badge
+            className={`absolute top-3 ${
+              from === "private" ? "left-14" : "right-3"
+            } bg-white/90 text-purple-700 backdrop-blur-sm border-none shadow-sm gap-1.5 px-2`}
+          >
             <GitFork className="w-3 h-3" />
             <span className="text-[10px] font-bold uppercase tracking-wide">
               Derivado
@@ -77,7 +88,7 @@ export function MaterialCard({ material }: MaterialCardProps) {
           </Badge>
         )}
 
-        {/* Badge Pendiente (Visible siempre si es false) */}
+        {/* Badge Pendiente */}
         {!material.estado && (
           <Badge className="absolute top-3 left-3 bg-amber-500 text-white border-none shadow-sm gap-1.5 px-2">
             <Lock className="w-3 h-3" />
@@ -124,8 +135,8 @@ export function MaterialCard({ material }: MaterialCardProps) {
           </div>
         </div>
 
-        {/* Botón Ver Detalle (Solo si está aprobado) */}
-        {material.estado && (
+        {/* Botón Ver Detalle (Solo visible si es enlace funcional) */}
+        {material.estado && from === "public" && (
           <div className="mt-4 flex justify-end opacity-0 group-hover:opacity-100 transition-opacity duration-300 transform translate-y-2 group-hover:translate-y-0 h-0 group-hover:h-auto">
             <span className="text-xs font-bold text-green-600 flex items-center gap-1">
               Ver Detalle <ArrowRight className="w-3 h-3" />
@@ -136,7 +147,32 @@ export function MaterialCard({ material }: MaterialCardProps) {
     </Card>
   );
 
-  // Renderizado condicional del Link
+  // --- LOGICA DE RENDERIZADO (WRAPPER) ---
+
+  // 1. MODO PRIVADO: Wrapper relativo para posicionar botón de editar
+  if (from === "private") {
+    return (
+      <div className="relative h-full block group/private">
+        {/* El enlace a detalle solo funciona si está aprobado */}
+        {material.estado ? (
+          <Link href={`/material/${material.id}`} className="block h-full">
+            {CardContentBody}
+          </Link>
+        ) : (
+          <div className="block h-full cursor-default">{CardContentBody}</div>
+        )}
+
+        {/* BOTÓN EDITAR (Posicionamiento Absoluto Z-30 para estar encima de todo) */}
+        {material_data && (
+          <div className="absolute top-3 right-3 z-30">
+            <EditMaterialDialog material={material_data} />
+          </div>
+        )}
+      </div>
+    );
+  }
+
+  // 2. MODO PÚBLICO: Lógica estándar
   if (material.estado) {
     return (
       <Link href={`/material/${material.id}`} className="block h-full">

@@ -32,8 +32,8 @@ export default function RootLayout({
         <Navigation />
         <main>{children}</main>
         <ToastContainer
-          position="bottom-right" // Posición recomendada
-          autoClose={4000} // Duración en ms
+          position="bottom-right" 
+          autoClose={4000} 
           hideProgressBar={false}
           newestOnTop={false}
           closeOnClick
@@ -41,7 +41,7 @@ export default function RootLayout({
           pauseOnFocusLoss
           draggable
           pauseOnHover
-          theme="light" // O "colored" si quieres que sean verdes/rojos sólidos
+          theme="light" 
         />
       </body>
     </html>

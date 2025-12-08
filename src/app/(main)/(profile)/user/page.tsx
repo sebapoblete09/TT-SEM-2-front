@@ -69,6 +69,9 @@ export default async function ProfilePage() {
   // Transformación de Datos (Mapper):
   // Convertimos el objeto 'Material' completo del backend al tipo 'Material_Card'
   // más ligero que usa el componente de lista.
+  const materiales_data: Material[] = data.materiales_creados.concat(
+    data.materiales_colaborador
+  );
   const materiales_creados: Material_Card[] = data.materiales_creados.map(
     (material: Material) => {
       return {
@@ -116,7 +119,6 @@ export default async function ProfilePage() {
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-6 items-stretch">
         {/* Columna Izquierda (Info Principal) */}
         <div className="lg:col-span-2 h-full">
-          {/* Asegúrate de que ProfileHeader tenga 'h-full' si es necesario, o que se adapte */}
           <ProfileHeader usuario={usuario} userAvatar={userAvatar} />
         </div>
 
@@ -135,6 +137,7 @@ export default async function ProfilePage() {
         {/* Lista de tarjetas filtrable */}
         <Materials_Profile
           initialMaterials={materiales_creados}
+          initialMaterialsData={materiales_data}
           colaboraciones={materiales_colaboraciones}
         />
       </div>

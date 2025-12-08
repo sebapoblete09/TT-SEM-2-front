@@ -132,7 +132,11 @@ export default function Materials_Profile({
         ) : (
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
             {materialsFiltrados.map((material) => (
-              <MaterialCard key={material.id} material={material} />
+              <MaterialCard
+                key={material.id}
+                material={material}
+                from="public"
+              />
             ))}
           </div>
         )}

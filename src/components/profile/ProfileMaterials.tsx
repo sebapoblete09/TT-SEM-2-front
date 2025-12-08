@@ -3,19 +3,22 @@
 
 import { useState } from "react";
 import { MaterialCard } from "@/components/ui/materialCard";
-import { Material_Card } from "@/types/materials";
+import { Material, Material_Card } from "@/types/materials";
 import { Input } from "@/components/ui/input";
 import { CheckCircle2, Clock, LayoutGrid, Search, Users } from "lucide-react";
 
 type MaterialsProfileProps = {
   initialMaterials: Material_Card[];
+  initialMaterialsData: Material[];
   colaboraciones: Material_Card[]; // Lista 2: Donde soy colaborador
 };
 
 export default function Materials_Profile({
   initialMaterials,
-  colaboraciones, // Lista 2: Donde soy colaborador
-}: MaterialsProfileProps) {
+  initialMaterialsData,
+  colaboraciones,
+}: // Lista 2: Donde soy colaborador
+MaterialsProfileProps) {
   const [searchTerm, setSearchTerm] = useState("");
 
   const [activeTab, setActiveTab] = useState<
@@ -154,7 +157,14 @@ export default function Materials_Profile({
         ) : (
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
             {materialsFiltrados.map((material) => (
-              <MaterialCard key={material.id} material={material} />
+              <MaterialCard
+                key={material.id}
+                material={material}
+                material_data={initialMaterialsData.find(
+                  (m) => m.id === material.id
+                )}
+                from="private"
+              />
             ))}
           </div>
         )}
