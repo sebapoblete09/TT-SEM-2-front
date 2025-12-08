@@ -3,19 +3,22 @@
 
 import { useState } from "react";
 import { MaterialCard } from "@/components/ui/materialCard";
-import { Material_Card } from "@/types/materials";
+import { Material, Material_Card } from "@/types/materials";
 import { Input } from "@/components/ui/input";
-import { CheckCircle2, Clock, LayoutGrid, Search } from "lucide-react";
+import { CheckCircle2, Clock, LayoutGrid, Search, Users } from "lucide-react";
 
 type MaterialsProfileProps = {
   initialMaterials: Material_Card[];
+  initialMaterialsData: Material[];
   colaboraciones: Material_Card[]; // Lista 2: Donde soy colaborador
 };
 
 export default function Materials_Profile({
   initialMaterials,
-  colaboraciones, // Lista 2: Donde soy colaborador
-}: MaterialsProfileProps) {
+  initialMaterialsData,
+  colaboraciones,
+}: // Lista 2: Donde soy colaborador
+MaterialsProfileProps) {
   const [searchTerm, setSearchTerm] = useState("");
 
   const [activeTab, setActiveTab] = useState<
@@ -64,9 +67,10 @@ export default function Materials_Profile({
             </h2>
           </div>
           {/* Barra de Herramientas */}
-          <div className="flex flex-col sm:flex-row gap-3 w-full md:w-auto">
-            {/* Buscador */}
-            <div className="relative w-full sm:w-64">
+          {/* Contenedor Principal: Cambiado de Grid a Flex vertical para centrar elementos */}
+          <div className="flex flex-col gap-4 w-full m-auto items-center">
+            {/* Buscador: Le di un max-width para que no se vea gigante */}
+            <div className="relative w-full sm:max-w-md">
               <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-slate-400" />
               <Input
                 placeholder="Buscar..."
@@ -76,8 +80,12 @@ export default function Materials_Profile({
               />
             </div>
 
-            {/* TABS DE ESTADO (Segmented Control) */}
-            <div className="flex p-1 bg-slate-100 rounded-lg border border-slate-200 overflow-x-auto">
+            {/* TABS DE ESTADO */}
+            {/* Cambios clave aquí: 
+      1. w-fit: Hace que el contenedor gris se encoja al tamaño de los botones.
+      2. mx-auto: Asegura el centrado horizontal.
+  */}
+            <div className="flex p-1 bg-slate-100 rounded-lg border border-slate-200 overflow-x-auto w-fit mx-auto">
               <button
                 onClick={() => setActiveTab("todos")}
                 className={`px-3 py-1.5 text-sm font-medium rounded-md transition-all flex items-center gap-2 whitespace-nowrap ${
@@ -110,7 +118,7 @@ export default function Materials_Profile({
                     : "text-slate-500 hover:text-slate-700"
                 }`}
               >
-                <Clock className="w-4 h-4" />
+                <Users className="w-4 h-4" />
                 <span className="hidden sm:inline">Colaboraciones</span>
               </button>
 
@@ -149,7 +157,14 @@ export default function Materials_Profile({
         ) : (
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
             {materialsFiltrados.map((material) => (
-              <MaterialCard key={material.id} material={material} />
+              <MaterialCard
+                key={material.id}
+                material={material}
+                material_data={initialMaterialsData.find(
+                  (m) => m.id === material.id
+                )}
+                from="private"
+              />
             ))}
           </div>
         )}

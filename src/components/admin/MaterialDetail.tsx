@@ -1,5 +1,6 @@
 "use client";
 
+import { useState } from "react";
 import { Material } from "@/types/materials";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
@@ -14,199 +15,269 @@ import {
 } from "@/components/ui/dialog";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Badge } from "@/components/ui/badge";
-import { Check, X, Eye, Calendar, Image as ImageIcon } from "lucide-react";
+import {
+  Check,
+  X,
+  Eye,
+  Calendar,
+  Image as ImageIcon,
+  ZoomIn,
+  Send,
+} from "lucide-react";
 import { formatDistanceToNow } from "date-fns";
 import { es } from "date-fns/locale";
 import { Tabs } from "@/components/ui/tabs";
 
+// Importamos el contenido del modal y el diálogo de rechazo
 import { MaterialModalContent } from "./MaterialModal";
-
+import { RejectionDialog } from "./RejectionMaterial";
 type MaterialCardItemProps = {
   material: Material;
   onApprove: (id: string) => void;
-  onDelete: (id: string) => void;
+  // Nueva prop que acepta la razón del rechazo
+  onRejectWithReason: (id: string, reason: string) => Promise<void>;
+  // Nueva prop para saber si ya se envió corrección sin recargar todo
+  isCorrectionSent?: boolean;
 };
 
 export function MaterialCardItem({
   material,
   onApprove,
-  onDelete,
+  onRejectWithReason,
+  isCorrectionSent,
 }: MaterialCardItemProps) {
-  // Obtener primera imagen con seguridad
+  const [showRejectModal, setShowRejectModal] = useState(false);
+  const [isSubmitting, setIsSubmitting] = useState(false);
+
   const firstImage = material.galeria?.[0]?.url_imagen;
 
+  // Manejador para confirmar el rechazo desde el modal
+  const handleConfirmReject = async (reason: string) => {
+    setIsSubmitting(true);
+    await onRejectWithReason(material.id, reason);
+    setIsSubmitting(false);
+    setShowRejectModal(false);
+  };
+
   return (
-    <Dialog>
-      {/* --- TARJETA DE LA LISTA  --- */}
-      <Card className="group hover:shadow-md transition-all duration-200 border-l-4 border-l-amber-400 overflow-hidden mb-4">
-        <CardContent className="p-5">
-          <div className="flex flex-col md:flex-row gap-5 items-start md:items-center justify-between">
-            {/* IZQUIERDA: Avatar + Info */}
-            <div className="flex items-start gap-4 flex-1">
-              <Avatar className="h-16 w-16 border border-slate-200 shadow-sm rounded-lg bg-slate-50">
-                <AvatarImage
-                  src={firstImage}
-                  alt={material.nombre}
-                  className="object-cover w-full h-full"
-                />
-                <AvatarFallback className="bg-slate-100 text-slate-400 rounded-lg">
-                  <ImageIcon className="w-6 h-6" />
-                </AvatarFallback>
-              </Avatar>
+    <>
+      <Dialog>
+        {/* --- TARJETA DE LA LISTA --- */}
+        <Card
+          className={`group hover:shadow-md transition-all duration-200 border-l-4 overflow-hidden mb-3 sm:mb-4 ${
+            isCorrectionSent
+              ? "border-l-orange-500 bg-orange-50/30"
+              : "border-l-amber-400"
+          }`}
+        >
+          {/* Padding reducido en móvil: p-3 */}
+          <CardContent className="p-3 sm:p-5">
+            <div className="flex flex-col md:flex-row gap-3 md:gap-5 justify-between">
+              {/* --- ZONA SUPERIOR: INFO --- */}
+              <div className="flex items-start gap-3 w-full min-w-0">
+                {/* Avatar / Lightbox de imagen pequeña */}
+                <Dialog>
+                  <DialogTrigger asChild>
+                    <div className="relative group/avatar cursor-zoom-in shrink-0">
+                      <Avatar className="h-12 w-12 sm:h-16 sm:w-16 border border-slate-200 rounded-lg bg-slate-50 transition-transform hover:scale-105">
+                        <AvatarImage
+                          src={firstImage}
+                          className="object-cover"
+                        />
+                        <AvatarFallback className="bg-slate-100 text-slate-400 rounded-lg">
+                          <ImageIcon className="w-5 h-5 sm:w-6 sm:h-6" />
+                        </AvatarFallback>
+                      </Avatar>
+                      <div className="absolute inset-0 bg-black/0 group-hover/avatar:bg-black/10 rounded-lg transition-colors flex items-center justify-center">
+                        <ZoomIn className="w-4 h-4 text-white opacity-0 group-hover/avatar:opacity-100 drop-shadow-md" />
+                      </div>
+                    </div>
+                  </DialogTrigger>
+                  <DialogContent className="max-w-[95vw] max-h-[95vh] w-auto h-auto p-0 bg-transparent border-none shadow-none flex items-center justify-center outline-none">
+                    <div className="relative w-full h-full flex items-center justify-center">
+                      {firstImage && (
+                        <img
+                          src={firstImage}
+                          alt={material.nombre}
+                          className="max-w-full max-h-[90vh] object-contain rounded-md shadow-2xl"
+                        />
+                      )}
+                    </div>
+                  </DialogContent>
+                </Dialog>
 
-              <div className="space-y-1.5">
-                <div className="flex items-center gap-2 flex-wrap">
-                  <h3 className="font-bold text-lg text-slate-800 leading-tight">
-                    {material.nombre}
-                  </h3>
-                  {material.estado === false ? (
-                    <Badge
-                      variant="outline"
-                      className="text-[10px] text-amber-700 bg-amber-50 border-amber-200"
-                    >
-                      Pendiente
-                    </Badge>
-                  ) : (
-                    <Badge
-                      variant="outline"
-                      className="text-[10px] text-blue-700 bg-blue-50 border-blue-200"
-                    >
-                      Aprobado
-                    </Badge>
-                  )}
-                </div>
+                <div className="flex-1 min-w-0 space-y-1">
+                  {/* Título y Badge */}
+                  <div className="flex flex-wrap items-center gap-2">
+                    <h3 className="font-bold text-base sm:text-lg text-slate-900 leading-tight truncate max-w-full">
+                      {material.nombre}
+                    </h3>
+                    {isCorrectionSent ? (
+                      <Badge
+                        variant="outline"
+                        className="text-[10px] px-1.5 h-5 text-orange-700 bg-orange-100 border-orange-200"
+                      >
+                        Corrección Solicitada
+                      </Badge>
+                    ) : material.estado === false ? (
+                      <Badge
+                        variant="outline"
+                        className="text-[10px] px-1.5 h-5 text-amber-700 bg-amber-50 border-amber-200"
+                      >
+                        Pendiente
+                      </Badge>
+                    ) : (
+                      <Badge
+                        variant="outline"
+                        className="text-[10px] px-1.5 h-5 text-blue-700 bg-blue-50 border-blue-200"
+                      >
+                        Aprobado
+                      </Badge>
+                    )}
+                  </div>
 
-                <p className="text-sm text-slate-500 line-clamp-1 max-w-lg">
-                  {material.descripcion}
-                </p>
+                  {/* Descripción oculta en móvil (<640px) */}
+                  <p className="hidden sm:block text-sm text-slate-500 line-clamp-1">
+                    {material.descripcion}
+                  </p>
 
-                <div className="flex items-center gap-3 text-xs text-slate-400 pt-1">
-                  <span className="flex items-center gap-1">
-                    <span className="font-medium text-slate-600">
+                  {/* Metadatos compactos */}
+                  <div className="flex items-center gap-2 text-xs text-slate-400 pt-0.5">
+                    <span className="font-medium text-slate-600 truncate max-w-[100px] sm:max-w-none">
                       {material.creador.nombre}
                     </span>
-                    <p>{material.creador.email}</p>
-                  </span>
-                  <span className="hidden sm:inline">•</span>
-                  <span className="flex items-center gap-1">
-                    <Calendar className="w-3 h-3" />
-                    {formatDistanceToNow(
-                      new Date(material.created_at || new Date()),
-                      { addSuffix: true, locale: es }
-                    )}
-                  </span>
+                    <span>•</span>
+                    <span className="whitespace-nowrap flex items-center gap-1">
+                      <Calendar className="w-3 h-3" />
+                      {formatDistanceToNow(
+                        new Date(material.created_at || new Date()),
+                        { locale: es }
+                      )}
+                    </span>
+                  </div>
+                </div>
+              </div>
+
+              {/* --- ZONA ACCIONES (Responsive Grid) --- */}
+              <div className="mt-1 md:mt-0 md:border-l md:border-slate-100 md:pl-4 flex shrink-0">
+                <div className="grid grid-cols-[auto_1fr_1fr] md:flex items-center gap-2 w-full">
+                  {/* Botón REVISAR (Abre el modal grande) */}
+                  <DialogTrigger asChild>
+                    <Button
+                      size="sm"
+                      variant="ghost"
+                      className="md:w-auto text-slate-500 hover:text-slate-900 bg-slate-50 border border-slate-100 md:border-transparent"
+                    >
+                      <Eye className="h-4 w-4 md:mr-2" />
+                      <span className="hidden md:inline">Revisar</span>
+                    </Button>
+                  </DialogTrigger>
+
+                  {/* Botones de Decisión */}
+                  {material.estado === false ? (
+                    <>
+                      {isCorrectionSent ? (
+                        // Estado: Ya se envió corrección
+                        <Button
+                          size="sm"
+                          variant="outline"
+                          disabled
+                          className="col-span-2 md:w-auto text-orange-600 border-orange-200 bg-orange-50"
+                        >
+                          <Send className="h-4 w-4 md:mr-2" />
+                          <span className="hidden md:inline">Enviado</span>
+                          <span className="md:hidden">Enviado</span>
+                        </Button>
+                      ) : (
+                        // Estado: Pendiente normal
+                        <>
+                          <Button
+                            size="sm"
+                            variant="outline"
+                            className="text-red-600 border-red-200 hover:bg-red-50"
+                            onClick={() => setShowRejectModal(true)}
+                          >
+                            <X className="h-4 w-4 md:mr-2" />
+                            <span className="hidden md:inline">Corrección</span>
+                          </Button>
+                          <Button
+                            size="sm"
+                            className="bg-green-600 hover:bg-green-700 text-white"
+                            onClick={() => onApprove(material.id)}
+                          >
+                            <Check className="h-4 w-4 md:mr-2" />
+                            <span className="hidden md:inline">Aprobar</span>
+                          </Button>
+                        </>
+                      )}
+                    </>
+                  ) : (
+                    // Estado: Ya aprobado (Opcional: permitir volver a pendiente)
+                    <Button
+                      size="sm"
+                      className="col-span-2 md:w-auto"
+                      onClick={() => setShowRejectModal(true)}
+                    >
+                      Avisar Edición
+                    </Button>
+                  )}
                 </div>
               </div>
             </div>
+          </CardContent>
+        </Card>
 
-            {/* DERECHA: Botones Rápidos */}
-            <div className="flex items-center gap-2 w-full md:w-auto justify-end border-t md:border-t-0 pt-4 md:pt-0 mt-2 md:mt-0 border-slate-100">
-              <DialogTrigger asChild>
-                <Button
-                  size="sm"
-                  variant="ghost"
-                  className="text-slate-500 hover:text-slate-900 bg-slate-50 hover:bg-slate-100"
-                >
-                  <Eye className="mr-2 h-4 w-4" /> Revisar
-                </Button>
-              </DialogTrigger>
+        {/* --- MODAL DE DETALLE (Full Responsive) --- */}
+        <DialogContent className="w-[95vw] max-w-[800px] max-h-[90dvh] flex flex-col p-0 gap-0 overflow-hidden rounded-2xl">
+          <DialogHeader className="px-6 py-4 border-b border-slate-100 bg-white shrink-0 z-10">
+            <DialogTitle className="line-clamp-1">
+              {material.nombre}
+            </DialogTitle>
+          </DialogHeader>
 
-              <div className="h-4 w-px bg-slate-200 mx-1 hidden md:block" />
-
-              {material.estado === false ? (
-                <>
-                  <Button
-                    size="sm"
-                    variant="outline-primary"
-                    className="text-red-600 border-red-200 hover:bg-red-50"
-                    onClick={() => onDelete(material.id)}
-                  >
-                    <X className="h-4 w-4" /> Rechazar
-                  </Button>
-                  <Button
-                    size="sm"
-                    variant="default"
-                    className="bg-green-600 hover:bg-green-700 text-white"
-                    onClick={() => onApprove(material.id)}
-                  >
-                    <Check className="h-4 w-4" /> Aprobar
-                  </Button>
-                </>
-              ) : (
-                <Button
-                  size="sm"
-                  variant="default"
-                  onClick={() => onDelete(material.id)}
-                >
-                  Avisar Edicion
-                </Button>
-              )}
+          <div className="flex-1 overflow-y-auto min-h-0 bg-slate-50/50 relative">
+            <div className="p-4 sm:p-6">
+              <Tabs defaultValue="general" className="w-full">
+                <MaterialModalContent material={material} />
+              </Tabs>
             </div>
           </div>
-        </CardContent>
-      </Card>
 
-      {/* --- EL MODAL  --- */}
-      <DialogContent className="sm:max-w-[800px] w-[95vw] max-h-[90vh] flex flex-col p-0 gap-0 overflow-hidden rounded-2xl">
-        {/* 1. HEADER FIJO */}
-        <DialogHeader className="px-6 py-5 border-b border-slate-100 bg-white shrink-0 z-10">
-          <div className="flex items-center gap-2 mb-2">
-            {material.estado === false ? (
-              <Badge
-                variant="outline"
-                className="bg-amber-50 text-amber-700 border-amber-200"
-              >
-                Revisión Pendiente
-              </Badge>
-            ) : (
-              <Badge
-                variant="outline"
-                className="bg-blue-50 text-blue-700 border-blue-200"
-              >
-                Material Aprobado
-              </Badge>
+          <DialogFooter className="px-6 py-4 border-t border-slate-100 bg-white shrink-0 flex flex-col sm:flex-row gap-2">
+            <DialogClose asChild>
+              <Button variant="ghost" className="w-full sm:w-auto">
+                Cerrar
+              </Button>
+            </DialogClose>
+            {/* Botones duplicados en el modal para facilitar la acción tras revisar */}
+            {!material.estado && !isCorrectionSent && (
+              <>
+                <Button
+                  variant="outline"
+                  className="text-red-600 border-red-200 hover:bg-red-50 w-full sm:w-auto"
+                  onClick={() => setShowRejectModal(true)}
+                >
+                  Solicitar Corrección
+                </Button>
+                <Button
+                  className="bg-green-600 hover:bg-green-700 text-white w-full sm:w-auto"
+                  onClick={() => onApprove(material.id)}
+                >
+                  Aprobar y Publicar
+                </Button>
+              </>
             )}
-            <span className="text-xs text-slate-400 font-mono">
-              ID: {material.id.split("-")[0]}
-            </span>
-          </div>
-          <DialogTitle className="text-2xl font-bold text-slate-900 line-clamp-1">
-            {material.nombre}
-          </DialogTitle>
-        </DialogHeader>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
 
-        {/* 2. CUERPO SCROLLABLE */}
-        <div className="flex-1 overflow-hidden bg-slate-50/50 relative">
-          <Tabs defaultValue="general" className="h-full flex flex-col">
-            <MaterialModalContent material={material} />
-          </Tabs>
-        </div>
-
-        {/* 3. FOOTER FIJO */}
-        <DialogFooter className="px-6 py-4 border-t border-slate-100 bg-white shrink-0 flex flex-col sm:flex-row justify-between items-center gap-3">
-          <DialogClose asChild>
-            <Button variant="ghost" className="text-slate-500 w-full sm:w-auto">
-              Cancelar
-            </Button>
-          </DialogClose>
-
-          <div className="flex gap-3 w-full sm:w-auto">
-            <Button
-              variant="outline-primary"
-              className="text-red-600 border-red-100 hover:bg-red-50 flex-1 sm:flex-none"
-              onClick={() => onDelete(material.id)}
-            >
-              <X className="mr-2 h-4 w-4" /> Rechazar
-            </Button>
-            <Button
-              className="bg-green-600 hover:bg-green-700 text-white flex-1 sm:flex-none"
-              onClick={() => onApprove(material.id)}
-            >
-              <Check className="mr-2 h-4 w-4" /> Aprobar y Publicar
-            </Button>
-          </div>
-        </DialogFooter>
-      </DialogContent>
-    </Dialog>
+      {/* --- MODAL DE RECHAZO (Independiente) --- */}
+      <RejectionDialog
+        open={showRejectModal}
+        onOpenChange={setShowRejectModal}
+        onConfirm={handleConfirmReject}
+        isSubmitting={isSubmitting}
+      />
+    </>
   );
 }

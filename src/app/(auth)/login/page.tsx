@@ -50,13 +50,10 @@ export default function Page() {
 
       if (error) {
         console.error("Error iniciando OAuth:", error.message);
-        // Aquí se podría implementar un Toast de error
       }
     } catch (error) {
       console.error("Error inesperado en login:", error);
     } finally {
-      // Nota: No reseteamos setLoading(false) aquí porque la redirección
-      // de OAuth navegará fuera de la página, y queremos mantener el estado de carga.
     }
   };
 

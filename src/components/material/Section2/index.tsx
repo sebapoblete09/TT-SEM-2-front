@@ -10,7 +10,7 @@ export default function CompositionsTools({
   material: Material;
 }) {
   return (
-    <section className=" grid grid-cols-2 gap-2 p-7">
+    <section className=" grid grid-cols-1 md:grid-cols-2 gap-2 p-7">
       <CompositionTab composicion={material.composicion} />
 
       <ToolsCard herramientas={material.herramientas} />
