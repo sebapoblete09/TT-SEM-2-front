@@ -1,6 +1,8 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
+import { useForm } from "react-hook-form";
+import { zodResolver } from "@hookform/resolvers/zod";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -25,6 +27,9 @@ import {
 } from "lucide-react";
 import { BasicInfoData } from "@/types/materials";
 
+// IMPORTAMOS EL ESQUEMA Y EL TIPO DESDE EL ARCHIVO EXTERNO
+import { basicInfoSchema, BasicInfoFormValues } from "./schemas";
+
 interface BasicInfoFormProps {
   data: BasicInfoData;
   setData: React.Dispatch<React.SetStateAction<BasicInfoData>>;
@@ -39,28 +44,104 @@ export default function BasicInfoForm({
   const [herramienta, setHerramienta] = useState("");
   const [colaborador, setColaborador] = useState("");
 
+  const form = useForm<BasicInfoFormValues>({
+    resolver: zodResolver(basicInfoSchema), // Usamos el esquema importado
+    defaultValues: {
+      nombre: data.nombre,
+      descripcion: data.descripcion,
+      derivadoDe: data.derivadoDe || "",
+      herramientas: data.herramientas,
+      imagenes: data.imagenes,
+    },
+    mode: "onChange",
+  });
+
+  // Sincronizar Herramientas
+  useEffect(() => {
+    form.setValue("herramientas", data.herramientas, {
+      // TRUCO: Solo valida si la lista TIENE algo.
+      // Si está vacía (carga inicial), no valida para no asustar al usuario.
+      shouldValidate: data.herramientas.length > 0,
+      shouldDirty: true,
+    });
+  }, [data.herramientas, form]);
+
+  // Sincronizar Imágenes
+  useEffect(() => {
+    form.setValue("imagenes", data.imagenes, {
+      // Lo mismo aquí: solo valida si ya subiste al menos una foto
+      shouldValidate: data.imagenes.length > 0,
+      shouldDirty: true,
+    });
+  }, [data.imagenes, form]);
+
+  useEffect(() => {
+    form.reset({
+      nombre: data.nombre,
+      descripcion: data.descripcion,
+      derivadoDe: data.derivadoDe || "",
+      herramientas: data.herramientas,
+      imagenes: data.imagenes,
+    });
+  }, [data, form]);
+
+  // --- LÓGICA DE AVANCE ---
+  const handleNextStep = async () => {
+    const isValid = await form.trigger();
+
+    if (isValid) {
+      const formValues = form.getValues();
+      setData((prev) => ({
+        ...prev,
+        nombre: formValues.nombre,
+        descripcion: formValues.descripcion,
+        derivadoDe: formValues.derivadoDe || "",
+      }));
+      onNext();
+    }
+  };
+
   // 📸 Manejo de imágenes
   const handleImageUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
     const files = e.target.files;
     if (!files) return;
     const fileList = Array.from(files);
+
+    const currentValues = form.getValues();
+
     setData((prev) => ({
       ...prev,
+      nombre: currentValues.nombre,
+      descripcion: currentValues.descripcion,
+      // CORRECCIÓN: Agregamos || "" para evitar undefined
+      derivadoDe: currentValues.derivadoDe || "",
       imagenes: [...prev.imagenes, ...fileList],
     }));
   };
 
   const removeImage = (index: number) => {
+    const currentValues = form.getValues();
+
     setData((prev) => ({
       ...prev,
+      nombre: currentValues.nombre,
+      descripcion: currentValues.descripcion,
+      // CORRECCIÓN AQUÍ TAMBIÉN
+      derivadoDe: currentValues.derivadoDe || "",
       imagenes: prev.imagenes.filter((_, i) => i !== index),
     }));
   };
 
   const addHerramienta = () => {
     if (herramienta.trim() && !data.herramientas.includes(herramienta)) {
+      const currentValues = form.getValues();
+
       setData((prev) => ({
         ...prev,
+        nombre: currentValues.nombre,
+        descripcion: currentValues.descripcion,
+        // CORRECCIÓN
+        derivadoDe: currentValues.derivadoDe || "",
         herramientas: [...prev.herramientas, herramienta],
       }));
       setHerramienta("");
@@ -68,8 +149,14 @@ export default function BasicInfoForm({
   };
 
   const removeHerramienta = (item: string) => {
+    const currentValues = form.getValues();
+
     setData((prev) => ({
       ...prev,
+      nombre: currentValues.nombre,
+      descripcion: currentValues.descripcion,
+      // CORRECCIÓN
+      derivadoDe: currentValues.derivadoDe || "",
       herramientas: prev.herramientas.filter((h) => h !== item),
     }));
   };
@@ -116,13 +203,20 @@ export default function BasicInfoForm({
               Nombre del Material <span className="text-red-500">*</span>
             </Label>
             <Input
-              value={data.nombre}
-              onChange={(e) =>
-                setData((prev) => ({ ...prev, nombre: e.target.value }))
-              }
+              {...form.register("nombre")} // <--- AQUÍ ESTÁ LA MAGIA
               placeholder="Ej: Bioplástico de cáscara de naranja"
-              className="h-12 bg-slate-50 border-slate-200 focus-visible:ring-green-500 focus-visible:border-green-500 transition-all"
+              className={`h-12 bg-slate-50 border-slate-200 transition-all ${
+                form.formState.errors.nombre
+                  ? "border-red-500 focus-visible:ring-red-500"
+                  : "focus-visible:ring-green-500"
+              }`}
             />
+            {/* Mostrar mensaje de error si existe */}
+            {form.formState.errors.nombre && (
+              <p className="text-xs text-red-500 font-medium animate-in slide-in-from-left-1">
+                {form.formState.errors.nombre.message}
+              </p>
+            )}
           </div>
 
           <div className="space-y-2">
@@ -130,14 +224,20 @@ export default function BasicInfoForm({
               Descripción <span className="text-red-500">*</span>
             </Label>
             <Textarea
-              value={data.descripcion}
-              onChange={(e) =>
-                setData((prev) => ({ ...prev, descripcion: e.target.value }))
-              }
+              {...form.register("descripcion")} // <--- CONEXIÓN
               rows={4}
-              placeholder="Describe sus características, textura, color y posibles aplicaciones..."
-              className="bg-slate-50 border-slate-200 focus-visible:ring-green-500 focus-visible:border-green-500 resize-none transition-all"
+              placeholder="Describe sus características..."
+              className={`bg-slate-50 border-slate-200 resize-none transition-all ${
+                form.formState.errors.descripcion
+                  ? "border-red-500 focus-visible:ring-red-500"
+                  : "focus-visible:ring-green-500"
+              }`}
             />
+            {form.formState.errors.descripcion && (
+              <p className="text-xs text-red-500 font-medium animate-in slide-in-from-left-1">
+                {form.formState.errors.descripcion.message}
+              </p>
+            )}
           </div>
         </div>
 
@@ -147,16 +247,31 @@ export default function BasicInfoForm({
         {/* 2. LISTAS DINÁMICAS (Herramientas y Colaboradores) */}
         <div className="grid md:grid-cols-2 gap-8">
           {/* Herramientas */}
+          {/* 3. ZONA DE HERRAMIENTAS CON ERROR VISUAL */}
+          {/* Herramientas */}
           <div className="space-y-3">
-            <Label className="text-slate-700 font-medium flex items-center gap-2">
-              <Hammer className="w-4 h-4 text-slate-400" /> Herramientas
+            <Label
+              className={`font-medium flex items-center gap-2 ${
+                form.formState.errors.herramientas
+                  ? "text-red-500"
+                  : "text-slate-700"
+              }`}
+            >
+              <Hammer className="w-4 h-4" /> Herramientas{" "}
+              <span className="text-red-500">*</span>
             </Label>
+
+            {/* 1. INPUT + BOTÓN (Arriba para facilitar la entrada) */}
             <div className="flex gap-2">
               <Input
                 value={herramienta}
                 onChange={(e) => setHerramienta(e.target.value)}
-                placeholder="Añadir herramienta..."
-                className="bg-white border-slate-200 focus-visible:ring-green-500"
+                placeholder="Escribe una herramienta y presiona Enter..."
+                className={`bg-white border-slate-200 focus-visible:ring-green-500 ${
+                  form.formState.errors.herramientas
+                    ? "border-red-300 focus-visible:ring-red-500"
+                    : ""
+                }`}
                 onKeyDown={(e) =>
                   e.key === "Enter" && (e.preventDefault(), addHerramienta())
                 }
@@ -171,12 +286,27 @@ export default function BasicInfoForm({
               </Button>
             </div>
 
-            <div className="flex flex-wrap gap-2 min-h-[2rem]">
+            {/* 2. MENSAJE DE ERROR (Debajo del input, limpio) */}
+            {form.formState.errors.herramientas && (
+              <p className="text-xs text-red-500 font-medium animate-in slide-in-from-left-1">
+                {form.formState.errors.herramientas.message}
+              </p>
+            )}
+
+            {/* 3. LISTA DE HERRAMIENTAS (Contenedor visual) */}
+            <div
+              className={`flex flex-wrap gap-2 p-3 rounded-lg border min-h-[3.5rem] transition-colors ${
+                data.herramientas.length === 0
+                  ? "border-dashed border-slate-200 bg-slate-50/50 justify-center items-center"
+                  : "border-solid border-slate-100 bg-white"
+              }`}
+            >
               {data.herramientas.length === 0 && (
-                <span className="text-xs text-slate-400 italic">
-                  Sin herramientas añadidas
+                <span className="text-sm text-slate-400">
+                  Las herramientas agregadas aparecerán aquí
                 </span>
               )}
+
               {data.herramientas.map((h: string) => (
                 <Badge
                   key={h}
@@ -252,10 +382,7 @@ export default function BasicInfoForm({
             ¿Derivado de otro material? (Opcional)
           </Label>
           <Input
-            value={data.derivadoDe}
-            onChange={(e) =>
-              setData((prev) => ({ ...prev, derivadoDe: e.target.value }))
-            }
+            {...form.register("derivadoDe")} // <--- CONEXIÓN
             placeholder="ID o nombre del material base"
             className="mt-2 bg-white border-slate-200 focus-visible:ring-green-500"
           />
@@ -267,7 +394,13 @@ export default function BasicInfoForm({
             <ImageIcon className="w-4 h-4 text-slate-400" /> Galería de Imágenes
           </Label>
 
-          <div className="border-2 border-dashed border-slate-200 rounded-xl p-8 bg-slate-50/50 hover:bg-slate-50 hover:border-green-400 transition-all text-center relative group cursor-pointer">
+          <div
+            className={`border-2 border-dashed rounded-xl p-8 transition-all text-center relative group cursor-pointer ${
+              form.formState.errors.imagenes
+                ? "border-red-200 bg-red-50 hover:bg-red-100/50" // Estilo de error
+                : "border-slate-200 bg-slate-50/50 hover:bg-slate-50 hover:border-green-400"
+            }`}
+          >
             <input
               type="file"
               multiple
@@ -319,7 +452,7 @@ export default function BasicInfoForm({
         {/* BOTÓN SIGUIENTE */}
         <div className="flex justify-end pt-6 border-t border-slate-100">
           <Button
-            onClick={onNext}
+            onClick={handleNextStep} // <--- CAMBIAR 'onNext' POR 'handleNextStep'
             size="lg"
             className="bg-green-600 hover:bg-green-700 text-white shadow-lg shadow-green-900/10 group"
           >

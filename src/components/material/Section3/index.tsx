@@ -22,6 +22,7 @@ export default function Properties({ material }: { material: Material }) {
             data={material.prop_mecanicas}
             icon={Layers}
             iconColorClass="bg-blue-100 text-blue-600"
+            borderColorClass="border-blue-200"
           />
         </TabsContent>
 
@@ -32,6 +33,7 @@ export default function Properties({ material }: { material: Material }) {
             data={material.prop_perceptivas}
             icon={Eye}
             iconColorClass="bg-purple-100 text-purple-600"
+            borderColorClass="border-purple-200"
           />
         </TabsContent>
 
@@ -42,6 +44,7 @@ export default function Properties({ material }: { material: Material }) {
             data={material.prop_emocionales}
             icon={Heart}
             iconColorClass="bg-rose-100 text-rose-600"
+            borderColorClass="border-rose-200"
           />
         </TabsContent>
       </Tabs>

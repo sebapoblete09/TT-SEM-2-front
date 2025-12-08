@@ -60,11 +60,11 @@ export default function MaterialSteps({ pasos }: { pasos: StepLike[] }) {
             </div>
 
             {/* 2. TARJETA DE CONTENIDO */}
-            <Card className="flex-1 border-2 shadow-md shadow-slate-200/50 bg-white hover:shadow-lg transition-shadow rounded-2xl overflow-hidden">
+            <Card className="flex-1 border-2 shadow-md shadow-slate-200/50 bg-white hover:shadow-lg transition-shadow rounded-3xl lg:rounded-tl-none overflow-hidden">
               <CardContent className="p-6">
                 {/* Descripción */}
                 <div className="mb-6">
-                  <p className="text-slate-700 text-lg leading-relaxed">
+                  <p className="text-slate-700 text-lg leading-relaxed bg-gray-200 p-4 border border-slate-100 rounded-2xl rounded-tl-none">
                     {p.descripcion}
                   </p>
                 </div>

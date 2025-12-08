@@ -45,6 +45,7 @@ export default async function MaterialPending() {
       <MaterialClientList
         initialMaterials={Pending_Materials}
         access_token={session.access_token}
+        filterType="pending" // <--- Esto hace que si lo apruebas, desaparezca de aquí
       />
     </TabsContent>
   );

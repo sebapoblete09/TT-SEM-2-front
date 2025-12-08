@@ -2,6 +2,7 @@ import type { Metadata } from "next";
 import { Geist, Geist_Mono } from "next/font/google";
 import { Navigation } from "@/components/layout/navbar";
 import "./globals.css";
+import { ToastContainer } from "react-toastify";
 
 const geistSans = Geist({
   variable: "--font-geist-sans",
@@ -30,6 +31,18 @@ export default function RootLayout({
       >
         <Navigation />
         <main>{children}</main>
+        <ToastContainer
+          position="bottom-right" // Posición recomendada
+          autoClose={4000} // Duración en ms
+          hideProgressBar={false}
+          newestOnTop={false}
+          closeOnClick
+          rtl={false}
+          pauseOnFocusLoss
+          draggable
+          pauseOnHover
+          theme="light" // O "colored" si quieres que sean verdes/rojos sólidos
+        />
       </body>
     </html>
   );

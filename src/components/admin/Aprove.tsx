@@ -44,6 +44,7 @@ export default async function MaterialAprove() {
       <MaterialClientList
         initialMaterials={Aprove_Material}
         access_token={session.access_token}
+        filterType="approved" // <--- Esto hace que si lo rechazas, desaparezca de aquí
       />
     </TabsContent>
   );
