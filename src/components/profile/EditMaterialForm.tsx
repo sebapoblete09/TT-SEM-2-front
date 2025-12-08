@@ -6,7 +6,7 @@ import { zodResolver } from "@hookform/resolvers/zod";
 import * as z from "zod";
 import { toast } from "sonner"; // O react-toastify
 import { useRouter } from "next/navigation";
-import { createClient } from "@/lib/supabase/client"; // <--- IMPORTAR ESTO
+import { EditSuccess } from "../ui/editConfirmation";
 
 // UI Components
 import { Button } from "@/components/ui/button";
@@ -44,6 +44,7 @@ import Image from "next/image";
 // Types & Constants
 import { Material } from "@/types/materials";
 import { PROPERTY_OPTIONS } from "@/components/register-material/schemas";
+import { updateMaterialService } from "@/services/materialServices";
 
 // --- 1. ESQUEMA DE VALIDACIÓN (EDICIÓN) ---
 const optionEnum = z.enum(["Baja", "Media", "Alta"]);
@@ -97,7 +98,6 @@ type EditFormValues = z.infer<typeof editSchema>;
 interface EditMaterialFormProps {
   material: Material;
   onSuccess: () => void;
-  access_token?: string; // Si lo tienes disponible, pásalo, si no, usa supabase client
 }
 
 export default function EditMaterialForm({
@@ -105,8 +105,8 @@ export default function EditMaterialForm({
   onSuccess,
 }: EditMaterialFormProps) {
   const router = useRouter();
-  const supabase = createClient();
   const [isSubmitting, setIsSubmitting] = useState(false);
+  const [showSuccessMessage, setShowSuccessMessage] = useState(false);
 
   // Estados para inputs de listas
   const [newComp, setNewComp] = useState("");
@@ -152,48 +152,58 @@ export default function EditMaterialForm({
     return null;
   };
 
-  // --- 4. MANEJADORES DE LISTAS ---
+  // --- 4. MANEJADORES DE LISTAS (CORREGIDOS) ---
+
   const addToList = (
     field: "composicion" | "herramientas",
     value: string,
     resetFn: (v: string) => void
   ) => {
-    if (!value.trim()) return;
-    const currentList = form.getValues(field);
-    if (!currentList.includes(value.trim())) {
-      form.setValue(field, [...currentList, value.trim()], {
+    // 1. Limpieza básica
+    const trimmedValue = value.trim();
+    if (!trimmedValue) return;
+
+    // 2. Obtener lista actual de forma segura
+    const currentList = form.getValues(field) || [];
+
+    // 3. Validar duplicados (case insensitive opcional)
+    if (!currentList.includes(trimmedValue)) {
+      const newList = [...currentList, trimmedValue];
+
+      // 4. Actualizar RHF forzando validación y dirty state
+      form.setValue(field, newList, {
         shouldDirty: true,
+        shouldTouch: true,
+        shouldValidate: true,
       });
+
+      // 5. Limpiar input
       resetFn("");
     }
   };
 
   const removeFromList = (
     field: "composicion" | "herramientas",
-    index: number
+    indexToRemove: number
   ) => {
-    const currentList = form.getValues(field);
-    const newList = currentList.filter((_, i) => i !== index);
-    form.setValue(field, newList, { shouldDirty: true });
+    // 1. Obtener lista actual
+    const currentList = form.getValues(field) || [];
+
+    // 2. Filtrar
+    const newList = currentList.filter((_, index) => index !== indexToRemove);
+
+    // 3. Actualizar RHF
+    form.setValue(field, newList, {
+      shouldDirty: true,
+      shouldTouch: true,
+      shouldValidate: true,
+    });
   };
 
   // --- 5. SUBMIT CON FORMDATA (Igual que Create) ---
   const onSubmit = async (values: EditFormValues) => {
     setIsSubmitting(true);
     try {
-      const {
-        data: { session },
-        error: sessionError,
-      } = await supabase.auth.getSession();
-
-      // Valida que tengas el token
-      if (sessionError || !session?.access_token) {
-        throw new Error(
-          sessionError?.message || "No se encontró sesión. Inicia sesión."
-        );
-      }
-
-      const accessToken = session.access_token;
       // 1. Construir FormData
       const formData = new FormData();
 
@@ -215,18 +225,22 @@ export default function EditMaterialForm({
       );
 
       // GALERÍA: Manejo Híbrido
-      // Filtramos cuáles son URLs existentes y cuáles son nuevos Files
+
+      // 1. Filtrar URLs existentes (Strings)
+      // Importante: Asegurarse de que sean strings y no null/undefined
       const existingGallery = values.galeria_imagenes.filter(
-        (img) => typeof img === "string"
+        (img) => typeof img === "string" && img.length > 0
       );
+
+      // 2. Filtrar Nuevos Archivos (File objects)
       const newGalleryFiles = values.galeria_imagenes.filter(
         (img) => img instanceof File
       );
-
-      // Enviamos la lista de URLs que se deben MANTENER
+      // 3. Append URLs existentes como JSON string
+      // El backend debe esperar este campo y usarlo para NO borrar estas fotos
       formData.append("existing_gallery_urls", JSON.stringify(existingGallery));
 
-      // Enviamos los nuevos archivos
+      // 4. Append Nuevos Archivos (binarios)
       newGalleryFiles.forEach((file) => {
         if (file instanceof File) {
           formData.append("new_galeria_images[]", file);
@@ -236,52 +250,30 @@ export default function EditMaterialForm({
       // PASOS: Manejo Híbrido
       // Preparamos el array de pasos para enviar como JSON (sin los objetos File)
       const pasosData = values.pasos.map((p) => ({
-        id: p.id, // Si tiene ID, es update. Si no, es create.
+        id: p.id,
         orden_paso: p.orden_paso,
         descripcion: p.descripcion,
-        // Si es string, mandamos la URL para que el back sepa que se mantiene
+        // Si es string (URL vieja), la mandamos. Si es File (nueva), mandamos null en el JSON
         url_imagen: typeof p.url_imagen === "string" ? p.url_imagen : null,
       }));
+
       formData.append("pasos", JSON.stringify(pasosData));
 
       // Imágenes de Pasos (Nuevas)
       values.pasos.forEach((step, index) => {
         if (step.url_imagen instanceof File) {
-          // Usamos el índice para que el back sepa a qué paso corresponde
+          // Usamos una clave que el backend pueda mapear al índice del paso
+          // Ejemplo: paso_images[0], paso_images[1]...
           formData.append(`new_paso_images[${index}]`, step.url_imagen);
         }
       });
 
-      // 2. Enviar al Backend
-      const baseUrl =
-        process.env.NEXT_PUBLIC_BACK_URL || "http://localhost:8080";
+      await updateMaterialService(material.id, formData);
 
-      // Necesitas obtener el token de sesión aquí si no lo pasas por props
-      // const { data: { session } } = await supabase.auth.getSession();
-      // const token = session?.access_token;
-
-      const response = await fetch(`${baseUrl}/materials/${material.id}`, {
-        method: "PUT",
-        headers: {
-          // IMPORTANTE: NO agregues "Content-Type".
-          // fetch detecta FormData y pone "multipart/form-data; boundary=..." automáticamente.
-
-          // Agregamos el token aquí:
-          Authorization: `Bearer ${accessToken}`,
-        },
-        // headers: { Authorization: `Bearer ${token}` }, // NO poner Content-Type, fetch lo pone auto con boundary
-        body: formData,
-      });
-
-      if (!response.ok) throw new Error("Error al actualizar material");
-
-      toast.success("Material actualizado correctamente");
-      router.refresh();
-      onSuccess();
+      setShowSuccessMessage(true);
     } catch (error) {
       console.error(error);
-      toast.error("Error al guardar cambios");
-    } finally {
+      toast.error("Hubo un problema al guardar los cambios");
       setIsSubmitting(false);
     }
   };
@@ -314,7 +306,9 @@ export default function EditMaterialForm({
       )}
     />
   );
-
+  if (showSuccessMessage) {
+    return <EditSuccess onClose={onSuccess} />;
+  }
   return (
     <Form {...form}>
       <form
@@ -397,14 +391,71 @@ export default function EditMaterialForm({
                       <Plus className="w-4" />
                     </Button>
                   </div>
+                  {/* Ejemplo para Composición (hacer igual para Herramientas) */}
                   <div className="flex flex-wrap gap-2">
+                    {/* Usamos form.watch() para asegurar que la UI se actualice al instante */}
                     {form.watch("composicion").map((c, i) => (
-                      <Badge key={i} variant="secondary">
-                        {c}{" "}
-                        <X
-                          className="w-3 ml-1 cursor-pointer"
-                          onClick={() => removeFromList("composicion", i)}
-                        />
+                      <Badge
+                        key={`${c}-${i}`}
+                        variant="secondary"
+                        className="gap-1 pr-1 pl-3 py-1"
+                      >
+                        {c}
+                        <button
+                          type="button" // IMPORTANTE: Evita submit accidental
+                          className="ml-1 hover:bg-slate-200 rounded-full p-0.5 transition-colors focus:outline-none focus:ring-2 focus:ring-red-500"
+                          onClick={(e) => {
+                            e.preventDefault(); // Evita recargas
+                            e.stopPropagation(); // Evita clicks en el padre
+                            removeFromList("composicion", i);
+                          }}
+                        >
+                          <X className="w-3 h-3 text-slate-500 hover:text-red-600" />
+                        </button>
+                      </Badge>
+                    ))}
+                  </div>
+                </div>
+
+                <div className="space-y-3">
+                  <FormLabel>Herramientas</FormLabel>
+                  <div className="flex gap-2">
+                    <Input
+                      value={newTool}
+                      onChange={(e) => setNewTool(e.target.value)}
+                      className="h-9"
+                    />
+                    <Button
+                      type="button"
+                      size="sm"
+                      onClick={() =>
+                        addToList("herramientas", newTool, setNewTool)
+                      }
+                    >
+                      <Plus className="w-4" />
+                    </Button>
+                  </div>
+                  {/* Ejemplo para Composición (hacer igual para Herramientas) */}
+                  <div className="flex flex-wrap gap-2">
+                    {/* Usamos form.watch() para asegurar que la UI se actualice al instante */}
+                    {form.watch("herramientas").map((c, i) => (
+                      <Badge
+                        key={`${c}-${i}`}
+                        variant="secondary"
+                        className="gap-1 pr-1 pl-3 py-1"
+                      >
+                        {c}
+                        <button
+                          type="button" // IMPORTANTE: Evita submit accidental
+                          className="ml-1 hover:bg-slate-200 rounded-full p-0.5 transition-colors focus:outline-none focus:ring-2 focus:ring-red-500"
+                          onClick={(e) => {
+                            e.preventDefault(); // Evita recargas
+                            e.stopPropagation(); // Evita clicks en el padre
+                            removeFromList("herramientas", i);
+                          }}
+                        >
+                          <X className="w-3 h-3 text-slate-500 hover:text-red-600" />
+                        </button>
                       </Badge>
                     ))}
                   </div>
@@ -454,13 +505,23 @@ export default function EditMaterialForm({
                       className="hidden"
                       accept="image/*"
                       onChange={(e) => {
-                        if (e.target.files) {
+                        if (e.target.files && e.target.files.length > 0) {
                           const newFiles = Array.from(e.target.files);
-                          const current = form.getValues("galeria_imagenes");
-                          form.setValue("galeria_imagenes", [
-                            ...current,
-                            ...newFiles,
-                          ]);
+                          const current =
+                            form.getValues("galeria_imagenes") || []; // Asegurar array
+
+                          // Validar duplicados si es necesario, o simplemente agregar
+                          form.setValue(
+                            "galeria_imagenes",
+                            [...current, ...newFiles],
+                            {
+                              shouldDirty: true,
+                              shouldValidate: true,
+                            }
+                          );
+
+                          // Limpiar el input para permitir subir el mismo archivo si se borró
+                          e.target.value = "";
                         }
                       }}
                     />
@@ -470,15 +531,105 @@ export default function EditMaterialForm({
             </TabsContent>
 
             {/* TAB PROPIEDADES */}
+            {/* TAB PROPIEDADES */}
             <TabsContent value="propiedades" className="space-y-8 mt-0">
-              {/* ... (Igual que en el código anterior, usa renderPropSelect) ... */}
-              <div className="grid grid-cols-2 gap-4">
-                {renderPropSelect(
-                  "prop_mecanicas",
-                  "resistencia",
-                  "Resistencia"
-                )}
-                {/* ... resto de selects ... */}
+              {/* 1. Propiedades Mecánicas (Selects) */}
+              <div className="space-y-4">
+                <h4 className="font-semibold text-blue-700 border-b pb-2">
+                  Mecánicas
+                </h4>
+                <div className="grid grid-cols-2 md:grid-cols-3 gap-4">
+                  {renderPropSelect(
+                    "prop_mecanicas",
+                    "resistencia",
+                    "Resistencia"
+                  )}
+                  {renderPropSelect("prop_mecanicas", "dureza", "Dureza")}
+                  {renderPropSelect(
+                    "prop_mecanicas",
+                    "elasticidad",
+                    "Elasticidad"
+                  )}
+                  {renderPropSelect(
+                    "prop_mecanicas",
+                    "ductilidad",
+                    "Ductilidad"
+                  )}
+                  {renderPropSelect(
+                    "prop_mecanicas",
+                    "fragilidad",
+                    "Fragilidad"
+                  )}
+                </div>
+              </div>
+
+              {/* 2. Propiedades Sensoriales/Perceptivas (Textareas) */}
+              <div className="space-y-4">
+                <h4 className="font-semibold text-purple-700 border-b pb-2">
+                  Sensoriales
+                </h4>
+                <div className="grid md:grid-cols-2 gap-4">
+                  {/* Mapeamos los campos de texto manualmente */}
+                  {[
+                    { name: "color", label: "Color" },
+                    { name: "brillo", label: "Brillo" },
+                    { name: "textura", label: "Textura" },
+                    { name: "transparencia", label: "Transparencia" },
+                    { name: "sensacion_termica", label: "Sensación Térmica" },
+                  ].map((prop) => (
+                    <FormField
+                      key={prop.name}
+                      control={form.control}
+                      name={`prop_perceptivas.${prop.name}` as any}
+                      render={({ field }) => (
+                        <FormItem>
+                          <FormLabel className="text-xs uppercase text-slate-500 font-bold">
+                            {prop.label}
+                          </FormLabel>
+                          <FormControl>
+                            <Textarea
+                              {...field}
+                              rows={2}
+                              className="bg-slate-50 min-h-[60px] resize-none"
+                              placeholder={`Describe la ${prop.label.toLowerCase()}...`}
+                            />
+                          </FormControl>
+                          <FormMessage />
+                        </FormItem>
+                      )}
+                    />
+                  ))}
+                </div>
+              </div>
+
+              {/* 3. Propiedades Emocionales (Selects) */}
+              <div className="space-y-4">
+                <h4 className="font-semibold text-rose-700 border-b pb-2">
+                  Emocionales
+                </h4>
+                <div className="grid grid-cols-2 md:grid-cols-3 gap-4">
+                  {renderPropSelect(
+                    "prop_emocionales",
+                    "calidez_emocional",
+                    "Calidez"
+                  )}
+                  {renderPropSelect(
+                    "prop_emocionales",
+                    "inspiracion",
+                    "Inspiración"
+                  )}
+                  {renderPropSelect(
+                    "prop_emocionales",
+                    "sostenibilidad_percibida",
+                    "Sostenibilidad"
+                  )}
+                  {renderPropSelect("prop_emocionales", "armonia", "Armonía")}
+                  {renderPropSelect(
+                    "prop_emocionales",
+                    "innovacion_emocional",
+                    "Innovación"
+                  )}
+                </div>
               </div>
             </TabsContent>
 
