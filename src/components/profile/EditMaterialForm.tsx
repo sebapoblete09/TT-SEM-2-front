@@ -29,22 +29,15 @@ import {
 } from "@/components/ui/select";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Badge } from "@/components/ui/badge";
-import {
-  Plus,
-  X,
-  Save,
-  Loader2,
-  Trash2,
-  FlaskConical,
-  Hammer,
-  ImageIcon,
-} from "lucide-react";
+import { Plus, X, Loader2, Trash2, ImageIcon } from "lucide-react";
 import Image from "next/image";
 
 // Types & Constants
 import { Material } from "@/types/materials";
 import { PROPERTY_OPTIONS } from "@/components/register-material/schemas";
-import { updateMaterialService } from "@/services/materialServices";
+
+//Actions
+import { updateMaterialAction } from "@/actions/materials";
 
 // --- 1. ESQUEMA DE VALIDACIÓN (EDICIÓN) ---
 const optionEnum = z.enum(["Baja", "Media", "Alta"]);
@@ -104,7 +97,6 @@ export default function EditMaterialForm({
   material,
   onSuccess,
 }: EditMaterialFormProps) {
-  const router = useRouter();
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [showSuccessMessage, setShowSuccessMessage] = useState(false);
 
@@ -134,7 +126,7 @@ export default function EditMaterialForm({
             id: p.ID,
             orden_paso: p.orden_paso,
             descripcion: p.descripcion,
-            url_imagen: p.url_imagen, // Esto será un string (URL)
+            url_imagen: p.url_imagen,
           })) || [],
     },
   });
@@ -268,7 +260,7 @@ export default function EditMaterialForm({
         }
       });
 
-      await updateMaterialService(material.id, formData);
+      await updateMaterialAction(material.id, formData);
 
       setShowSuccessMessage(true);
     } catch (error) {

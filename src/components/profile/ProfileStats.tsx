@@ -1,44 +1,9 @@
+import { getStatsList } from "@/const/StatList";
 import { estadisticas } from "@/types/user";
-import {
-  FileText,
-  CheckCircle,
-  Clock,
-  Users,
-  LayoutDashboard,
-} from "lucide-react";
+import { LayoutDashboard } from "lucide-react";
 
 export function ProfileStats({ estadisticas }: { estadisticas: estadisticas }) {
-  // Definimos la lista de datos para iterar limpiamente
-  const statsList = [
-    {
-      label: "Total Materiales",
-      value: estadisticas.materiales_creados ?? 0,
-      icon: FileText,
-      color: "text-blue-600",
-      bg: "bg-blue-50",
-    },
-    {
-      label: "Aprobados",
-      value: estadisticas.materiales_aprobados ?? 0,
-      icon: CheckCircle,
-      color: "text-green-600",
-      bg: "bg-green-50",
-    },
-    {
-      label: "Pendientes",
-      value: estadisticas.materiales_pendientes ?? 0,
-      icon: Clock,
-      color: "text-amber-600",
-      bg: "bg-amber-50",
-    },
-    {
-      label: "Colaboraciones",
-      value: estadisticas.colaboraciones ?? 0,
-      icon: Users,
-      color: "text-purple-600",
-      bg: "bg-purple-50",
-    },
-  ];
+  const statsList = getStatsList(estadisticas);
 
   return (
     <div className="bg-white rounded-2xl border border-slate-200 shadow-sm h-full overflow-hidden">

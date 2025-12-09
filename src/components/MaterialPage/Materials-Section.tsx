@@ -1,10 +1,10 @@
+// components/MaterialPage/Materials-Section.tsx
 "use client";
 
-import { useState, useEffect, useMemo } from "react";
-import { MaterialCard } from "@/components/ui/materialCard";
-import { Material_Card } from "@/types/materials";
+import { useState, useMemo } from "react";
 import FilterSection from "./Filter-Section";
-import { Loader2, SearchX } from "lucide-react";
+import { MaterialCard } from "@/components/ui/materialCard";
+import { SearchX } from "lucide-react";
 import {
   Select,
   SelectContent,
@@ -12,47 +12,23 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
+// Importante: Asegúrate de importar tu tipo correcto
+import { Material_Card } from "@/types/materials";
 
-export default function Materials_Section() {
-  const [materials, setMaterials] = useState<Material_Card[]>([]);
-  const [loading, setLoading] = useState(true);
-  const [error, setError] = useState<string | null>(null);
+type Props = {
+  initialMaterials: Material_Card[];
+};
+
+export default function Materials_Section({ initialMaterials }: Props) {
+  // 1. Recibimos los datos del servidor.
+  const [materials] = useState<Material_Card[]>(initialMaterials);
 
   // ESTADOS PARA FILTRADO Y ORDENAMIENTO
   const [searchTerm, setSearchTerm] = useState("");
   const [selectedCategory, setSelectedCategory] = useState<string | null>(null);
-  const [sortOrder, setSortOrder] = useState("newest"); // Nuevo estado
+  const [sortOrder, setSortOrder] = useState("newest");
 
-  // 1. Cargar Materiales
-  useEffect(() => {
-    const fetchMaterials = async () => {
-      try {
-        setLoading(true);
-        const baseUrl =
-          process.env.NEXT_PUBLIC_BACK_URL || "http://localhost:8080";
-        const res = await fetch(`${baseUrl}/materials-summary`, {
-          method: "GET",
-          headers: { "Content-Type": "application/json" },
-          cache: "no-store",
-        });
-
-        if (!res.ok) throw new Error(`Error ${res.status}`);
-
-        const data = await res.json();
-        const lista = Array.isArray(data) ? data : [];
-        lista.sort((a, b) => a.nombre.localeCompare(b.nombre));
-        setMaterials(lista);
-      } catch (err) {
-        setError(err instanceof Error ? err.message : "Error desconocido");
-      } finally {
-        setLoading(false);
-      }
-    };
-
-    fetchMaterials();
-  }, []);
-
-  // 2. LÓGICA DE FILTRADO + ORDENAMIENTO
+  // 2. LÓGICA DE FILTRADO + ORDENAMIENTO (Se mantiene igual)
   const filteredMaterials = useMemo(() => {
     // A. Primero Filtramos
     const result = materials.filter((mat) => {
@@ -71,16 +47,18 @@ export default function Materials_Section() {
           matchesCategory =
             mat.derivado_de !== emptyUUID && Boolean(mat.derivado_de);
         } else {
-          matchesCategory = mat.composicion?.some((c) =>
-            c.toLowerCase().includes(selectedCategory.toLowerCase())
-          );
+          // Aseguramos que composicion exista antes de usar some
+          matchesCategory =
+            mat.composicion?.some((c: string) =>
+              c.toLowerCase().includes(selectedCategory.toLowerCase())
+            ) ?? false;
         }
       }
 
       return matchesSearch && matchesCategory;
     });
 
-    // B. Luego Ordenamos (Aquí va tu código)
+    // B. Luego Ordenamos
     return result.sort((a, b) => {
       if (sortOrder === "a-z") {
         return a.nombre.localeCompare(b.nombre);
@@ -90,7 +68,7 @@ export default function Materials_Section() {
       }
       return 0;
     });
-  }, [materials, searchTerm, selectedCategory, sortOrder]); // Agregamos sortOrder a dependencias
+  }, [materials, searchTerm, selectedCategory, sortOrder]);
 
   return (
     <div className="min-h-screen bg-slate-50/50 animate-in fade-in duration-500">
@@ -120,7 +98,7 @@ export default function Materials_Section() {
 
           {/* COLUMNA DE RESULTADOS */}
           <main className="flex-1 w-full">
-            {/* BARRA DE CONTROL (Contador + Ordenar) */}
+            {/* BARRA DE CONTROL */}
             <div className="flex flex-col sm:flex-row justify-between items-center mb-6 pb-4 border-b border-slate-200 gap-4">
               <span className="text-sm font-medium text-slate-500">
                 Mostrando <strong>{filteredMaterials.length}</strong> resultados
@@ -129,23 +107,12 @@ export default function Materials_Section() {
               {/* SELECTOR DE ORDENAMIENTO */}
               <div className="flex items-center gap-2">
                 <span className="text-sm text-slate-400">Ordenar por:</span>
-                <Select
-                  value={sortOrder}
-                  onValueChange={setSortOrder}
-                  defaultValue="a-z"
-                >
+                <Select value={sortOrder} onValueChange={setSortOrder}>
                   <SelectTrigger className="w-[180px] bg-white border-slate-200">
-                    {/* Renderizamos el valor actual explícitamente */}
-                    <SelectValue>
-                      {sortOrder === "a-z"
-                        ? "Nombre (A-Z)"
-                        : sortOrder === "z-a"
-                        ? "Nombre (Z-A)"
-                        : "Ordenar por"}
-                    </SelectValue>
+                    <SelectValue placeholder="Ordenar por" />
                   </SelectTrigger>
-
                   <SelectContent>
+                    <SelectItem value="newest">Más recientes</SelectItem>
                     <SelectItem value="a-z">Nombre (A-Z)</SelectItem>
                     <SelectItem value="z-a">Nombre (Z-A)</SelectItem>
                   </SelectContent>
@@ -153,17 +120,8 @@ export default function Materials_Section() {
               </div>
             </div>
 
-            {/* ESTADOS DE CARGA / ERROR / VACÍO */}
-            {loading ? (
-              <div className="py-32 text-center flex flex-col items-center">
-                <Loader2 className="h-10 w-10 text-green-600 animate-spin mb-4" />
-                <p className="text-slate-500">Cargando catálogo...</p>
-              </div>
-            ) : error ? (
-              <div className="py-10 text-center text-red-500 bg-red-50 rounded-xl border border-red-100">
-                Error: {error}
-              </div>
-            ) : filteredMaterials.length === 0 ? (
+            {/* LISTA DE RESULTADOS (Sin loading state visual) */}
+            {filteredMaterials.length === 0 ? (
               <div className="py-20 text-center flex flex-col items-center bg-white rounded-2xl border border-dashed border-slate-200">
                 <div className="h-16 w-16 bg-slate-50 rounded-full flex items-center justify-center mb-4">
                   <SearchX className="h-8 w-8 text-slate-400" />

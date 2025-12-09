@@ -5,6 +5,10 @@ import { useRouter } from "next/navigation";
 import { Material } from "@/types/materials";
 import { MaterialCardItem } from "./MaterialDetail"; // Asegúrate que la ruta sea correcta
 import { toast } from "react-toastify";
+import {
+  approveMaterialAction,
+  rejectedMaterialAction,
+} from "@/actions/materials";
 
 // Extendemos el tipo para la UI
 type MaterialWithUI = Material & {
@@ -13,14 +17,12 @@ type MaterialWithUI = Material & {
 
 type MaterialListProps = {
   initialMaterials: Material[];
-  access_token: string;
-  filterType?: "pending" | "approved" | "all"; // Opcional: para saber qué lista estamos viendo
+  filterType?: "pending" | "approved" | "all";
 };
 
 export function MaterialClientList({
   initialMaterials,
-  access_token,
-  filterType = "all", // Por defecto asume que muestra todo, ajusta según tu uso
+  filterType = "all",
 }: MaterialListProps) {
   const router = useRouter();
 
@@ -28,7 +30,7 @@ export function MaterialClientList({
   const [materials, setMaterials] =
     useState<MaterialWithUI[]>(initialMaterials);
 
-  // 1. SINCRONIZACIÓN AUTOMÁTICA (La clave para evitar el F5)
+  // 1. SINCRONIZACIÓN AUTOMÁTICA
   // Cuando router.refresh() trae nuevos datos, actualizamos el estado local.
   useEffect(() => {
     setMaterials(initialMaterials);
@@ -36,68 +38,63 @@ export function MaterialClientList({
 
   // --- APROBAR ---
   const handleApprove = async (id: string) => {
+    // Guardamos el estado anterior por si hay que revertir (rollback)
+    const previousMaterials = [...materials];
+
     try {
-      const baseUrl =
-        process.env.NEXT_PUBLIC_BACK_URL || "http://localhost:8080";
+      // 1. Actualización OPTIMISTA
+      // Si estamos en la vista de pendientes, lo quitamos visualmente inmediato
+      setMaterials((prev) => prev.filter((m) => m.id !== id));
 
-      // Actualización OPTIMISTA (Visual inmediata)
-      setMaterials((prev) =>
-        prev.map((m) =>
-          m.id === id ? { ...m, estado: true, correctionSent: false } : m
-        )
-      );
+      toast.success("Procesando aprobación...");
 
-      const response = await fetch(`${baseUrl}/materials/${id}/approve`, {
-        method: "POST",
-        headers: { Authorization: `Bearer ${access_token}` },
-      });
+      // 2. Llamada al Server Action
+      const result = await approveMaterialAction(id);
 
-      if (!response.ok) throw new Error("Error al aprobar");
+      if (!result.success) {
+        throw new Error(result.message);
+      }
 
-      toast.success("¡Material aprobado y publicado exitosamente!");
-      router.refresh(); // Sincroniza con el servidor en segundo plano
+      // 3. Éxito confirmado
+      toast.success("¡Material aprobado y publicado!");
     } catch (e) {
       console.error(e);
-      toast.error("Hubo un error al intentar aprobar el material.");
-      // Si falla, revertimos el cambio (opcional, requeriría guardar estado previo)
-      router.refresh();
+      // 4. Rollback (Si falla, devolvemos el material a la lista)
+      setMaterials(previousMaterials);
+      toast.error(e instanceof Error ? e.message : "Error al aprobar.");
     }
   };
 
   // --- RECHAZAR / CORREGIR ---
   const handleReject = async (id: string, reason: string) => {
+    // Guardamos el estado anterior por si hay que revertir (rollback)
+    const previousMaterials = [...materials];
     try {
-      const baseUrl =
-        process.env.NEXT_PUBLIC_BACK_URL || "http://localhost:8080";
-
       // Actualización OPTIMISTA (Visual inmediata)
       // Marcamos estado false y activamos la etiqueta visual
       setMaterials((prev) =>
         prev.map((m) =>
           m.id === id ? { ...m, estado: false, correctionSent: true } : m
         )
-      );
+      ); // Sincroniza datos reales
+      toast.success("Procesando rechazo...");
 
-      const response = await fetch(`${baseUrl}/materials/${id}/reject`, {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-          Authorization: `Bearer ${access_token}`,
-        },
-        body: JSON.stringify({ razon: reason }),
-      });
+      // 2. Llamada al Server Action
+      const result = await rejectedMaterialAction(id, reason);
 
-      if (!response.ok) throw new Error("Error al rechazar");
+      if (!result.success) {
+        throw new Error(result.message);
+      }
 
-      toast.info("Solicitud de corrección enviada al usuario.");
-      router.refresh(); // Sincroniza datos reales
+      // 3. Éxito confirmado
+      toast.success("¡Material rechazado y notificado!");
     } catch (e) {
       console.error(e);
-      toast.error("No se pudo enviar la corrección. Intente nuevamente.");
+      setMaterials(previousMaterials);
+      toast.error(e instanceof Error ? e.message : "Error al rechazar.");
     }
   };
 
-  // Lógica de filtrado visual (Opcional si quieres que desaparezcan de la lista actual)
   // Si esta lista es SOLO de pendientes, y aprobamos uno, no queremos verlo más.
   const visibleMaterials = materials.filter((m) => {
     if (filterType === "pending") return m.estado === false; // Solo pendientes
@@ -119,7 +116,6 @@ export function MaterialClientList({
               material={material}
               onApprove={handleApprove}
               onRejectWithReason={handleReject}
-              // Pasamos la prop visual que creamos en el map optimista
               isCorrectionSent={material.correctionSent}
             />
           ))

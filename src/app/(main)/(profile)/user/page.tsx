@@ -7,7 +7,7 @@
  * 3. Formatear los datos para los componentes de presentación (UI).
  * 4. Renderizar la estructura del layout (Grid).
  */
-
+import { getUserDataService } from "@/services/userServices";
 import { createClient } from "@/lib/supabase/server";
 import { redirect } from "next/navigation";
 
@@ -38,29 +38,19 @@ export default async function ProfilePage() {
   // Extraemos el avatar directamente de los metadatos de OAuth (Google)
   const userAvatar = session?.user?.user_metadata?.avatar_url;
 
-  // Forzamos la lectura de headers para que esta página sea dinámica (Dynamic Rendering)
-  // y no se genere estáticamente en tiempo de build.
-
-  //Llamar al back para obtener el perfil del usaurio
-  const baseUrl = process.env.NEXT_PUBLIC_BACK_URL || "http://localhost:8080";
-
-  const res = await fetch(`${baseUrl}/me`, {
-    method: "GET",
-    headers: {
-      Authorization: `Bearer ${session.access_token}`,
-    },
-    // 'no-store': Asegura que siempre obtengamos los datos más recientes (sin caché).
-    // Importante para ver cambios en tiempo real (ej: nuevo material creado).
-    cache: "no-store",
-  });
-
-  if (!res.ok) {
-    // Manejar error (ej. mostrar una página de error)
-    return <p>Error al cargar el perfil. Intenta de nuevo.</p>;
-  }
-
   // 4. Procesamiento de Datos
-  const data = await res.json();
+  let data;
+  try {
+    data = await getUserDataService(session.access_token);
+  } catch (error) {
+    console.error("Error al obtener perfil:", error);
+
+    return (
+      <div className="container py-20 text-center text-red-500">
+        Hubo un problema al cargar tu perfil. Intenta recargar.
+      </div>
+    );
+  }
 
   // Desestructuramos la respuesta del backend
   const usuario: usuario = data.usuario;

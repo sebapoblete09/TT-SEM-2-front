@@ -9,6 +9,7 @@
 import { useState } from "react";
 import { useRouter } from "next/navigation";
 import { createClient } from "@/lib/supabase/client";
+import { createMaterialAction } from "@/actions/materials";
 
 // Tipos e Interfaces
 import { BasicInfoData } from "@/types/materials";
@@ -78,20 +79,6 @@ export default function RegisterMaterialPage() {
     try {
       setLoading(true);
 
-      // 1. Verificación de Sesión
-      const {
-        data: { session },
-        error: sessionError,
-      } = await supabase.auth.getSession();
-
-      // Valida que tengas el token
-      if (sessionError || !session?.access_token) {
-        throw new Error(
-          sessionError?.message || "No se encontró sesión. Inicia sesión."
-        );
-      }
-
-      const accessToken = session.access_token;
       const formData = new FormData();
 
       // 2. Construcción del Payload (FormData)
@@ -100,7 +87,6 @@ export default function RegisterMaterialPage() {
       formData.append("descripcion", basicInfo.descripcion);
       formData.append("herramientas", JSON.stringify(basicInfo.herramientas));
       formData.append("composicion", JSON.stringify(composicion));
-      formData.append("creador_id", JSON.stringify(session.user.id));
       formData.append("prop_mecanicas", JSON.stringify(properties.mecanicas));
       formData.append(
         "prop_perceptivas",
@@ -137,24 +123,12 @@ export default function RegisterMaterialPage() {
         formData.append("galeria_images[]", img);
       });
 
-      // 4. Petición al Backend
-      const baseUrl =
-        process.env.NEXT_PUBLIC_BACK_URL || "http://localhost:8080";
-
-      const response = await fetch(`${baseUrl}/materials`, {
-        method: "POST",
-        headers: {
-          Authorization: `Bearer ${accessToken}`,
-        },
-        body: formData,
-      });
-
-      if (!response.ok) {
-        const errorData = await response.json();
-        throw new Error(errorData.message || "Error desconocido en el backend");
+      const result = await createMaterialAction(formData);
+      if (!result.success) {
+        throw new Error(result.message);
       }
 
-      // 5. Éxito: Mostrar Modal
+      // 3. Éxito
       setLoading(false);
       setShowSuccess(true);
     } catch (err) {

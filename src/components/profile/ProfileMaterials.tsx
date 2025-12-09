@@ -81,10 +81,6 @@ MaterialsProfileProps) {
             </div>
 
             {/* TABS DE ESTADO */}
-            {/* Cambios clave aquí: 
-      1. w-fit: Hace que el contenedor gris se encoja al tamaño de los botones.
-      2. mx-auto: Asegura el centrado horizontal.
-  */}
             <div className="flex p-1 bg-slate-100 rounded-lg border border-slate-200 overflow-x-auto w-fit mx-auto">
               <button
                 onClick={() => setActiveTab("todos")}

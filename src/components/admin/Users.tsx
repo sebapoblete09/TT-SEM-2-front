@@ -1,12 +1,15 @@
+// components/admin/UsersSection.tsx (o donde lo tengas)
+
 import { createClient } from "@/lib/supabase/server";
 import { redirect } from "next/navigation";
-import { usuario } from "@/types/user";
 import { UsersList } from "./UserList";
+import { getUsersService } from "@/services/userServices"; // Importamos el servicio
+import { usuario } from "@/types/user";
 
 export default async function UsersSection() {
   const supabase = await createClient();
 
-  //Inicializar la session
+  // 1. Auth Check
   const {
     data: { session },
   } = await supabase.auth.getSession();
@@ -15,23 +18,22 @@ export default async function UsersSection() {
     redirect("/login");
   }
 
-  const baseUrl = process.env.NEXT_PUBLIC_BACK_URL || "http://localhost:8080";
-  const res = await fetch(`${baseUrl}/users`, {
-    method: "GET",
-    headers: {
-      Authorization: `Bearer ${session.access_token}`,
-    },
-    cache: "no-store",
-  });
+  // 2. Data Fetching (Usando el Service)
+  let users: usuario[] = [];
 
-  if (!res.ok) {
-    // Manejar error (ej. mostrar una página de error)
-    return <p>Error al cargar la lista de usuarios</p>;
+  try {
+    // Le pasamos el token seguro del servidor
+    users = await getUsersService(session.access_token);
+  } catch (error) {
+    console.error(error);
+    // Si falla, mostramos un mensaje visual
+    return (
+      <div className="p-4 text-red-500 bg-red-50 rounded-md border border-red-200">
+        Error al cargar la lista de usuarios. Intente más tarde.
+      </div>
+    );
   }
 
-  const data = await res.json();
-  const users: usuario[] = data;
-  const token = session.access_token;
-
-  return <UsersList initialUsers={users} access_token={token} />;
+  // 3. Render
+  return <UsersList initialUsers={users} />;
 }
