@@ -24,7 +24,7 @@ import {
   SheetClose,
 } from "@/components/ui/sheet";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
-import { User, LogOut, Menu, PlusCircle } from "lucide-react";
+import { User, LogOut, Menu, PlusCircle, Bell } from "lucide-react";
 
 import NotificationBell from "../ui/notificationBel";
 
@@ -209,6 +209,18 @@ export function Navigation() {
                         >
                           <User className="h-4 w-4 text-slate-500" />
                           <span>Mi Perfil</span>
+                        </Link>
+                      </DropdownMenuItem>
+                      <DropdownMenuItem
+                        asChild
+                        className="cursor-pointer rounded-md hover:bg-slate-50"
+                      >
+                        <Link
+                          href="/notification"
+                          className="flex w-full items-center gap-2"
+                        >
+                          <Bell className="h-4 w-4 text-slate-500" />
+                          <span>Notificaciones</span>
                         </Link>
                       </DropdownMenuItem>
                       <DropdownMenuSeparator className="bg-slate-100" />

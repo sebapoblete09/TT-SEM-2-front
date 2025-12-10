@@ -30,6 +30,7 @@ export function MaterialCard({
   // --- CUERPO DE LA TARJETA ---
   const CardContentBody = (
     <Card
+      id={material.id}
       className={`group h-full border-none shadow-lg bg-white rounded-2xl overflow-hidden flex flex-col relative transition-all duration-300 ${
         material.estado
           ? "hover:shadow-2xl hover:shadow-green-900/10 hover:-translate-y-1"
@@ -37,7 +38,7 @@ export function MaterialCard({
       }`}
     >
       {/* 0. CAPA DE BLOQUEO (Solo visual, para el usuario público) */}
-      {!material.estado && from === "public" && (
+      {!material.estado && from === "private" && (
         <div className="absolute inset-0 z-20 bg-slate-100/50 backdrop-blur-[1px] flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity duration-200">
           <div className="bg-amber-100 text-amber-800 px-4 py-2 rounded-lg shadow-md flex items-center gap-2 font-medium text-sm">
             <Lock className="w-4 h-4" />
@@ -77,8 +78,7 @@ export function MaterialCard({
         {/* Badge Derivado (Ajustado si estamos en modo privado para no chocar con editar) */}
         {isDerived && (
           <Badge
-            className={`absolute top-3 ${
-              from === "private" ? "left-14" : "right-3"
+            className={`absolute top-3 right-3
             } bg-white/90 text-purple-700 backdrop-blur-sm border-none shadow-sm gap-1.5 px-2`}
           >
             <GitFork className="w-3 h-3" />
