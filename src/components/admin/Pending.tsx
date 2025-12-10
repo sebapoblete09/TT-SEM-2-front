@@ -46,7 +46,6 @@ export default async function MaterialPending() {
       {Pending_Materials.length > 0 && (
         <MaterialClientList
           initialMaterials={Pending_Materials}
-          access_token={session.access_token}
           filterType="pending"
         />
       )}
