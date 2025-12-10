@@ -1,8 +1,7 @@
-// components/MaterialPage/Materials-Section.tsx
 "use client";
 
-import { useState, useMemo } from "react";
-import FilterSection from "./Filter-Section";
+import { useState, useEffect, useMemo } from "react";
+import FilterSection, { FilterOptions } from "./Filter-Section"; // Asegúrate de exportar la interfaz en FilterSection
 import { MaterialCard } from "@/components/ui/materialCard";
 import { SearchX } from "lucide-react";
 import {
@@ -12,63 +11,102 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
-// Importante: Asegúrate de importar tu tipo correcto
 import { Material_Card } from "@/types/materials";
+import { getFilterServices } from "@/services/materialServices";
 
 type Props = {
   initialMaterials: Material_Card[];
 };
 
 export default function Materials_Section({ initialMaterials }: Props) {
-  // 1. Recibimos los datos del servidor.
-  const [materials] = useState<Material_Card[]>(initialMaterials);
-
-  // ESTADOS PARA FILTRADO Y ORDENAMIENTO
+  // --- ESTADOS DE FILTRO ---
   const [searchTerm, setSearchTerm] = useState("");
-  const [selectedCategory, setSelectedCategory] = useState<string | null>(null);
+  const [isDerivados, setIsDerivados] = useState(false);
+  const [selectedHerramientas, setSelectedHerramientas] = useState<string[]>(
+    []
+  );
+  const [selectedComposicion, setSelectedComposicion] = useState<string[]>([]);
   const [sortOrder, setSortOrder] = useState("newest");
 
-  // 2. LÓGICA DE FILTRADO + ORDENAMIENTO (Se mantiene igual)
-  const filteredMaterials = useMemo(() => {
-    // A. Primero Filtramos
-    const result = materials.filter((mat) => {
-      const term = searchTerm.toLowerCase();
+  // Estado para las opciones del Sidebar (que vienen del endpoint)
+  const [filterOptions, setFilterOptions] = useState<FilterOptions>({
+    herramientas: [],
+    composicion: [],
+  });
 
-      // Filtro de Texto
+  // 1. CARGAR OPCIONES DEL SIDEBAR AL MONTAR
+  useEffect(() => {
+    const loadOptions = async () => {
+      try {
+        const options = await getFilterServices();
+        // Ordenamos alfabéticamente para mejor UX
+        if (options.herramientas) options.herramientas.sort();
+        if (options.composicion) options.composicion.sort();
+
+        setFilterOptions(options);
+      } catch (error) {
+        console.error("Error cargando filtros:", error);
+      }
+    };
+    loadOptions();
+  }, []);
+
+  // 2. LÓGICA DE FILTRADO (CLIENT SIDE - useMemo)
+  const filteredMaterials = useMemo(() => {
+    // A. Filtrado
+    const result = initialMaterials.filter((mat) => {
+      // 1. Búsqueda Texto
+      const term = searchTerm.toLowerCase();
       const matchesSearch =
         mat.nombre.toLowerCase().includes(term) ||
         mat.descripcion.toLowerCase().includes(term);
 
-      // Filtro de Categoría
-      let matchesCategory = true;
-      if (selectedCategory) {
-        if (selectedCategory === "Derivados") {
-          const emptyUUID = "00000000-0000-0000-0000-000000000000";
-          matchesCategory =
-            mat.derivado_de !== emptyUUID && Boolean(mat.derivado_de);
+      // 2. Filtro Derivados
+      // Verificamos si tiene un UUID válido (no vacío ni ceros)
+      const emptyUUID = "00000000-0000-0000-0000-000000000000";
+      let matchesDerivado = true;
+      if (isDerivados) {
+        matchesDerivado = !!mat.derivado_de && mat.derivado_de !== emptyUUID;
+      }
+
+      // 3. Filtro Herramientas (Lógica OR: Si tiene ALGUNA de las seleccionadas)
+
+      // 4. Filtro Composición (Lógica OR)
+      let matchesComposicion = true;
+      if (selectedComposicion.length > 0) {
+        if (!mat.composicion || mat.composicion.length === 0) {
+          matchesComposicion = false;
         } else {
-          // Aseguramos que composicion exista antes de usar some
-          matchesCategory =
-            mat.composicion?.some((c: string) =>
-              c.toLowerCase().includes(selectedCategory.toLowerCase())
-            ) ?? false;
+          matchesComposicion = selectedComposicion.some((selected) => {
+            const selectedLower = selected.toLowerCase();
+
+            // Aquí está la magia: convertimos ambos a minúsculas antes de comparar
+            return mat.composicion?.some((matComp) =>
+              matComp.toLowerCase().includes(selectedLower)
+            );
+          });
         }
       }
 
-      return matchesSearch && matchesCategory;
+      return matchesSearch && matchesDerivado && matchesComposicion;
     });
 
-    // B. Luego Ordenamos
+    // B. Ordenamiento
     return result.sort((a, b) => {
-      if (sortOrder === "a-z") {
-        return a.nombre.localeCompare(b.nombre);
-      }
-      if (sortOrder === "z-a") {
-        return b.nombre.localeCompare(a.nombre);
-      }
+      if (sortOrder === "a-z") return a.nombre.localeCompare(b.nombre);
+      if (sortOrder === "z-a") return b.nombre.localeCompare(a.nombre);
+      // Para 'newest' necesitarías un campo de fecha en el objeto Material_Card.
+      // Si no lo tienes en el type, el sort original del backend se mantiene (0)
       return 0;
     });
-  }, [materials, searchTerm, selectedCategory, sortOrder]);
+  }, [
+    initialMaterials,
+    searchTerm,
+    isDerivados,
+    selectedHerramientas,
+    selectedComposicion,
+    sortOrder,
+  ]);
 
   return (
     <div className="min-h-screen bg-slate-50/50 animate-in fade-in duration-500">
@@ -79,24 +117,29 @@ export default function Materials_Section({ initialMaterials }: Props) {
             Catálogo de <span className="text-green-600">Materiales</span>
           </h1>
           <p className="text-lg text-slate-500 max-w-2xl">
-            Explora nuestra colección de biomateriales innovadores,
-            desarrollados por la comunidad de la UTEM.
+            Explora nuestra colección de biomateriales innovadores.
           </p>
         </div>
 
-        {/* LAYOUT PRINCIPAL */}
         <div className="flex flex-col lg:flex-row gap-8 items-start">
-          {/* SIDEBAR DE FILTROS */}
-          <aside className="w-full lg:w-72 flex-shrink-0 sticky top-24 z-10">
+          {/* SIDEBAR */}
+          <aside className="w-full lg:w-72 flex-shrink-0 relative top-24 z-10">
             <FilterSection
+              // Pasamos estados
               searchTerm={searchTerm}
               setSearchTerm={setSearchTerm}
-              selectedCategory={selectedCategory}
-              setSelectedCategory={setSelectedCategory}
+              isDerivados={isDerivados}
+              setIsDerivados={setIsDerivados}
+              selectedHerramientas={selectedHerramientas}
+              setSelectedHerramientas={setSelectedHerramientas}
+              selectedComposicion={selectedComposicion}
+              setSelectedComposicion={setSelectedComposicion}
+              // Pasamos las opciones cargadas del back
+              options={filterOptions}
             />
           </aside>
 
-          {/* COLUMNA DE RESULTADOS */}
+          {/* RESULTADOS */}
           <main className="flex-1 w-full">
             {/* BARRA DE CONTROL */}
             <div className="flex flex-col sm:flex-row justify-between items-center mb-6 pb-4 border-b border-slate-200 gap-4">
@@ -104,7 +147,6 @@ export default function Materials_Section({ initialMaterials }: Props) {
                 Mostrando <strong>{filteredMaterials.length}</strong> resultados
               </span>
 
-              {/* SELECTOR DE ORDENAMIENTO */}
               <div className="flex items-center gap-2">
                 <span className="text-sm text-slate-400">Ordenar por:</span>
                 <Select value={sortOrder} onValueChange={setSortOrder}>
@@ -120,7 +162,7 @@ export default function Materials_Section({ initialMaterials }: Props) {
               </div>
             </div>
 
-            {/* LISTA DE RESULTADOS (Sin loading state visual) */}
+            {/* LISTA DE RESULTADOS */}
             {filteredMaterials.length === 0 ? (
               <div className="py-20 text-center flex flex-col items-center bg-white rounded-2xl border border-dashed border-slate-200">
                 <div className="h-16 w-16 bg-slate-50 rounded-full flex items-center justify-center mb-4">

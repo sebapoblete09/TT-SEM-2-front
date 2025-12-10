@@ -63,6 +63,28 @@ export const getPendingMaterialsService = async (access_token: string) => {
   return response.json();
 };
 
+//OBTENER MATERIALES DERIVADOS DE OTRO
+export const getDerivedMaterialsService = async (parentId: string) => {
+  const response = await fetch(`${BASE_URL}/materials/${parentId}/derived`, {
+    method: "GET",
+    headers: { "Content-Type": "application/json" },
+    cache: "no-store",
+  });
+  if (!response.ok) throw new Error(`Error ${response.status}`);
+  const data = await response.json();
+  return data.filter((m: any) => m.estado === true);
+};
+
+//// Obtener las listas para llenar el sidebar (Herramientas y Composición)
+export const getFilterServices = async () => {
+  const response = await fetch(`${BASE_URL}/materials/filters`, {
+    method: "GET",
+    cache: "force-cache",
+  });
+  if (!response.ok) throw new Error("Error cargando opciones de filtro");
+  return response.json();
+};
+
 /**------------------
  Funciones POST
 ---------------------*/
