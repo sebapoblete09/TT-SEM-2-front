@@ -1,8 +1,9 @@
 // components/Materials_Profile.tsx
 "use client";
 
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { MaterialCard } from "@/components/ui/materialCard";
+import { useSearchParams } from "next/navigation";
 import { Material, Material_Card } from "@/types/materials";
 import { Input } from "@/components/ui/input";
 import { CheckCircle2, Clock, LayoutGrid, Search, Users } from "lucide-react";
@@ -19,12 +20,49 @@ export default function Materials_Profile({
   colaboraciones,
 }: // Lista 2: Donde soy colaborador
 MaterialsProfileProps) {
+  const searchParams = useSearchParams();
   const [searchTerm, setSearchTerm] = useState("");
+  const initialTab =
+    (searchParams.get("filter") as
+      | "todos"
+      | "aprobados"
+      | "pendientes"
+      | "colaboraciones") || "todos";
+  const highlightId = searchParams.get("highlight");
+  const [activeTab, setActiveTab] = useState(initialTab);
 
-  const [activeTab, setActiveTab] = useState<
-    "todos" | "aprobados" | "pendientes" | "colaboraciones"
-  >("todos");
+  useEffect(() => {
+    if (highlightId) {
+      // Damos un pequeño timeout para asegurar que el DOM se renderizó
+      setTimeout(() => {
+        const element = document.getElementById(`card-${highlightId}`);
+        if (element) {
+          element.scrollIntoView({ behavior: "smooth", block: "center" });
+          // Opcional: Agregar una clase temporal para resaltar
+          element.classList.add("ring-4", "ring-amber-400", "ring-offset-4");
+          setTimeout(() => {
+            element.classList.remove(
+              "ring-4",
+              "ring-amber-400",
+              "ring-offset-4"
+            );
+          }, 3000);
+        }
+      }, 500);
+    }
+  }, [highlightId, activeTab]);
 
+  useEffect(() => {
+    const currentFilter = searchParams.get("filter") as any;
+    if (
+      currentFilter &&
+      ["todos", "aprobados", "pendientes", "colaboraciones"].includes(
+        currentFilter
+      )
+    ) {
+      setActiveTab(currentFilter);
+    }
+  }, [searchParams]);
   // 1. SELECCIÓN DE LISTA BASE
   // Dependiendo del Tab, elegimos qué array vamos a filtrar
   let listaBase: Material_Card[] = [];
@@ -81,10 +119,6 @@ MaterialsProfileProps) {
             </div>
 
             {/* TABS DE ESTADO */}
-            {/* Cambios clave aquí: 
-      1. w-fit: Hace que el contenedor gris se encoja al tamaño de los botones.
-      2. mx-auto: Asegura el centrado horizontal.
-  */}
             <div className="flex p-1 bg-slate-100 rounded-lg border border-slate-200 overflow-x-auto w-fit mx-auto">
               <button
                 onClick={() => setActiveTab("todos")}
@@ -157,14 +191,21 @@ MaterialsProfileProps) {
         ) : (
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
             {materialsFiltrados.map((material) => (
-              <MaterialCard
+              // 3. AGREGAR ID AL WRAPPER
+              // Es vital poner el id={`card-${material.id}`} aquí para que el scroll funcione
+              <div
                 key={material.id}
-                material={material}
-                material_data={initialMaterialsData.find(
-                  (m) => m.id === material.id
-                )}
-                from="private"
-              />
+                id={`card-${material.id}`}
+                className="transition-all duration-500 rounded-3xl"
+              >
+                <MaterialCard
+                  material={material}
+                  material_data={initialMaterialsData.find(
+                    (m) => m.id === material.id
+                  )}
+                  from="private"
+                />
+              </div>
             ))}
           </div>
         )}

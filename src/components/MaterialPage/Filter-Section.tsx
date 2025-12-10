@@ -44,9 +44,7 @@ export default function FilterSection({
 
   return (
     <>
-      {/* OVERLAY OSCURO (Solo móvil, cuando está abierto)
-         Esto oscurece el fondo detrás del menú fijo 
-      */}
+      {/* OVERLAY OSCURO (Solo móvil, cuando está abierto)*/}
       {isOpen && (
         <div
           className="fixed inset-0 bg-black/50 z-40 lg:hidden"
@@ -54,9 +52,7 @@ export default function FilterSection({
         />
       )}
 
-      {/* CONTENEDOR PRINCIPAL 
-         Clases dinámicas para transformar de "bloque estático" a "modal fijo" en móvil
-      */}
+      {/* CONTENEDOR PRINCIPAL*/}
       <div
         className={`
           bg-white transition-all duration-300
@@ -129,7 +125,6 @@ export default function FilterSection({
           {/* Categorías */}
           <div className="pb-10 lg:pb-0">
             {" "}
-            {/* Padding extra en móvil para scroll final */}
             <label className="text-xs font-bold text-slate-400 uppercase tracking-wider mb-3 block">
               Categorías
             </label>

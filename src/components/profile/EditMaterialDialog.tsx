@@ -13,7 +13,7 @@ import { Button } from "@/components/ui/button";
 import { Pencil } from "lucide-react";
 import { Material } from "@/types/materials";
 
-import EditMaterialForm from "./EditMaterialForm";
+import EditMaterialForm from "./editMaterial/EditMaterialForm";
 
 export function EditMaterialDialog({ material }: { material: Material }) {
   const [open, setOpen] = useState(false);
@@ -41,13 +41,8 @@ export function EditMaterialDialog({ material }: { material: Material }) {
         </DialogHeader>
 
         <div className="py-4">
-          <div className="p-10 text-center border-2 border-dashed rounded-xl bg-slate-50">
-            <p className="text-slate-500">
-              <EditMaterialForm
-                material={material}
-                onSuccess={() => setOpen(false)}
-              />
-            </p>
+          <div>
+            <EditMaterialForm material={material} />
           </div>
         </div>
       </DialogContent>

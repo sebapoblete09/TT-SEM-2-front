@@ -1,14 +1,17 @@
-"use client";
-
 import Materials_Section from "@/components/MaterialPage/Materials-Section";
-import { Suspense } from "react";
+import { getMaterialsService } from "@/services/materialServices";
 
-export default function Home() {
+export default async function Home() {
+  let materials = [];
+  try {
+    materials = await getMaterialsService();
+  } catch (error) {
+    console.error("Error cargando materiales:", error);
+  }
+
   return (
-    <Suspense
-      fallback={<div className="p-20 text-center">Cargando catálogo...</div>}
-    >
-      <Materials_Section />
-    </Suspense>
+    <main>
+      <Materials_Section initialMaterials={materials} />
+    </main>
   );
 }

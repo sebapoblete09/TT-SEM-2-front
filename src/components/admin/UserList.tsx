@@ -2,6 +2,8 @@
 "use client";
 
 import { useState } from "react";
+
+//UI COMPONENTS
 import { TabsContent } from "@/components/ui/tabs";
 import { Button } from "@/components/ui/button";
 import {
@@ -11,17 +13,21 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
-import { usuario } from "@/types/user";
 import { BookOpen, Edit2, ShieldCheck, UserCog, X } from "lucide-react";
 import { Badge } from "../ui/badge";
 
+//TYPES
+import { usuario } from "@/types/user";
+
+import { updateUserRoleAction } from "@/actions/user"; // Importamos la acción
+import { toast } from "react-toastify";
+
 type UserListProps = {
   initialUsers: usuario[];
-  access_token: string;
 };
 
-export function UsersList({ initialUsers, access_token }: UserListProps) {
-  // Estado para manejar la lista de usuarios (para futuras actualizaciones)
+export function UsersList({ initialUsers }: UserListProps) {
+  // Estado para manejar la lista de usuarios
   const [users, setUsers] = useState(initialUsers);
 
   // Estado para saber qué usuario estamos editando
@@ -31,30 +37,27 @@ export function UsersList({ initialUsers, access_token }: UserListProps) {
 
   // funcion para cambiar el rol de un usuario
   const handleRoleChange = async (userId: number, newRole: string) => {
+    setLoading(true);
+
+    // Guardamos el estado anterior por si hay error (rollback)
+    const previousUsers = [...users];
+
     console.log(`Cambiando rol para ${userId} a ${newRole}`);
 
+    // 1. Actualización Optimista (inmediata en UI)
+    setUsers(
+      users.map((u) => (u.google_id === userId ? { ...u, rol: newRole } : u))
+    );
+    setEditingUserId(null);
+
     try {
-      const baseUrl =
-        process.env.NEXT_PUBLIC_BACK_URL || "http://localhost:8080";
-      const res = await fetch(`${baseUrl}/users/${userId}`, {
-        method: "PUT",
-        headers: {
-          "Content-Type": "application/json",
-          Authorization: `Bearer ${access_token}`,
-        },
-        body: JSON.stringify({ rol: newRole }),
-      });
-      if (!res.ok) throw new Error("Error al actualizar rol");
-
-      // Actualizar estado local (Optimistic Update)
-      setUsers(
-        users.map((u) => (u.google_id === userId ? { ...u, rol: newRole } : u))
-      );
-
-      setEditingUserId(null);
+      // 2. Llamamos a la Server Action
+      await updateUserRoleAction(userId, newRole);
     } catch (error) {
       console.error(error);
-      alert("Error al actualizar el rol");
+      toast.error("Error al actualizar el rol");
+      // Rollback: volvemos al estado anterior si falló
+      setUsers(previousUsers);
     } finally {
       setLoading(false);
     }

@@ -12,53 +12,44 @@
 
 import { createClient } from "@/lib/supabase/server";
 import { redirect } from "next/navigation";
+import { ShieldCheck } from "lucide-react";
 
 // Componentes UI y Layout
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { ShieldCheck } from "lucide-react";
 
-// Componentes de Módulos Administrativos
+// Componentes de Módulos
 import UsersSection from "@/components/admin/Users";
 import MaterialPending from "@/components/admin/Pending";
 import MaterialAprove from "@/components/admin/Aprove";
 import Stats from "@/components/admin/Stats";
 
-//tipos
+// Importamos el Servicio
+import { getUsersStatsService } from "@/services/userServices";
 import { DashboardCounts } from "@/types/dashboard";
 
-/**
- * Función auxiliar para obtener las estadísticas del dashboard.
- * Realiza una única llamada al backend optimizado en lugar de múltiples requests.
- * @returns {Promise<DashboardCounts>} Objeto con los contadores (pendientes, aprobados, usuarios).
- */
-async function getDashboardStats(): Promise<DashboardCounts> {
+export default async function AdminPage() {
+  // 1. Inicializar Auth
   const supabase = await createClient();
   const {
     data: { session },
   } = await supabase.auth.getSession();
+
   if (!session) redirect("/login");
 
-  const baseUrl = process.env.NEXT_PUBLIC_BACK_URL || "http://localhost:8080";
+  // 2. Carga de Datos
+  // Inicializamos con valores seguros por si acaso
+  let stats: DashboardCounts = { pendientes: 0, aprobados: 0, usuarios: 0 };
 
-  const res = await fetch(`${baseUrl}/users/stats`, {
-    headers: { Authorization: `Bearer ${session.access_token}` },
-    cache: "no-store",
-  });
-
-  if (!res.ok) {
-    // Si falla, retornamos ceros para que no rompa la UI
-    return { pendientes: 0, aprobados: 0, usuarios: 0 };
+  try {
+    // Llamada limpia al servicio
+    stats = await getUsersStatsService(session.access_token);
+  } catch (error) {
+    console.error("Error cargando estadísticas del dashboard:", error);
   }
 
-  return await res.json();
-}
-
-export default async function AdminPage() {
-  // Carga inicial de datos en el servidor (SSR)
-  const stats = await getDashboardStats();
   return (
     <div className="min-h-screen bg-slate-50/50 pb-20">
-      {/* Header con fondo blanco para separar del contenido */}
+      {/* Header con fondo blanco */}
       <div className="bg-white border-b border-slate-200 mb-8">
         <div className="container mx-auto max-w-7xl px-4 py-8">
           <div className="flex items-center gap-4">
@@ -86,34 +77,32 @@ export default async function AdminPage() {
           usuarios={stats.usuarios}
         />
 
-        {/* 2. Pestañas de Gestión */}
-        {/* 'defaultValue="pending"' asegura que lo primero que vea el admin sea lo urgente */}
+        {/* 2. Pestañas de Gestión (Sin cambios) */}
         <Tabs defaultValue="pending" className="space-y-6">
-          {/* Barra de Navegación de Tabs */}
           <div className="flex flex-col justify-between gap-4">
             <TabsList className="grid w-full grid-cols-1 sm:grid-cols-3 h-auto sm:h-12 p-1 bg-white border border-slate-200 rounded-xl shadow-sm">
               <TabsTrigger
                 value="pending"
-                className="rounded-lg data-[state=active]:bg-slate-100 data-[state=active]:text-slate-900 data-[state=active]:shadow-none h-10 px-2"
+                className="rounded-lg data-[state=active]:bg-slate-100 data-[state=active]:text-slate-900 h-10 px-2"
               >
                 Materiales Pendientes
               </TabsTrigger>
               <TabsTrigger
                 value="aprove"
-                className="rounded-lg data-[state=active]:bg-slate-100 data-[state=active]:text-slate-900 data-[state=active]:shadow-none h-10 px-2"
+                className="rounded-lg data-[state=active]:bg-slate-100 data-[state=active]:text-slate-900 h-10 px-2"
               >
                 Materiales Aprobados
               </TabsTrigger>
               <TabsTrigger
                 value="users"
-                className="rounded-lg data-[state=active]:bg-slate-100 data-[state=active]:text-slate-900 data-[state=active]:shadow-none h-10 px-2"
+                className="rounded-lg data-[state=active]:bg-slate-100 data-[state=active]:text-slate-900 h-10 px-2"
               >
                 Gestionar Usuarios
               </TabsTrigger>
             </TabsList>
           </div>
 
-          {/* --- CONTENIDO: MATERIALES PENDIENTES --- */}
+          {/* CONTENIDOS DE LAS TABS */}
           <TabsContent
             value="pending"
             className="animate-in fade-in-50 duration-300 slide-in-from-bottom-2"
@@ -123,7 +112,6 @@ export default async function AdminPage() {
             </div>
           </TabsContent>
 
-          {/* --- CONTENIDO: MATERIALES APROBADOS --- */}
           <TabsContent
             value="aprove"
             className="animate-in fade-in-50 duration-300 slide-in-from-bottom-2"
@@ -133,7 +121,6 @@ export default async function AdminPage() {
             </div>
           </TabsContent>
 
-          {/* --- CONTENIDO: GESTIÓN DE USUARIOS --- */}
           <TabsContent
             value="users"
             className="animate-in fade-in-50 duration-300 slide-in-from-bottom-2"

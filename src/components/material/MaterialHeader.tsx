@@ -5,11 +5,9 @@ import { Button } from "@/components/ui/button";
 import {
   Calendar,
   Share2,
-  Leaf,
   Users,
   GitFork,
   MessageCircle,
-  Linkedin,
   Check,
   Copy,
 } from "lucide-react";
@@ -55,14 +53,6 @@ export default function MaterialHeader({ material }: { material: Material }) {
       text
     )} ${encodeURIComponent(url)}`;
     window.open(whatsappUrl, "_blank");
-  };
-
-  const handleLinkedIn = () => {
-    const url = getShareUrl();
-    const linkedinUrl = `https://www.linkedin.com/sharing/share-offsite/?url=${encodeURIComponent(
-      url
-    )}`;
-    window.open(linkedinUrl, "_blank");
   };
 
   return (
@@ -117,15 +107,6 @@ export default function MaterialHeader({ material }: { material: Material }) {
               >
                 <MessageCircle className="mr-2 h-4 w-4" />
                 WhatsApp
-              </DropdownMenuItem>
-
-              {/* Opción 3: LinkedIn */}
-              <DropdownMenuItem
-                onClick={handleLinkedIn}
-                className="cursor-pointer text-blue-700 focus:text-blue-800 focus:bg-blue-50"
-              >
-                <Linkedin className="mr-2 h-4 w-4" />
-                LinkedIn
               </DropdownMenuItem>
             </DropdownMenuContent>
           </DropdownMenu>
