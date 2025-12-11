@@ -9,6 +9,7 @@ import {
   approveMaterialAction,
   rejectedMaterialAction,
 } from "@/actions/materials";
+import { deleteMaterialAction } from "@/actions/materials";
 
 // Extendemos el tipo para la UI
 type MaterialWithUI = Material & {
@@ -95,6 +96,23 @@ export function MaterialClientList({
     }
   };
 
+  // --- ELIMINAR MATERIAL ---
+  const handleDelete = async (id: string) => {
+    try {
+      // 1. Llamar a la Server Action
+      const result = await deleteMaterialAction(id);
+
+      if (result.success) {
+        toast.success("Material eliminado correctamente");
+      } else {
+        toast.error(result.message || "Error al eliminar");
+      }
+    } catch (error) {
+      console.error(error);
+      toast.error("Ocurrió un error inesperado");
+    }
+  };
+
   // Si esta lista es SOLO de pendientes, y aprobamos uno, no queremos verlo más.
   const visibleMaterials = materials.filter((m) => {
     if (filterType === "pending") return m.estado === false; // Solo pendientes
@@ -117,6 +135,7 @@ export function MaterialClientList({
               onApprove={handleApprove}
               onRejectWithReason={handleReject}
               isCorrectionSent={material.correctionSent}
+              onDelete={handleDelete}
             />
           ))
         )}

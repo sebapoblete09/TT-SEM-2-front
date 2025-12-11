@@ -41,9 +41,10 @@ export function EditMaterialDialog({ material }: { material: Material }) {
         </DialogHeader>
 
         <div className="py-4">
-          <div>
-            <EditMaterialForm material={material} />
-          </div>
+          <EditMaterialForm
+            material={material}
+            onSuccessClose={() => setOpen(false)}
+          />
         </div>
       </DialogContent>
     </Dialog>

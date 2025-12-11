@@ -6,6 +6,7 @@ import {
   approveMaterialService,
   rejectedMaterialService,
   createMaterialService,
+  deleteMaterialService,
 } from "@/services/materialServices"; // Ajusta la ruta si es necesario
 import { revalidatePath } from "next/cache";
 
@@ -147,6 +148,31 @@ export async function rejectedMaterialAction(id: string, reason: string) {
     revalidatePath("/profile");
 
     return { success: true, message: "Material rechazado correctamente" };
+  } catch (error) {
+    console.error(error);
+    return {
+      success: false,
+      message: error instanceof Error ? error.message : "Error desconocido",
+    };
+  }
+}
+
+//Eliminar material
+export async function deleteMaterialAction(id: string) {
+  const supabase = await createClient();
+  const {
+    data: { session },
+  } = await supabase.auth.getSession();
+  // 1. Validación
+  if (!session) {
+    return { success: false, message: "No autorizado" };
+  }
+  try {
+    await deleteMaterialService(session.access_token, id);
+    revalidatePath("/materials"); // Catálogo público
+    revalidatePath("/profile"); // Perfil del usuario (donde gestiona sus materiales)
+
+    return { success: true, message: "Material eliminado correctamente" };
   } catch (error) {
     console.error(error);
     return {

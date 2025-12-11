@@ -1,3 +1,4 @@
+import { FieldError, useFormContext } from "react-hook-form";
 import { Input } from "@/components/ui/input";
 import {
   Select,
@@ -6,65 +7,76 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
-import {
-  prop_mecanicas,
-  prop_perceptivas,
-  prop_emocionales,
-} from "@/types/materials";
 import { Hammer, Eye, Heart, Layers } from "lucide-react";
+import { EditMaterialFormValues } from "@/components/register-material/schemas"; // Asegúrate de importar tu tipo
+function PropertyInput({ label, name }: { label: string; name: string }) {
+  const {
+    register,
+    formState: { errors },
+  } = useFormContext<EditMaterialFormValues>();
 
-interface Props {
-  mecanicas: prop_mecanicas;
-  setMecanicas: (v: prop_mecanicas) => void;
-  perceptivas: prop_perceptivas;
-  setPerceptivas: (v: prop_perceptivas) => void;
-  emocionales: prop_emocionales;
-  setEmocionales: (v: prop_emocionales) => void;
-}
+  // 2. CORRECCIÓN AQUÍ:
+  // Usamos 'as FieldError | undefined' para decirle a TS que el resultado tiene .message
+  const error = name
+    .split(".")
+    .reduce((obj: any, key) => obj?.[key], errors) as FieldError | undefined;
 
-// Helper 1: Para Texto Libre (Perceptivas)
-function PropertyInput({
-  label,
-  value,
-  onChange,
-}: {
-  label: string;
-  value: string;
-  onChange: (val: string) => void;
-}) {
   return (
     <div>
       <label className="block text-xs font-semibold text-slate-500 mb-1 uppercase tracking-wider">
         {label}
       </label>
       <Input
-        value={value || ""}
-        onChange={(e) => onChange(e.target.value)}
-        className="bg-white text-slate-900"
+        {...register(name as any)} // 'as any' en el name ayuda si TS se pone estricto con los paths
+        className={`bg-white text-slate-900 ${
+          error ? "border-red-500 focus-visible:ring-red-500" : ""
+        }`}
         placeholder={`Definir ${label.toLowerCase()}...`}
       />
+      {/* Ahora TS ya sabe que 'error' es un FieldError y tiene .message */}
+      {error && (
+        <span className="text-red-500 text-[10px] mt-1 block">
+          {error.message}
+        </span>
+      )}
     </div>
   );
 }
 
-// Helper 2: Para Selección de Nivel (Mecánicas y Emocionales)
-function PropertySelect({
-  label,
-  value,
-  onChange,
-}: {
-  label: string;
-  value: string;
-  onChange: (val: string) => void;
-}) {
+function PropertySelect({ label, name }: { label: string; name: string }) {
+  const {
+    setValue,
+    watch,
+    formState: { errors },
+  } = useFormContext<EditMaterialFormValues>();
+
+  // CORRECCIÓN 1: Forzamos a que TS trate el valor como string
+  // Usamos 'as any' en el watch para evitar conflictos de path, y 'as string' en el resultado
+  const currentValue = watch(name as any) as string;
+
+  // CORRECCIÓN 2: Forzamos el tipo del error
+  // (obj: any) permite navegar sin restricciones
+  // 'as FieldError | undefined' asegura que TS sepa que tiene la propiedad .message
+  const error = name
+    .split(".")
+    .reduce((obj: any, key) => obj?.[key], errors) as FieldError | undefined;
+
   return (
     <div>
       <label className="block text-xs font-semibold text-slate-500 mb-1 uppercase tracking-wider">
         {label}
       </label>
-      <Select value={value} onValueChange={onChange}>
-        <SelectTrigger className="bg-white">
-          <SelectValue placeholder="Seleccionar nivel..." />
+      <Select
+        value={currentValue}
+        onValueChange={(val) =>
+          setValue(name as any, val, {
+            shouldValidate: true,
+            shouldDirty: true,
+          })
+        }
+      >
+        <SelectTrigger className={`bg-white ${error ? "border-red-500" : ""}`}>
+          <SelectValue placeholder="Seleccionar..." />
         </SelectTrigger>
         <SelectContent>
           <SelectItem value="Baja">Baja</SelectItem>
@@ -72,27 +84,20 @@ function PropertySelect({
           <SelectItem value="Alta">Alta</SelectItem>
         </SelectContent>
       </Select>
+
+      {/* Ahora TS sabe que 'error' es de tipo FieldError */}
+      {error && (
+        <span className="text-red-500 text-[10px] mt-1 block">
+          {error.message || "Requerido"}
+        </span>
+      )}
     </div>
   );
 }
 
-export function PropertiesSection({
-  mecanicas,
-  setMecanicas,
-  perceptivas,
-  setPerceptivas,
-  emocionales,
-  setEmocionales,
-}: Props) {
-  // Handlers genéricos para actualizar objetos
-  const updateMec = (key: keyof prop_mecanicas, val: string) =>
-    setMecanicas({ ...mecanicas, [key]: val });
-
-  const updatePer = (key: keyof prop_perceptivas, val: string) =>
-    setPerceptivas({ ...perceptivas, [key]: val });
-
-  const updateEmo = (key: keyof prop_emocionales, val: string) =>
-    setEmocionales({ ...emocionales, [key]: val });
+// --- Componente Principal ---
+export function PropertiesSection() {
+  // Ya no recibe props, usa el contexto del padre
 
   return (
     <div className="space-y-6">
@@ -103,31 +108,11 @@ export function PropertiesSection({
           <h3 className="font-semibold text-blue-700">Propiedades Mecánicas</h3>
         </div>
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-          <PropertySelect
-            label="Resistencia"
-            value={mecanicas.resistencia}
-            onChange={(v) => updateMec("resistencia", v)}
-          />
-          <PropertySelect
-            label="Dureza"
-            value={mecanicas.dureza}
-            onChange={(v) => updateMec("dureza", v)}
-          />
-          <PropertySelect
-            label="Elasticidad"
-            value={mecanicas.elasticidad}
-            onChange={(v) => updateMec("elasticidad", v)}
-          />
-          <PropertySelect
-            label="Ductilidad"
-            value={mecanicas.ductilidad}
-            onChange={(v) => updateMec("ductilidad", v)}
-          />
-          <PropertySelect
-            label="Fragilidad"
-            value={mecanicas.fragilidad}
-            onChange={(v) => updateMec("fragilidad", v)}
-          />
+          <PropertySelect label="Resistencia" name="mecanicas.resistencia" />
+          <PropertySelect label="Dureza" name="mecanicas.dureza" />
+          <PropertySelect label="Elasticidad" name="mecanicas.elasticidad" />
+          <PropertySelect label="Ductilidad" name="mecanicas.ductilidad" />
+          <PropertySelect label="Fragilidad" name="mecanicas.fragilidad" />
         </div>
       </div>
 
@@ -140,30 +125,16 @@ export function PropertiesSection({
           </h3>
         </div>
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-          <PropertyInput
-            label="Color"
-            value={perceptivas.color}
-            onChange={(v) => updatePer("color", v)}
-          />
-          <PropertyInput
-            label="Brillo"
-            value={perceptivas.brillo}
-            onChange={(v) => updatePer("brillo", v)}
-          />
-          <PropertyInput
-            label="Textura"
-            value={perceptivas.textura}
-            onChange={(v) => updatePer("textura", v)}
-          />
+          <PropertyInput label="Color" name="perceptivas.color" />
+          <PropertyInput label="Brillo" name="perceptivas.brillo" />
+          <PropertyInput label="Textura" name="perceptivas.textura" />
           <PropertyInput
             label="Transparencia"
-            value={perceptivas.transparencia}
-            onChange={(v) => updatePer("transparencia", v)}
+            name="perceptivas.transparencia"
           />
           <PropertyInput
             label="Sensación Térmica"
-            value={perceptivas.sensacion_termica}
-            onChange={(v) => updatePer("sensacion_termica", v)}
+            name="perceptivas.sensacion_termica"
           />
         </div>
       </div>
@@ -179,28 +150,17 @@ export function PropertiesSection({
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
           <PropertySelect
             label="Calidez Emocional"
-            value={emocionales.calidez_emocional}
-            onChange={(v) => updateEmo("calidez_emocional", v)}
+            name="emocionales.calidez_emocional"
           />
-          <PropertySelect
-            label="Inspiración"
-            value={emocionales.inspiracion}
-            onChange={(v) => updateEmo("inspiracion", v)}
-          />
+          <PropertySelect label="Inspiración" name="emocionales.inspiracion" />
           <PropertySelect
             label="Sostenibilidad Percibida"
-            value={emocionales.sostenibilidad_percibida}
-            onChange={(v) => updateEmo("sostenibilidad_percibida", v)}
+            name="emocionales.sostenibilidad_percibida"
           />
-          <PropertySelect
-            label="Armonía"
-            value={emocionales.armonia}
-            onChange={(v) => updateEmo("armonia", v)}
-          />
+          <PropertySelect label="Armonía" name="emocionales.armonia" />
           <PropertySelect
             label="Innovación Emocional"
-            value={emocionales.innovacion_emocional}
-            onChange={(v) => updateEmo("innovacion_emocional", v)}
+            name="emocionales.innovacion_emocional"
           />
         </div>
       </div>

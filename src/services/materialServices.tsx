@@ -177,3 +177,23 @@ export const updateMaterialService = async (
 
   return response.json();
 };
+
+/**------------------
+ Funciones DELETE
+---------------------*/
+export const deleteMaterialService = async (
+  access_token: string,
+  id: string
+) => {
+  const response = await fetch(`${BASE_URL}/materials/${id}`, {
+    method: "DELETE",
+    headers: {
+      Authorization: `Bearer ${access_token}`,
+    },
+  });
+  if (!response.ok) {
+    const error = await response.text();
+    throw new Error(error || "Error al eliminar material");
+  }
+  return response.json();
+};
