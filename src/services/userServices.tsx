@@ -77,3 +77,5 @@ export const getPublicUserProfileService = async (id: string) => {
 
   return response.json();
 };
+
+//ELIMINAR USUARIO (Admin)

@@ -125,7 +125,7 @@ export async function approveMaterialAction(id: string) {
 }
 
 //RECHAZAR MATERIAL
-export async function rejectedMaterialAction(id: string, reason: string) {
+export async function rejectedMaterialAction(id: string, razon: string) {
   const supabase = await createClient();
   const {
     data: { session },
@@ -138,7 +138,7 @@ export async function rejectedMaterialAction(id: string, reason: string) {
 
   try {
     // 2. Llamada al servicio
-    await rejectedMaterialService(session.access_token, id, reason);
+    await rejectedMaterialService(session.access_token, id, razon);
 
     // 3. Revalidación (CRÍTICO)
     // Esto hace que Next.js actualice las listas en el servidor.
@@ -158,7 +158,7 @@ export async function rejectedMaterialAction(id: string, reason: string) {
 }
 
 //Eliminar material
-export async function deleteMaterialAction(id: string) {
+export async function deleteMaterialAction(id: string, razon: string) {
   const supabase = await createClient();
   const {
     data: { session },
@@ -168,7 +168,7 @@ export async function deleteMaterialAction(id: string) {
     return { success: false, message: "No autorizado" };
   }
   try {
-    await deleteMaterialService(session.access_token, id);
+    await deleteMaterialService(session.access_token, id, razon);
     revalidatePath("/materials"); // Catálogo público
     revalidatePath("/profile"); // Perfil del usuario (donde gestiona sus materiales)
 

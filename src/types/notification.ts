@@ -6,7 +6,7 @@ export interface Notificacion {
   titulo: string;
   mensaje: string;
   leido: boolean;
-  tipo: "aprobado" | "rechazado" | "info" | "success" | "error";
+  tipo: "aprobado" | "rechazado" | "info" | "success" | "eliminado";
   material_id?: string;
   link?: string;
 }

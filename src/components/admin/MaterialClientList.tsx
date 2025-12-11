@@ -97,10 +97,10 @@ export function MaterialClientList({
   };
 
   // --- ELIMINAR MATERIAL ---
-  const handleDelete = async (id: string) => {
+  const handleDelete = async (id: string, reason: string) => {
     try {
       // 1. Llamar a la Server Action
-      const result = await deleteMaterialAction(id);
+      const result = await deleteMaterialAction(id, reason);
 
       if (result.success) {
         toast.success("Material eliminado correctamente");

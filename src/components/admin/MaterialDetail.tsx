@@ -28,26 +28,17 @@ import {
 import { formatDistanceToNow } from "date-fns";
 import { es } from "date-fns/locale";
 import { Tabs } from "@/components/ui/tabs";
-import {
-  AlertDialog,
-  AlertDialogAction,
-  AlertDialogCancel,
-  AlertDialogContent,
-  AlertDialogDescription,
-  AlertDialogFooter,
-  AlertDialogHeader,
-  AlertDialogTitle,
-  AlertDialogTrigger,
-} from "@/components/ui/alert-dialog";
 
-// Importamos el contenido del modal y el diálogo de rechazo
+// Importamos el contenido del modal y los diálogos
 import { MaterialModalContent } from "./MaterialModal";
 import { RejectionDialog } from "./RejectionMaterial";
+import { DeleteMaterial } from "./DeleteMaterial";
+
 type MaterialCardItemProps = {
   material: Material;
   onApprove: (id: string) => void;
   onRejectWithReason: (id: string, reason: string) => Promise<void>;
-  onDelete: (id: string) => Promise<void>; // <--- NUEVA PROP
+  onDelete: (id: string, reason: string) => Promise<void>;
   isCorrectionSent?: boolean;
 };
 
@@ -59,23 +50,26 @@ export function MaterialCardItem({
   onDelete,
 }: MaterialCardItemProps) {
   const [showRejectModal, setShowRejectModal] = useState(false);
+  const [showDeleteModal, setShowDeleteModal] = useState(false); // <--- NUEVO ESTADO
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [isDeleting, setIsDeleting] = useState(false);
 
   const firstImage = material.galeria?.[0]?.url_imagen;
 
-  // Manejador para confirmar el rechazo desde el modal
+  // Manejador para confirmar el rechazo
   const handleConfirmReject = async (reason: string) => {
     setIsSubmitting(true);
     await onRejectWithReason(material.id, reason);
     setIsSubmitting(false);
     setShowRejectModal(false);
   };
-  // Manejador para eliminar
-  const handleConfirmDelete = async () => {
+
+  // Manejador para confirmar la eliminación (recibe la razón del componente DeleteMaterial)
+  const handleConfirmDelete = async (reason: string) => {
     setIsDeleting(true);
-    await onDelete(material.id);
+    await onDelete(material.id, reason);
     setIsDeleting(false);
+    setShowDeleteModal(false);
   };
 
   return (
@@ -89,12 +83,11 @@ export function MaterialCardItem({
               : "border-l-amber-400"
           }`}
         >
-          {/* Padding reducido en móvil: p-3 */}
           <CardContent className="p-3 sm:p-5">
             <div className="flex flex-col md:flex-row gap-3 md:gap-5 justify-between">
               {/* --- ZONA SUPERIOR: INFO --- */}
               <div className="flex items-start gap-3 w-full min-w-0">
-                {/* ... (Avatar y Diálogo de imagen - Se mantienen igual) ... */}
+                {/* Avatar / Lightbox */}
                 <Dialog>
                   <DialogTrigger asChild>
                     <div className="relative group/avatar cursor-zoom-in shrink-0">
@@ -155,12 +148,10 @@ export function MaterialCardItem({
                     )}
                   </div>
 
-                  {/* Descripción oculta en móvil (<640px) */}
                   <p className="hidden sm:block text-sm text-slate-500 line-clamp-1">
                     {material.descripcion}
                   </p>
 
-                  {/* Metadatos compactos */}
                   <div className="flex items-center gap-2 text-xs text-slate-400 pt-0.5">
                     <span className="font-medium text-slate-600 truncate max-w-[100px] sm:max-w-none">
                       {material.creador.nombre}
@@ -177,11 +168,10 @@ export function MaterialCardItem({
                 </div>
               </div>
 
-              {/* --- ZONA ACCIONES (Responsive Grid) --- */}
+              {/* --- ZONA ACCIONES --- */}
               <div className="mt-1 md:mt-0 md:border-l md:border-slate-100 md:pl-4 flex shrink-0">
-                {/* Ajustamos el grid para acomodar el botón extra */}
                 <div className="grid grid-cols-[auto_1fr_1fr_auto] md:flex items-center gap-2 w-full">
-                  {/* Botón REVISAR (Abre el modal grande) */}
+                  {/* Botón REVISAR */}
                   <DialogTrigger asChild>
                     <Button
                       size="sm"
@@ -197,7 +187,6 @@ export function MaterialCardItem({
                   {material.estado === false ? (
                     <>
                       {isCorrectionSent ? (
-                        // Estado: Ya se envió corrección
                         <Button
                           size="sm"
                           variant="outline"
@@ -209,7 +198,6 @@ export function MaterialCardItem({
                           <span className="md:hidden">Enviado</span>
                         </Button>
                       ) : (
-                        // Estado: Pendiente normal
                         <>
                           <Button
                             size="sm"
@@ -232,7 +220,6 @@ export function MaterialCardItem({
                       )}
                     </>
                   ) : (
-                    // Estado: Ya aprobado
                     <Button
                       size="sm"
                       className="col-span-2 md:w-auto"
@@ -242,57 +229,31 @@ export function MaterialCardItem({
                     </Button>
                   )}
 
-                  {/* --- BOTÓN ELIMINAR CON CONFIRMACIÓN --- */}
-                  <AlertDialog>
-                    <AlertDialogTrigger asChild>
-                      <Button
-                        size="sm"
-                        variant="ghost"
-                        className="text-slate-400 hover:text-red-600 hover:bg-red-50 px-2 ml-1"
-                        disabled={isDeleting}
-                        title="Eliminar material"
-                      >
-                        {isDeleting ? (
-                          <span className="animate-spin text-lg leading-none">
-                            ⟳
-                          </span>
-                        ) : (
-                          <Trash2 className="h-4 w-4" />
-                        )}
-                        <span className="sr-only">Eliminar</span>
-                      </Button>
-                    </AlertDialogTrigger>
-
-                    <AlertDialogContent>
-                      <AlertDialogHeader>
-                        <AlertDialogTitle>
-                          ¿Estás completamente seguro?
-                        </AlertDialogTitle>
-                        <AlertDialogDescription>
-                          Esta acción no se puede deshacer. Esto eliminará
-                          permanentemente el material{" "}
-                          <strong>{material.nombre}</strong> y todos sus datos
-                          asociados de la base de datos.
-                        </AlertDialogDescription>
-                      </AlertDialogHeader>
-                      <AlertDialogFooter>
-                        <AlertDialogCancel>Cancelar</AlertDialogCancel>
-                        <AlertDialogAction
-                          onClick={handleConfirmDelete}
-                          className="bg-red-600 hover:bg-red-700 text-white"
-                        >
-                          {isDeleting ? "Eliminando..." : "Eliminar"}
-                        </AlertDialogAction>
-                      </AlertDialogFooter>
-                    </AlertDialogContent>
-                  </AlertDialog>
+                  {/* --- BOTÓN ELIMINAR (Abre DeleteMaterial) --- */}
+                  <Button
+                    size="sm"
+                    variant="ghost"
+                    className="text-slate-400 hover:text-red-600 hover:bg-red-50 px-2 ml-1"
+                    disabled={isDeleting}
+                    title="Eliminar material"
+                    onClick={() => setShowDeleteModal(true)} // Abre el nuevo modal
+                  >
+                    {isDeleting ? (
+                      <span className="animate-spin text-lg leading-none">
+                        ⟳
+                      </span>
+                    ) : (
+                      <Trash2 className="h-4 w-4" />
+                    )}
+                    <span className="sr-only">Eliminar</span>
+                  </Button>
                 </div>
               </div>
             </div>
           </CardContent>
         </Card>
 
-        {/* --- MODAL DE DETALLE (Full Responsive) --- */}
+        {/* --- MODAL DE DETALLE --- */}
         <DialogContent className="w-[95vw] max-w-[800px] max-h-[90dvh] flex flex-col p-0 gap-0 overflow-hidden rounded-2xl">
           <DialogHeader className="px-6 py-4 border-b border-slate-100 bg-white shrink-0 z-10">
             <DialogTitle className="line-clamp-1">
@@ -314,7 +275,6 @@ export function MaterialCardItem({
                 Cerrar
               </Button>
             </DialogClose>
-            {/* Botones duplicados en el modal para facilitar la acción tras revisar */}
             {!material.estado && !isCorrectionSent && (
               <>
                 <Button
@@ -336,12 +296,20 @@ export function MaterialCardItem({
         </DialogContent>
       </Dialog>
 
-      {/* --- MODAL DE RECHAZO (Independiente) --- */}
+      {/* --- MODAL DE RECHAZO --- */}
       <RejectionDialog
         open={showRejectModal}
         onOpenChange={setShowRejectModal}
         onConfirm={handleConfirmReject}
         isSubmitting={isSubmitting}
+      />
+
+      {/* --- MODAL DE ELIMINAR (NUEVO) --- */}
+      <DeleteMaterial
+        open={showDeleteModal}
+        onOpenChange={setShowDeleteModal}
+        onConfirm={handleConfirmDelete}
+        isSubmitting={isDeleting}
       />
     </>
   );

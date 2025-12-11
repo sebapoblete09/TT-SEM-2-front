@@ -133,7 +133,7 @@ export const approveMaterialService = async (
 export const rejectedMaterialService = async (
   access_token: string,
   id: string,
-  reason: string
+  razon: string
 ) => {
   const response = await fetch(`${BASE_URL}/materials/${id}/reject`, {
     method: "POST",
@@ -141,7 +141,7 @@ export const rejectedMaterialService = async (
       Authorization: `Bearer ${access_token}`,
       "Content-Type": "application/json",
     },
-    body: JSON.stringify({ reason }),
+    body: JSON.stringify({ razon }),
   });
 
   if (!response.ok) {
@@ -183,13 +183,16 @@ export const updateMaterialService = async (
 ---------------------*/
 export const deleteMaterialService = async (
   access_token: string,
-  id: string
+  id: string,
+  razon: string
 ) => {
   const response = await fetch(`${BASE_URL}/materials/${id}`, {
     method: "DELETE",
     headers: {
       Authorization: `Bearer ${access_token}`,
+      "Content-Type": "application/json", // <--- FALTA ESTO
     },
+    body: JSON.stringify({ razon }),
   });
   if (!response.ok) {
     const error = await response.text();
