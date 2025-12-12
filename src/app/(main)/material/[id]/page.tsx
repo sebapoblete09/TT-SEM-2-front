@@ -16,6 +16,7 @@ import MaterialGallery from "@/components/material/MaterialGallery";
 import CompositionsTools from "@/components/material/Section2/index";
 import Properties from "@/components/material/Section3/index";
 import RecipeTab from "@/components/material/Section4/RecipeTabs";
+import DerivedSection from "@/components/MaterialPage/Derived-Section";
 
 // Definimos el tipo de las props de la página
 interface PageProps {
@@ -56,6 +57,9 @@ export default async function MaterialDetailPage({ params }: PageProps) {
         <CompositionsTools material={material} />
         <Properties material={material} />
         <RecipeTab pasos={material.pasos} />
+
+        {/*Seccion de derivados */}
+        <DerivedSection parentId={material.id} />
       </div>
     </div>
   );

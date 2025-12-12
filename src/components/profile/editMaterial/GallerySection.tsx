@@ -1,27 +1,32 @@
 import Image from "next/image";
+import { useFormContext } from "react-hook-form";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
-import { galeriaItem } from "@/types/materials"; // Importa tu tipo original
+import { EditMaterialFormValues } from "@/components/register-material/schemas"; // Tu tipo inferido
 
-interface Props {
-  originalGallery: galeriaItem[];
-  captions: string[];
-  setCaptions: (v: string[]) => void;
-  newFiles: File[];
-  setNewFiles: (v: File[]) => void;
-}
+export function GallerySection() {
+  const { register, watch, setValue } =
+    useFormContext<EditMaterialFormValues>();
 
-export function GallerySection({
-  originalGallery,
-  captions,
-  setCaptions,
-  newFiles,
-  setNewFiles,
-}: Props) {
-  const handleCaptionChange = (index: number, val: string) => {
-    const newCaptions = [...captions];
-    newCaptions[index] = val;
-    setCaptions(newCaptions);
+  // 1. Observamos el estado del formulario en tiempo real
+  // 'galeria' contiene las imágenes existentes cargadas en defaultValues
+  const existingGallery = watch("galeria") || [];
+
+  // 'newGalleryFiles' contiene los archivos nuevos subidos por el usuario
+  const newFiles = watch("newGalleryFiles") || [];
+
+  // Handler para input de archivos (RHF no maneja File[] nativamente bien con register directo)
+  const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    if (e.target.files && e.target.files.length > 0) {
+      // Convertimos FileList a Array estándar
+      const filesArray = Array.from(e.target.files);
+      setValue("newGalleryFiles", filesArray, { shouldValidate: true });
+    }
+  };
+
+  // Handler para cancelar subida
+  const handleCancelUpload = () => {
+    setValue("newGalleryFiles", []);
   };
 
   return (
@@ -30,61 +35,79 @@ export function GallerySection({
         Galería de Imágenes
       </h3>
 
+      {/* CONDICIONAL: Si NO hay archivos nuevos, mostramos la galería actual editable */}
       {newFiles.length === 0 ? (
         /* MODO EDICIÓN CAPTIONS */
         <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
-          {originalGallery?.map((img, i) => (
-            <div key={img.ID} className="border p-2 rounded bg-slate-50">
-              <div className="relative aspect-video w-full mb-2 bg-slate-200 rounded overflow-hidden">
-                <Image
-                  src={img.url_imagen}
-                  alt="Galeria"
-                  fill
-                  className="object-cover"
+          {existingGallery.length > 0 ? (
+            existingGallery.map((img, index) => (
+              <div
+                key={img.id || index}
+                className="border p-2 rounded bg-slate-50"
+              >
+                <div className="relative aspect-video w-full mb-2 bg-slate-200 rounded overflow-hidden">
+                  <Image
+                    src={img.url_imagen}
+                    alt="Galeria"
+                    fill
+                    className="object-cover"
+                  />
+                </div>
+                {/* Aquí está la magia de RHF: 
+                    Registramos el caption directamente a la posición del array.
+                    Al escribir, se actualiza el estado del formulario automáticamente.
+                */}
+                <Input
+                  {...register(`galeria.${index}.caption`)}
+                  className="h-8 text-xs bg-white"
+                  placeholder="Descripción..."
                 />
               </div>
-              <Input
-                className="h-8 text-xs"
-                placeholder="Descripción..."
-                value={captions[i]}
-                onChange={(e) => handleCaptionChange(i, e.target.value)}
-              />
+            ))
+          ) : (
+            <div className="col-span-full py-8 text-center text-slate-400 italic bg-slate-50 rounded border border-dashed">
+              No hay imágenes en la galería actual.
             </div>
-          ))}
+          )}
         </div>
       ) : (
-        /* MODO REEMPLAZO */
-        <div className="p-4 bg-amber-50 border border-amber-200 text-amber-800 rounded text-center">
+        /* MODO REEMPLAZO (Aviso visual) */
+        <div className="p-4 bg-amber-50 border border-amber-200 text-amber-800 rounded text-center animate-in fade-in zoom-in-95">
           Has seleccionado {newFiles.length} fotos nuevas.
-          <strong> Se borrará la galería anterior</strong> y se subirán estas
-          nuevas.
+          <br />
+          <strong>⚠️ Se borrará toda la galería anterior</strong> y se
+          reemplazarán con estas nuevas.
         </div>
       )}
 
-      {/* INPUT ARCHIVOS */}
-      <div className="mt-4 p-4 border-dashed border-2 rounded-xl bg-slate-50 text-center">
-        <p className="text-sm text-slate-500 mb-2">
+      {/* INPUT PARA SUBIR ARCHIVOS */}
+      <div className="mt-4 p-4 border-dashed border-2 rounded-xl bg-slate-50 text-center hover:bg-slate-100 transition-colors">
+        <p className="text-sm text-slate-500 mb-2 font-medium">
           {newFiles.length === 0
             ? "Para reemplazar todas las fotos, selecciona nuevas aquí:"
             : "Cambiar selección:"}
         </p>
+
         <input
           type="file"
           multiple
           accept="image/*"
-          onChange={(e) => {
-            if (e.target.files) setNewFiles(Array.from(e.target.files));
-          }}
+          className="text-sm text-slate-500 file:mr-4 file:py-2 file:px-4 file:rounded-full file:border-0 file:text-sm file:font-semibold file:bg-violet-50 file:text-violet-700 hover:file:bg-violet-100 cursor-pointer"
+          onChange={handleFileChange}
         />
+
         {newFiles.length > 0 && (
-          <Button
-            variant="ghost"
-            size="sm"
-            onClick={() => setNewFiles([])}
-            className="mt-2 text-red-500"
-          >
-            Cancelar subida (Mantener galería actual)
-          </Button>
+          <div className="mt-3">
+            <Button
+              type="button" // Importante para no hacer submit
+              variant="ghost"
+              size="sm"
+              onClick={handleCancelUpload}
+              className="text-red-500 hover:text-red-700 hover:bg-red-50"
+            >
+              Cancelar subida (Mantener galería actual)
+            </Button>
+          </div>
         )}
       </div>
     </div>

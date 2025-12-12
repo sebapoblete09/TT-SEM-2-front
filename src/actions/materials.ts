@@ -6,6 +6,7 @@ import {
   approveMaterialService,
   rejectedMaterialService,
   createMaterialService,
+  deleteMaterialService,
 } from "@/services/materialServices"; // Ajusta la ruta si es necesario
 import { revalidatePath } from "next/cache";
 
@@ -124,7 +125,7 @@ export async function approveMaterialAction(id: string) {
 }
 
 //RECHAZAR MATERIAL
-export async function rejectedMaterialAction(id: string, reason: string) {
+export async function rejectedMaterialAction(id: string, razon: string) {
   const supabase = await createClient();
   const {
     data: { session },
@@ -137,7 +138,7 @@ export async function rejectedMaterialAction(id: string, reason: string) {
 
   try {
     // 2. Llamada al servicio
-    await rejectedMaterialService(session.access_token, id, reason);
+    await rejectedMaterialService(session.access_token, id, razon);
 
     // 3. Revalidación (CRÍTICO)
     // Esto hace que Next.js actualice las listas en el servidor.
@@ -147,6 +148,31 @@ export async function rejectedMaterialAction(id: string, reason: string) {
     revalidatePath("/profile");
 
     return { success: true, message: "Material rechazado correctamente" };
+  } catch (error) {
+    console.error(error);
+    return {
+      success: false,
+      message: error instanceof Error ? error.message : "Error desconocido",
+    };
+  }
+}
+
+//Eliminar material
+export async function deleteMaterialAction(id: string, razon: string) {
+  const supabase = await createClient();
+  const {
+    data: { session },
+  } = await supabase.auth.getSession();
+  // 1. Validación
+  if (!session) {
+    return { success: false, message: "No autorizado" };
+  }
+  try {
+    await deleteMaterialService(session.access_token, id, razon);
+    revalidatePath("/materials"); // Catálogo público
+    revalidatePath("/profile"); // Perfil del usuario (donde gestiona sus materiales)
+
+    return { success: true, message: "Material eliminado correctamente" };
   } catch (error) {
     console.error(error);
     return {

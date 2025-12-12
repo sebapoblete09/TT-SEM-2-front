@@ -1,73 +1,94 @@
 import { useState } from "react";
+import { useFormContext } from "react-hook-form"; // <--- Importante
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { LinkIcon, Plus, Users, X } from "lucide-react";
 import { creador } from "@/types/materials";
+import { EditMaterialFormValues } from "@/components/register-material/schemas"; // Importa tu tipo inferido
 
-// --- Props del Componente Principal ---
+// --- Props Reducidas ---
+// Ya no necesitamos setNombre, setDescripcion, etc.
+// Solo pasamos datos estáticos (read-only) que no están en el form context editable
 interface Props {
-  nombre: string;
-  setNombre: (v: string) => void;
-  descripcion: string;
-  setDescripcion: (v: string) => void;
-  herramientas: string[];
-  setHerramientas: (v: string[]) => void;
-  composicion: string[];
-  setComposicion: (v: string[]) => void;
-  derivadoDe?: string; // Puede ser null o string vacío
-  colaboradores?: creador[]; // Array de objetos creador
+  derivadoDe?: string;
+  colaboradores?: creador[];
 }
 
-// --- Componente Auxiliar para manejar listas (Input + Badges) ---
+// --- Componente Auxiliar ListInput (Adaptado a RHF) ---
 function ListInput({
   label,
   placeholder,
-  items,
-  setItems,
+  fieldName, // Nombre del campo en el schema (ej: "herramientas")
 }: {
   label: string;
   placeholder: string;
-  items: string[];
-  setItems: (v: string[]) => void;
+  fieldName: "herramientas" | "composicion"; // Tipado estricto
 }) {
+  // Hook para acceder al form context
+  const {
+    watch,
+    setValue,
+    formState: { errors },
+  } = useFormContext<EditMaterialFormValues>();
+
+  // Estado local SOLO para el input de texto temporal (no se guarda en el form hasta dar Enter)
   const [inputValue, setInputValue] = useState("");
+
+  // Leemos el array actual del formulario
+  const items = watch(fieldName) || [];
 
   const handleAdd = () => {
     if (inputValue.trim() !== "") {
-      setItems([...items, inputValue.trim()]);
+      const newItem = inputValue.trim();
+      // Evitar duplicados (opcional)
+      if (!items.includes(newItem)) {
+        setValue(fieldName, [...items, newItem], {
+          shouldValidate: true,
+          shouldDirty: true,
+        });
+      }
       setInputValue("");
     }
   };
 
-  const handleRemove = (index: number) => {
-    const newItems = [...items];
-    newItems.splice(index, 1);
-    setItems(newItems);
+  const handleRemove = (indexToRemove: number) => {
+    const newItems = items.filter(
+      (_: string, index: number) => index !== indexToRemove
+    );
+    setValue(fieldName, newItems, { shouldValidate: true, shouldDirty: true });
   };
 
   const handleKeyDown = (e: React.KeyboardEvent<HTMLInputElement>) => {
     if (e.key === "Enter") {
-      e.preventDefault(); // Evita que se envíe el formulario principal
+      e.preventDefault();
       handleAdd();
     }
   };
+
+  // Obtener error específico de este campo array
+  const errorMsg = errors[fieldName]?.message;
 
   return (
     <div>
       <label className="block text-sm font-medium mb-1">
         {label} <span className="text-red-500">*</span>
       </label>
+
       <div className="flex gap-2">
         <Input
           placeholder={placeholder}
           value={inputValue}
           onChange={(e) => setInputValue(e.target.value)}
           onKeyDown={handleKeyDown}
+          // Si hay error en el array (ej: min(1)), pintamos borde rojo al input
+          className={
+            errorMsg ? "border-red-500 focus-visible:ring-red-500" : ""
+          }
         />
         <Button
-          type="button" // Importante: type button para no enviar el form
+          type="button"
           size="icon"
           onClick={handleAdd}
           className="bg-slate-900 hover:bg-slate-800 shrink-0"
@@ -76,6 +97,11 @@ function ListInput({
         </Button>
       </div>
 
+      {/* Mensaje de error de validación (ej: "Agrega al menos una herramienta") */}
+      {errorMsg && (
+        <p className="text-xs text-red-500 mt-1">{errorMsg as string}</p>
+      )}
+
       {/* Área de lista */}
       <div className="mt-3 flex flex-wrap gap-2 min-h-[40px] p-2 border border-dashed rounded-lg bg-slate-50/50">
         {items.length === 0 ? (
@@ -83,7 +109,7 @@ function ListInput({
             Los elementos agregados aparecerán aquí
           </span>
         ) : (
-          items.map((item, index) => (
+          items.map((item: string, index: number) => (
             <Badge
               key={index}
               variant="secondary"
@@ -106,61 +132,69 @@ function ListInput({
 }
 
 // --- Componente Principal ---
-export function BasicInfoSection({
-  nombre,
-  setNombre,
-  descripcion,
-  setDescripcion,
-  herramientas,
-  setHerramientas,
-  composicion,
-  setComposicion,
-  derivadoDe,
-  colaboradores,
-}: Props) {
+export function BasicInfoSection({ derivadoDe, colaboradores }: Props) {
+  // Accedemos al contexto RHF
+  const {
+    register,
+    formState: { errors },
+  } = useFormContext<EditMaterialFormValues>();
+
   return (
     <div className="space-y-6 border p-4 rounded-lg bg-slate-50">
       <h3 className="font-semibold text-slate-700">Información General</h3>
 
-      {/* --- CAMPOS EDITABLES --- */}
+      {/* --- CAMPO NOMBRE --- */}
       <div>
         <label className="block text-sm font-medium mb-1">
           Nombre del Material <span className="text-red-500">*</span>
         </label>
         <Input
-          value={nombre}
-          onChange={(e) => setNombre(e.target.value)}
-          required
+          {...register("nombre")} // Vinculación automática
+          className={
+            errors.nombre ? "border-red-500 focus-visible:ring-red-500" : ""
+          }
         />
+        {errors.nombre && (
+          <p className="text-xs text-red-500 mt-1">{errors.nombre.message}</p>
+        )}
       </div>
 
+      {/* --- CAMPO DESCRIPCIÓN --- */}
       <div>
         <label className="block text-sm font-medium mb-1">
           Descripción Corta
         </label>
         <Textarea
-          value={descripcion}
-          onChange={(e) => setDescripcion(e.target.value)}
+          {...register("descripcion")} // Vinculación automática
           rows={3}
+          className={
+            errors.descripcion
+              ? "border-red-500 focus-visible:ring-red-500"
+              : ""
+          }
         />
+        {errors.descripcion && (
+          <p className="text-xs text-red-500 mt-1">
+            {errors.descripcion.message}
+          </p>
+        )}
       </div>
 
       <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+        {/* Usamos el nuevo ListInput conectado a RHF */}
         <ListInput
           label="Herramientas"
           placeholder="Agregar herramienta..."
-          items={herramientas}
-          setItems={setHerramientas}
+          fieldName="herramientas"
         />
         <ListInput
           label="Composición"
           placeholder="Agregar ingrediente..."
-          items={composicion}
-          setItems={setComposicion}
+          fieldName="composicion"
         />
       </div>
 
-      {/* --- SECCIÓN DE SOLO LECTURA --- */}
+      {/* --- SECCIÓN DE SOLO LECTURA (Se mantiene igual) --- */}
       {(derivadoDe || (colaboradores && colaboradores.length > 0)) && (
         <div className="pt-4 mt-4 border-t border-slate-200">
           <h4 className="text-xs font-bold text-slate-400 uppercase tracking-wider mb-4">
@@ -179,7 +213,7 @@ export function BasicInfoSection({
                   <Input
                     value={derivadoDe}
                     disabled
-                    className="bg-slate-100  border-slate-200 cursor-not-allowed"
+                    className="bg-slate-100 border-slate-200 cursor-not-allowed"
                   />
                 </div>
                 <p className="text-[10px] text-slate-400 mt-1">
@@ -198,7 +232,7 @@ export function BasicInfoSection({
                 <div className="p-3 bg-slate-100 border border-slate-200 rounded-md min-h-[40px] flex flex-wrap gap-2">
                   {colaboradores.map((colab) => (
                     <Badge
-                      key={colab.ID || colab.google_id} // Usar ID único
+                      key={colab.ID || colab.google_id}
                       variant="outline"
                       className="bg-white text-slate-600 border-slate-300 shadow-sm"
                     >

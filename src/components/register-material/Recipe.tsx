@@ -1,10 +1,7 @@
 "use client";
 
 import { useEffect, useState } from "react";
-import { useForm, useFieldArray } from "react-hook-form";
-import { zodResolver } from "@hookform/resolvers/zod";
-import { recipeSchema, RecipeFormValues } from "./schemas";
-
+import { useFormContext, useFieldArray } from "react-hook-form"; // <--- CLAVE
 import {
   Card,
   CardHeader,
@@ -26,65 +23,41 @@ import {
 } from "lucide-react";
 import Image from "next/image";
 
-// Interfaz para los pasos
-export interface Step {
-  id: number;
-  orden_paso: number;
-  descripcion: string;
-  url_imagen: File | null;
-  url_video: File | null;
-}
+// Importamos el tipo global
+import { RegisterMaterialFormValues } from "./schemas";
 
 interface RecipeFormProps {
-  recipeSteps: Step[];
-  setRecipeSteps: React.Dispatch<React.SetStateAction<Step[]>>;
   onBack: () => void;
-  onSubmit: () => void;
+  // No recibe onSubmit ni setRecipeSteps, usa el contexto
 }
 
-export default function RecipeForm({
-  recipeSteps,
-  setRecipeSteps,
-  onBack,
-  onSubmit,
-}: RecipeFormProps) {
+export default function RecipeForm({ onBack }: RecipeFormProps) {
   // Previsualizaciones locales
   const [previews, setPreviews] = useState<
     Record<number, { image?: string; video?: string }>
   >({});
 
-  // 1. CONFIGURACIÓN DEL FORMULARIO
-  const form = useForm<RecipeFormValues>({
-    resolver: zodResolver(recipeSchema),
-    defaultValues: {
-      recipeSteps:
-        recipeSteps.length > 0
-          ? recipeSteps
-          : [
-              {
-                id: Date.now(),
-                orden_paso: 1,
-                descripcion: "",
-                url_imagen: null,
-                url_video: null,
-              },
-            ],
-    },
-    mode: "onChange",
-  });
+  // Conectamos al contexto global
+  const {
+    control,
+    register,
+    formState: { errors },
+    getValues,
+    setValue,
+    trigger,
+  } = useFormContext<RegisterMaterialFormValues>();
 
-  // 2. GESTIÓN DE ARRAY DINÁMICO
+  // Gestión de array dinámico conectado al schema global
   const { fields, append, remove } = useFieldArray({
-    control: form.control,
+    control,
     name: "recipeSteps",
   });
 
-  // 3. CARGA INICIAL DE PREVIEWS (Solo al montar o si cambia la data externa)
-  // Esto maneja cuando editas un material existente y ya trae fotos
+  // CARGA INICIAL DE PREVIEWS (Al montar, lee del estado global)
   useEffect(() => {
     const initialPreviews: Record<number, { image?: string; video?: string }> =
       {};
-    const currentSteps = form.getValues("recipeSteps");
+    const currentSteps = getValues("recipeSteps");
 
     currentSteps.forEach((step) => {
       if (step.url_imagen instanceof File) {
@@ -102,7 +75,6 @@ export default function RecipeForm({
     });
     setPreviews((prev) => ({ ...prev, ...initialPreviews }));
 
-    // Cleanup al desmontar
     return () => {
       Object.values(initialPreviews).forEach((p) => {
         if (p.image) URL.revokeObjectURL(p.image);
@@ -112,21 +84,20 @@ export default function RecipeForm({
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
-  // 4. MANEJO DE SUBIDA DE ARCHIVOS (VISUALIZACIÓN INSTANTÁNEA)
+  // MANEJO DE ARCHIVOS (Actualiza RHF y Previews)
   const handleFileChange = (
     index: number,
     field: "url_imagen" | "url_video",
     file: File | null
   ) => {
-    // A. Actualizamos RHF para la validación
-    form.setValue(`recipeSteps.${index}.${field}`, file, {
+    // 1. Actualizamos RHF
+    setValue(`recipeSteps.${index}.${field}`, file, {
       shouldValidate: true,
       shouldDirty: true,
     });
 
-    // B. Actualizamos la preview MANUALMENTE para que sea instantáneo
-    // Obtenemos el ID de este paso específico
-    const stepId = form.getValues(`recipeSteps.${index}.id`);
+    // 2. Actualizamos Preview
+    const stepId = getValues(`recipeSteps.${index}.id`);
 
     if (file) {
       const url = URL.createObjectURL(file);
@@ -138,7 +109,6 @@ export default function RecipeForm({
         },
       }));
     } else {
-      // Si el usuario borra/cancela el archivo, limpiamos la preview
       setPreviews((prev) => {
         const newPreviews = { ...prev };
         if (newPreviews[stepId]) {
@@ -150,14 +120,21 @@ export default function RecipeForm({
     }
   };
 
-  const handleFinalSubmit = async () => {
-    const isValid = await form.trigger();
-    if (isValid) {
-      // SOLUCIÓN: Agregamos 'as unknown as Step[]'
-      const values = form.getValues().recipeSteps;
-      setRecipeSteps(values as unknown as Step[]);
+  // VALIDACIÓN FINAL Y SUBMIT (Disparado por el botón submit real)
+  // Nota: En realidad, el botón type="submit" disparará el onSubmit del <form> en page.tsx.
+  // Pero si quieres validar SOLO este paso antes de dejar enviar, puedes hacer esto:
+  const handleFinalSubmit = async (e: React.MouseEvent) => {
+    // Prevenimos el submit default si la validación falla
+    e.preventDefault();
 
-      onSubmit();
+    const isValid = await trigger("recipeSteps");
+
+    if (isValid) {
+      // Disparamos el evento submit nativo del formulario para que page.tsx lo capture
+      // Ojo: Como estamos dentro de un form, un botón type="submit" lo haría solo.
+      // Pero si queremos validación manual pre-submit, usamos requestSubmit()
+      const formElement = document.querySelector("form");
+      formElement?.requestSubmit();
     }
   };
 
@@ -180,10 +157,8 @@ export default function RecipeForm({
       <CardContent className="space-y-8 p-6 md:p-8">
         <div className="space-y-6">
           {fields.map((field, index) => {
-            const stepError = form.formState.errors.recipeSteps?.[index];
-            // IMPORTANTE: Obtenemos el ID real del paso (no el id interno de field array) para buscar la preview
-            // Usamos form.getValues porque field.id es de uso interno de RHF
-            const realStepId = form.getValues(`recipeSteps.${index}.id`);
+            const stepError = errors.recipeSteps?.[index];
+            const realStepId = getValues(`recipeSteps.${index}.id`);
 
             return (
               <div
@@ -228,7 +203,7 @@ export default function RecipeForm({
                       Instrucciones del Paso {index + 1}
                     </Label>
                     <Textarea
-                      {...form.register(`recipeSteps.${index}.descripcion`)}
+                      {...register(`recipeSteps.${index}.descripcion`)}
                       rows={3}
                       placeholder="Ej: Mezclar la glicerina con el agua..."
                       className={`resize-none ${
@@ -265,7 +240,6 @@ export default function RecipeForm({
                           className="absolute inset-0 w-full h-full opacity-0 cursor-pointer z-20"
                         />
 
-                        {/* Buscamos la preview usando el ID real del paso */}
                         {previews[realStepId]?.image ? (
                           <div className="relative w-full h-full">
                             <Image
@@ -361,6 +335,7 @@ export default function RecipeForm({
             <ArrowLeft className="mr-2 w-4 h-4" /> Atrás
           </Button>
 
+          {/* BOTÓN FINAL */}
           <Button
             onClick={handleFinalSubmit}
             size="lg"

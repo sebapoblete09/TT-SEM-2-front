@@ -63,6 +63,28 @@ export const getPendingMaterialsService = async (access_token: string) => {
   return response.json();
 };
 
+//OBTENER MATERIALES DERIVADOS DE OTRO
+export const getDerivedMaterialsService = async (parentId: string) => {
+  const response = await fetch(`${BASE_URL}/materials/${parentId}/derived`, {
+    method: "GET",
+    headers: { "Content-Type": "application/json" },
+    cache: "no-store",
+  });
+  if (!response.ok) throw new Error(`Error ${response.status}`);
+  const data = await response.json();
+  return data.filter((m: any) => m.estado === true);
+};
+
+//// Obtener las listas para llenar el sidebar (Herramientas y Composición)
+export const getFilterServices = async () => {
+  const response = await fetch(`${BASE_URL}/materials/filters`, {
+    method: "GET",
+    cache: "force-cache",
+  });
+  if (!response.ok) throw new Error("Error cargando opciones de filtro");
+  return response.json();
+};
+
 /**------------------
  Funciones POST
 ---------------------*/
@@ -111,7 +133,7 @@ export const approveMaterialService = async (
 export const rejectedMaterialService = async (
   access_token: string,
   id: string,
-  reason: string
+  razon: string
 ) => {
   const response = await fetch(`${BASE_URL}/materials/${id}/reject`, {
     method: "POST",
@@ -119,7 +141,7 @@ export const rejectedMaterialService = async (
       Authorization: `Bearer ${access_token}`,
       "Content-Type": "application/json",
     },
-    body: JSON.stringify({ reason }),
+    body: JSON.stringify({ razon }),
   });
 
   if (!response.ok) {
@@ -153,5 +175,28 @@ export const updateMaterialService = async (
     throw new Error(errorData.message || "Error al actualizar material");
   }
 
+  return response.json();
+};
+
+/**------------------
+ Funciones DELETE
+---------------------*/
+export const deleteMaterialService = async (
+  access_token: string,
+  id: string,
+  razon: string
+) => {
+  const response = await fetch(`${BASE_URL}/materials/${id}`, {
+    method: "DELETE",
+    headers: {
+      Authorization: `Bearer ${access_token}`,
+      "Content-Type": "application/json", // <--- FALTA ESTO
+    },
+    body: JSON.stringify({ razon }),
+  });
+  if (!response.ok) {
+    const error = await response.text();
+    throw new Error(error || "Error al eliminar material");
+  }
   return response.json();
 };

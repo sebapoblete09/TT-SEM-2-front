@@ -1,267 +1,237 @@
 "use client";
 
 import { useState } from "react";
+import { useForm, FormProvider } from "react-hook-form";
+import { zodResolver } from "@hookform/resolvers/zod";
 import {
-  Material,
-  prop_emocionales,
-  prop_mecanicas,
-  prop_perceptivas,
-} from "@/types/materials";
+  editMaterialSchema,
+  EditMaterialFormValues,
+} from "@/components/register-material/schemas";
+import { Material } from "@/types/materials";
 import { updateMaterialAction } from "@/actions/materials";
 import { toast } from "sonner";
 import { Button } from "@/components/ui/button";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import { Card } from "@/components/ui/card";
+import { CheckCircle2, Home, Plus } from "lucide-react"; // Importar iconos
+import { useRouter } from "next/navigation"; // Importar router
 
-// Importamos los submódulos
 import { BasicInfoSection } from "./BasicInfoSection";
-import { StepsSection, StepWithFile } from "./StepSection";
-import { GallerySection } from "./GallerySection";
 import { PropertiesSection } from "./PropertiesSection";
+import { StepsSection } from "./StepSection";
+import { GallerySection } from "./GallerySection";
 
 interface EditProps {
   material: Material;
+  onSuccessClose?: () => void;
 }
 
-export default function EditMaterialForm({ material }: EditProps) {
+export default function EditMaterialForm({
+  material,
+  onSuccessClose,
+}: EditProps) {
+  const router = useRouter();
   const [loading, setLoading] = useState(false);
+  const [success, setSuccess] = useState(false); // Estado para el modal de éxito
 
-  // --- ESTADOS ---
-  const [nombre, setNombre] = useState(material.nombre);
-  const [descripcion, setDescripcion] = useState(material.descripcion);
-  const [herramientas, setHerramientas] = useState<string[]>(
-    material.herramientas || []
-  );
-  const [composicion, setComposicion] = useState<string[]>(
-    material.composicion || []
-  );
-  const [mecanicas, setMecanicas] = useState<prop_mecanicas>(
-    material.prop_mecanicas || {
-      material_id: material.id,
-      resistencia: "",
-      dureza: "",
-      elasticidad: "",
-      ductilidad: "",
-      fragilidad: "",
-    }
-  );
-  const [perceptivas, setPerceptivas] = useState<prop_perceptivas>(
-    material.prop_perceptivas || {
-      material_id: material.id,
-      color: "",
-      brillo: "",
-      textura: "",
-      transparencia: "",
-      sensacion_termica: "",
-    }
-  );
-  const [emocionales, setEmocionales] = useState<prop_emocionales>(
-    material.prop_emocionales || {
-      material_id: material.id,
-      calidez_emocional: "",
-      inspiracion: "",
-      sostenibilidad_percibida: "",
-      armonia: "",
-      innovacion_emocional: "",
-    }
-  );
-
-  const [steps, setSteps] = useState<StepWithFile[]>(
-    material.pasos
-      .sort((a, b) => a.orden_paso - b.orden_paso)
-      .map((p) => ({ ...p, newFile: null }))
-  );
-
-  const [galleryCaptions, setGalleryCaptions] = useState(
-    material.galeria?.sort((a, b) => a.ID - b.ID).map((g) => g.caption || "") ||
-      []
-  );
-  const [newGalleryFiles, setNewGalleryFiles] = useState<File[]>([]);
-
-  // --- HANDLERS ---
-  const handleStepChange = (index: number, val: string) => {
-    const newSteps = [...steps];
-    newSteps[index].descripcion = val;
-    setSteps(newSteps);
-  };
-
-  const handleAddStep = () => {
-    setSteps([
-      ...steps,
-      {
-        orden_paso: steps.length + 1, // El siguiente número
-        descripcion: "",
-        newFile: null,
-        // No ponemos ID, el backend sabrá que es nuevo porque su orden_paso es nuevo
-        // o porque no machea con existingPasos por lógica de descarte.
+  // 1. INICIALIZAR EL FORMULARIO
+  const methods = useForm<EditMaterialFormValues>({
+    resolver: zodResolver(editMaterialSchema),
+    defaultValues: {
+      nombre: material.nombre || "",
+      descripcion: material.descripcion || "",
+      derivadoDe: material.derivado_de || "",
+      herramientas: material.herramientas || [],
+      composicion: material.composicion || [],
+      mecanicas: material.prop_mecanicas || {
+        resistencia: "",
+        dureza: "",
+        elasticidad: "",
+        ductilidad: "",
+        fragilidad: "",
       },
-    ]);
-  };
+      perceptivas: material.prop_perceptivas || {
+        color: "",
+        brillo: "",
+        textura: "",
+        transparencia: "",
+        sensacion_termica: "",
+      },
+      emocionales: material.prop_emocionales || {
+        calidez_emocional: "",
+        inspiracion: "",
+        sostenibilidad_percibida: "",
+        armonia: "",
+        innovacion_emocional: "",
+      },
+      pasos: material.pasos
+        ? material.pasos
+            .sort((a, b) => a.orden_paso - b.orden_paso)
+            .map((p) => ({
+              id: p.ID || p.ID,
+              orden_paso: p.orden_paso,
+              descripcion: p.descripcion,
+              url_imagen: p.url_imagen,
+              url_video: p.url_video,
+              newFile: null,
+            }))
+        : [],
+      galeria:
+        material.galeria?.map((g) => ({
+          id: g.ID || g.ID,
+          url_imagen: g.url_imagen,
+          caption: g.caption || "",
+        })) || [],
+      newGalleryFiles: [],
+    },
+  });
 
-  const handleRemoveStep = (indexToRemove: number) => {
-    // 1. Filtramos el paso
-    const filtered = steps.filter((_, i) => i !== indexToRemove);
+  const { handleSubmit, getValues } = methods; // getValues para leer nombre en el modal
 
-    // 2. IMPORTANTE: Renumeramos los orden_paso para mantener secuencia 1, 2, 3...
-    // Esto asegura que el backend entienda la nueva estructura limpiamente.
-    const reordered = filtered.map((step, i) => ({
-      ...step,
-      orden_paso: i + 1,
-    }));
-
-    setSteps(reordered);
-  };
-
-  const handleStepFile = (index: number, file: File) => {
-    const newSteps = [...steps];
-    newSteps[index].newFile = file;
-    setSteps(newSteps);
-  };
-
-  const handleSubmit = async (e: React.FormEvent) => {
-    e.preventDefault();
+  // 2. MANEJO DEL SUBMIT
+  const onSubmit = async (data: EditMaterialFormValues) => {
     setLoading(true);
-
     try {
       const formData = new FormData();
+      formData.append("nombre", data.nombre);
+      formData.append("descripcion", data.descripcion);
+      if (data.derivadoDe) formData.append("derivado_de", data.derivadoDe);
+      formData.append("herramientas", JSON.stringify(data.herramientas));
+      formData.append("composicion", JSON.stringify(data.composicion));
+      formData.append("prop_mecanicas", JSON.stringify(data.mecanicas));
+      formData.append("prop_perceptivas", JSON.stringify(data.perceptivas));
+      formData.append("prop_emocionales", JSON.stringify(data.emocionales));
 
-      // Construcción del FormData (Lógica de negocio pura)
-      formData.append("nombre", nombre);
-      formData.append("descripcion", descripcion);
-      formData.append("herramientas", JSON.stringify(herramientas));
-      formData.append("composicion", JSON.stringify(composicion));
-      formData.append("prop_mecanicas", JSON.stringify(mecanicas));
-      formData.append("prop_perceptivas", JSON.stringify(perceptivas));
-      formData.append("prop_emocionales", JSON.stringify(emocionales));
-
-      const pasosPayload = steps.map((s, i) => ({
+      const pasosPayload = data.pasos.map((s, i) => ({
         orden_paso: i + 1,
         descripcion: s.descripcion,
       }));
       formData.append("pasos", JSON.stringify(pasosPayload));
 
-      steps.forEach((step, i) => {
-        if (step.newFile) formData.append(`paso_images[${i}]`, step.newFile);
+      data.pasos.forEach((step: any, i) => {
+        if (step.newFile instanceof File) {
+          formData.append(`paso_images[${i}]`, step.newFile);
+        }
       });
 
-      if (newGalleryFiles.length > 0) {
-        newGalleryFiles.forEach((f) => formData.append("galeria_images[]", f));
+      if (data.newGalleryFiles && data.newGalleryFiles.length > 0) {
+        (data.newGalleryFiles as File[]).forEach((file) => {
+          formData.append("galeria_images[]", file);
+        });
       } else {
-        formData.append("galeria_captions", JSON.stringify(galleryCaptions));
+        const captions = data.galeria?.map((g) => g.caption || "") || [];
+        formData.append("galeria_captions", JSON.stringify(captions));
       }
 
       const res = await updateMaterialAction(material.id, formData);
+
       if (res.success) {
-        toast.success("Material actualizado");
-        setNewGalleryFiles([]);
+        setSuccess(true); // <--- ACTIVAR MODAL DE ÉXITO
+        // Opcional: toast.success("Material actualizado");
       } else {
         toast.error(res.message);
       }
     } catch (error) {
-      toast.error("Error al enviar");
+      console.error(error);
+      toast.error("Error inesperado al enviar");
     } finally {
       setLoading(false);
     }
   };
 
-  // --- RENDERIZADO LIMPIO ---
-  return (
-    // El form envuelve todo para que el botón de submit funcione desde cualquier tab
-    <form
-      onSubmit={handleSubmit}
-      className="max-w-5xl mx-auto bg-white rounded-xl shadow-sm border overflow-hidden"
-    >
-      <Tabs defaultValue="general" className="w-full">
-        {/* --- HEADER DE TABS --- */}
-        <div className="border-b px-6 py-4 bg-slate-50/50">
-          <TabsList className="grid w-full grid-cols-4 bg-slate-100 p-1 rounded-lg">
-            <TabsTrigger value="general">General</TabsTrigger>
-            <TabsTrigger value="propiedades">Propiedades</TabsTrigger>
-            <TabsTrigger value="proceso">Proceso</TabsTrigger>
-            <TabsTrigger value="galeria">Galería</TabsTrigger>
-          </TabsList>
-        </div>
+  const onError = (errors: any) => {
+    console.log("Errores:", errors);
+    toast.error("Revisa el formulario, hay campos inválidos.");
+  };
 
-        {/* --- CONTENIDO DE TABS --- */}
-        <div className="p-6 min-h-[500px]">
-          {/* TAB 1: GENERAL */}
-          <TabsContent
-            value="general"
-            className="mt-0 space-y-6 animate-in fade-in-50"
-          >
-            <BasicInfoSection
-              nombre={nombre}
-              setNombre={setNombre}
-              descripcion={descripcion}
-              setDescripcion={setDescripcion}
-              herramientas={herramientas}
-              setHerramientas={setHerramientas}
-              composicion={composicion}
-              setComposicion={setComposicion}
-              derivadoDe={material.derivado_de}
-              colaboradores={material.colaboradores}
-            />
-          </TabsContent>
+  // Handler para el botón "Volver a Mis Materiales"
+  const handleSuccessRedirect = () => {
+    if (onSuccessClose) {
+      onSuccessClose(); // Cierra el modal del padre
+    } else {
+      router.push("/user"); // Fallback si es página
+    }
+  };
 
-          {/* TAB 2: PROPIEDADES */}
-          <TabsContent
-            value="propiedades"
-            className="mt-0 space-y-6 animate-in fade-in-50"
-          >
-            <PropertiesSection
-              mecanicas={mecanicas}
-              setMecanicas={setMecanicas}
-              perceptivas={perceptivas}
-              setPerceptivas={setPerceptivas}
-              emocionales={emocionales}
-              setEmocionales={setEmocionales}
-            />
-          </TabsContent>
+  // 1. SI HUBO ÉXITO: Mostramos SOLO la tarjeta de éxito
+  if (success) {
+    return (
+      <div className="flex justify-center py-10 animate-in fade-in slide-in-from-bottom-4 duration-500">
+        <Card className="w-full max-w-md p-8 shadow-xl border bg-white text-center relative overflow-hidden rounded-2xl">
+          {/* Decoración superior */}
+          <div className="absolute top-0 left-0 w-full h-2 bg-gradient-to-r from-green-400 to-teal-500" />
 
-          {/* TAB 3: PROCESO (STEPS) */}
-          <TabsContent
-            value="proceso"
-            className="mt-0 space-y-6 animate-in fade-in-50"
-          >
-            <StepsSection
-              steps={steps}
-              onStepChange={handleStepChange}
-              onStepFile={handleStepFile}
-              // Pasamos las nuevas funciones
-              onAddStep={handleAddStep}
-              onRemoveStep={handleRemoveStep}
-            />
-          </TabsContent>
+          <div className="flex flex-col items-center">
+            <div className="h-20 w-20 bg-green-100 rounded-full flex items-center justify-center mb-6">
+              <CheckCircle2 className="h-10 w-10 text-green-600" />
+            </div>
 
-          {/* TAB 4: GALERÍA */}
-          <TabsContent
-            value="galeria"
-            className="mt-0 space-y-6 animate-in fade-in-50"
-          >
-            <GallerySection
-              originalGallery={material.galeria || []}
-              captions={galleryCaptions}
-              setCaptions={setGalleryCaptions}
-              newFiles={newGalleryFiles}
-              setNewFiles={setNewGalleryFiles}
-            />
-          </TabsContent>
-        </div>
-      </Tabs>
+            <h2 className="text-2xl font-bold text-slate-900 mb-2">
+              ¡Actualización Exitosa!
+            </h2>
+            <p className="text-slate-500 mb-8 leading-relaxed">
+              El material <strong>{getValues("nombre")}</strong> ha sido
+              actualizado correctamente.
+            </p>
 
-      {/* --- FOOTER CON BOTÓN DE GUARDADO --- */}
-      <div className="bg-slate-50 px-6 py-4 border-t flex justify-between items-center">
-        <p className="text-xs text-slate-400">
-          * Recuerda guardar los cambios antes de salir.
-        </p>
-        <Button
-          type="submit"
-          disabled={loading}
-          size="lg"
-          className="min-w-[150px]"
-        >
-          {loading ? "Guardando..." : "Guardar Cambios"}
-        </Button>
+            <div className="flex flex-col gap-3 w-full">
+              <Button
+                onClick={handleSuccessRedirect}
+                size="lg"
+                className="w-full bg-slate-900 hover:bg-slate-800 text-white"
+              >
+                <Home className="mr-2 h-4 w-4" />
+                Volver a Mis Materiales
+              </Button>
+            </div>
+          </div>
+        </Card>
       </div>
-    </form>
+    );
+  }
+
+  // 2. SI NO (ESTADO NORMAL): Mostramos el formulario
+  return (
+    <FormProvider {...methods}>
+      <form
+        onSubmit={handleSubmit(onSubmit, onError)}
+        className="max-w-5xl mx-auto bg-white rounded-xl shadow-sm border overflow-hidden"
+      >
+        <Tabs defaultValue="general" className="w-full">
+          <div className="border-b px-6 py-4 bg-slate-50/50">
+            <TabsList className="grid w-full grid-cols-4 bg-slate-100 p-1 rounded-lg">
+              <TabsTrigger value="general">General</TabsTrigger>
+              <TabsTrigger value="propiedades">Propiedades</TabsTrigger>
+              <TabsTrigger value="proceso">Proceso</TabsTrigger>
+              <TabsTrigger value="galeria">Galería</TabsTrigger>
+            </TabsList>
+          </div>
+
+          <div className="p-6 min-h-[500px]">
+            <TabsContent value="general" className="mt-0">
+              <BasicInfoSection />
+            </TabsContent>
+
+            <TabsContent value="propiedades" className="mt-0">
+              <PropertiesSection />
+            </TabsContent>
+
+            <TabsContent value="proceso" className="mt-0">
+              <StepsSection />
+            </TabsContent>
+
+            <TabsContent value="galeria" className="mt-0">
+              <GallerySection />
+            </TabsContent>
+          </div>
+        </Tabs>
+
+        <div className="bg-slate-50 px-6 py-4 border-t flex justify-end gap-4">
+          <Button type="submit" disabled={loading} size="lg">
+            {loading ? "Guardando..." : "Guardar Cambios"}
+          </Button>
+        </div>
+      </form>
+    </FormProvider>
   );
 }
