@@ -10,6 +10,7 @@ export const basicInfoSchema = z.object({
   derivadoDe: z.string().optional(),
   imagenes: z.array(z.any()).min(1, "Debes subir al menos una imagen"),
   herramientas: z.array(z.string()).min(1, "Agrega al menos una herramienta"),
+  colaboradores: z.array(z.string()).optional(),
 });
 
 export type BasicInfoFormValues = z.infer<typeof basicInfoSchema>;
@@ -128,3 +129,18 @@ export const editMaterialSchema = z.object({
 });
 
 export type EditMaterialFormValues = z.infer<typeof editMaterialSchema>;
+
+// --- SCHEMA UNIFICADO PARA REGISTRO ---
+
+// --- SCHEMA PRINCIPAL UNIFICADO ---
+export const registerMaterialSchema = z.object({
+  // Spread de todos los schemas
+  ...basicInfoSchema.shape,
+  ...propertiesSchema.shape,
+  ...compositionSchema.shape,
+
+  // Pasos unificados
+  recipeSteps: z.array(stepSchema).min(1, "Agrega al menos un paso"),
+});
+
+export type RegisterMaterialFormValues = z.infer<typeof registerMaterialSchema>;

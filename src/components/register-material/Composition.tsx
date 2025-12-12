@@ -1,11 +1,7 @@
 "use client";
 
-import { useState, useEffect } from "react";
-import { useForm } from "react-hook-form";
-import { zodResolver } from "@hookform/resolvers/zod";
-// Importamos el nuevo esquema
-import { compositionSchema, CompositionFormValues } from "./schemas";
-
+import { useState } from "react";
+import { useFormContext } from "react-hook-form"; // <--- CLAVE
 import {
   Card,
   CardHeader,
@@ -26,60 +22,63 @@ import {
   Atom,
 } from "lucide-react";
 
+// Importamos el tipo del schema global
+import { RegisterMaterialFormValues } from "./schemas";
+
 interface CompositionFormProps {
-  composicion: string[];
-  setComposicion: React.Dispatch<React.SetStateAction<string[]>>;
   onNext: () => void;
   onBack: () => void;
+  // Ya no recibe composicion ni setComposicion
 }
 
 export default function CompositionForm({
-  composicion,
-  setComposicion,
   onNext,
   onBack,
 }: CompositionFormProps) {
-  // Estado local para el input de texto (no gestionado por Zod, solo es temporal)
-  const [current, setCurrent] = useState("");
+  // Estado local para el input temporal
+  const [currentInput, setCurrentInput] = useState("");
 
-  // --- 1. CONFIGURACIÓN DEL FORMULARIO ZOD ---
-  const form = useForm<CompositionFormValues>({
-    resolver: zodResolver(compositionSchema),
-    defaultValues: {
-      composicion: composicion,
-    },
-    mode: "onChange",
-  });
+  // Conectamos al contexto global
+  const {
+    formState: { errors },
+    watch,
+    setValue,
+    trigger,
+    clearErrors,
+  } = useFormContext<RegisterMaterialFormValues>();
 
-  // --- 2. SINCRONIZACIÓN (Efecto espejo) ---
-  // Cada vez que agregas/quitas un item, actualizamos a Zod
-  useEffect(() => {
-    form.setValue("composicion", composicion, {
-      shouldValidate: composicion.length > 0, // Solo validar si ya hay items para no mostrar rojo al inicio
-      shouldDirty: true,
-    });
-  }, [composicion, form]);
+  // Observamos el valor actual de la composición
+  const composicion = watch("composicion") || [];
 
-  // --- 3. VALIDACIÓN AL AVANZAR ---
-  const handleNextStep = async () => {
-    const isValid = await form.trigger(); // Dispara la validación del esquema
-    if (isValid) {
-      onNext();
-    }
-  };
-
-  // --- LÓGICA DE AGREGAR/QUITAR (Manual) ---
+  // --- LÓGICA DE AGREGAR/QUITAR ---
   const addItem = () => {
-    if (current.trim() && !composicion.includes(current)) {
-      setComposicion((prev) => [...prev, current]);
-      setCurrent("");
-      // Limpiamos el error de Zod visualmente apenas agregamos uno válido
-      form.clearErrors("composicion");
+    if (currentInput.trim() && !composicion.includes(currentInput.trim())) {
+      const newList = [...composicion, currentInput.trim()];
+
+      setValue("composicion", newList, {
+        shouldValidate: true,
+        shouldDirty: true,
+      });
+
+      setCurrentInput("");
+      clearErrors("composicion");
     }
   };
 
   const removeItem = (item: string) => {
-    setComposicion((prev) => prev.filter((c) => c !== item));
+    const newList = composicion.filter((c) => c !== item);
+    setValue("composicion", newList, {
+      shouldValidate: true,
+      shouldDirty: true,
+    });
+  };
+
+  // --- VALIDACIÓN AL AVANZAR ---
+  const handleNextStep = async () => {
+    const isValid = await trigger("composicion"); // Valida solo este campo
+    if (isValid) {
+      onNext();
+    }
   };
 
   return (
@@ -106,18 +105,16 @@ export default function CompositionForm({
             <Label
               htmlFor="componente-input"
               className={`text-xs font-semibold uppercase tracking-wide flex items-center gap-2 ${
-                form.formState.errors.composicion
-                  ? "text-red-500"
-                  : "text-slate-500"
+                errors.composicion ? "text-red-500" : "text-slate-500"
               }`}
             >
               <Atom className="w-4 h-4" /> Agregar Componente
             </Label>
 
-            {/* MENSAJE DE ERROR (Aparece a la derecha del label) */}
-            {form.formState.errors.composicion && (
+            {/* MENSAJE DE ERROR */}
+            {errors.composicion && (
               <span className="text-xs text-red-500 font-medium animate-in fade-in">
-                {form.formState.errors.composicion.message}
+                {errors.composicion.message}
               </span>
             )}
           </div>
@@ -125,15 +122,14 @@ export default function CompositionForm({
           <div className="flex gap-2">
             <Input
               id="componente-input"
-              value={current}
-              onChange={(e) => setCurrent(e.target.value)}
+              value={currentInput}
+              onChange={(e) => setCurrentInput(e.target.value)}
               onKeyDown={(e) =>
                 e.key === "Enter" && (e.preventDefault(), addItem())
               }
               placeholder="Ej: Glicerina, Agar, Agua..."
-              // Borde rojo si hay error y la lista está vacía
               className={`h-12 bg-slate-50 focus-visible:ring-amber-500 transition-all text-base ${
-                form.formState.errors.composicion
+                errors.composicion
                   ? "border-red-300 focus-visible:ring-red-500"
                   : "border-slate-200"
               }`}
@@ -152,8 +148,8 @@ export default function CompositionForm({
         {/* LISTA DE COMPONENTES */}
         <div
           className={`rounded-xl border p-6 min-h-[8rem] transition-colors ${
-            form.formState.errors.composicion
-              ? "border-red-200 bg-red-50/30" // Fondo rojizo suave si hay error
+            errors.composicion
+              ? "border-red-200 bg-red-50/30"
               : "border-slate-100 bg-slate-50/50"
           }`}
         >
@@ -161,23 +157,23 @@ export default function CompositionForm({
             <div className="flex flex-col items-center justify-center h-full text-center py-4">
               <Atom
                 className={`w-8 h-8 mb-2 ${
-                  form.formState.errors.composicion
+                  errors.composicion
                     ? "text-red-300"
                     : "text-slate-300 opacity-50"
                 }`}
               />
               <p
                 className={`text-sm ${
-                  form.formState.errors.composicion
+                  errors.composicion
                     ? "text-red-400 font-medium"
                     : "text-slate-400"
                 }`}
               >
-                {form.formState.errors.composicion
+                {errors.composicion
                   ? "¡La lista no puede estar vacía!"
                   : "Aún no hay componentes."}
               </p>
-              {!form.formState.errors.composicion && (
+              {!errors.composicion && (
                 <p className="text-xs text-slate-400 mt-1">
                   Escribe uno arriba y presiona Enter.
                 </p>
@@ -217,7 +213,7 @@ export default function CompositionForm({
           </Button>
 
           <Button
-            onClick={handleNextStep} // <--- Conectado a Zod
+            onClick={handleNextStep}
             className="bg-green-600 hover:bg-green-700 text-white shadow-lg shadow-green-900/10 group px-6"
           >
             Siguiente Paso

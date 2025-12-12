@@ -1,15 +1,6 @@
 "use client";
 
-import { useEffect } from "react";
-import { useForm, Controller } from "react-hook-form";
-import { zodResolver } from "@hookform/resolvers/zod";
-// Importamos el esquema y las opciones desde tu archivo de schemas
-import {
-  propertiesSchema,
-  PropertiesFormValues,
-  PROPERTY_OPTIONS,
-} from "./schemas";
-
+import { useFormContext, Controller, FieldError } from "react-hook-form"; // <--- Agrega FieldError
 import {
   Card,
   CardHeader,
@@ -36,83 +27,68 @@ import {
   ArrowRight,
 } from "lucide-react";
 
-// Mantenemos la interfaz de datos del padre
-export interface PropertiesData {
-  mecanicas: Record<string, string>;
-  perceptivas: Record<string, string>;
-  emocionales: Record<string, string>;
-}
+// Importamos el esquema y tipo global
+import { PROPERTY_OPTIONS, RegisterMaterialFormValues } from "./schemas";
 
 interface PropertiesFormProps {
-  data: PropertiesData;
-  setData: React.Dispatch<React.SetStateAction<PropertiesData>>;
   onNext: () => void;
   onBack: () => void;
+  // Ya no recibe data ni setData
 }
 
 export default function PropertiesForm({
-  data,
-  setData,
   onNext,
   onBack,
 }: PropertiesFormProps) {
-  // 1. Inicializamos el formulario
-  const form = useForm<PropertiesFormValues>({
-    resolver: zodResolver(propertiesSchema),
-    // 'as any' ayuda a TypeScript a mapear el objeto inicial sin conflictos estrictos
-    defaultValues: data as any,
-    mode: "onChange",
-  });
+  // Conectamos al contexto global
+  const {
+    control,
+    register,
+    formState: { errors },
+    trigger,
+  } = useFormContext<RegisterMaterialFormValues>();
 
-  // 2. Sincronización si el usuario vuelve atrás (Rellena el form con lo guardado)
-  useEffect(() => {
-    form.reset(data as any);
-  }, [data, form]);
-
-  // 3. Manejo del Submit
+  // Manejo del avance (Valida solo los campos de propiedades)
   const handleNextStep = async () => {
-    // Dispara la validación de TODOS los campos
-    const isValid = await form.trigger();
+    // Validamos las 3 categorías
+    const isValid = await trigger(["mecanicas", "perceptivas", "emocionales"]);
 
     if (isValid) {
-      const values = form.getValues();
-      // Guardamos en el estado global del Wizard
-      setData(values as unknown as PropertiesData);
       onNext();
     }
   };
 
-  // --- HELPER 1: SELECTS (Controlados por React Hook Form) ---
+  // --- HELPER 1: SELECTS (Controlados con Controller) ---
   const renderSelects = (
     categoria: "mecanicas" | "emocionales",
     props: { label: string; key: string }[]
   ) =>
     props.map((prop) => {
-      // Nombre del campo para Zod (ej: "mecanicas.resistencia")
+      // Tipado dinámico para acceder a errores anidados
+      const error = (errors[categoria] as any)?.[prop.key] as
+        | FieldError
+        | undefined;
+      // Nombre del campo completo (ej: "mecanicas.resistencia")
       const fieldName = `${categoria}.${prop.key}` as any;
 
       return (
         <div key={prop.key} className="space-y-2">
           <Label
             className={`text-xs font-semibold uppercase tracking-wide ${
-              // CORRECCIÓN AQUÍ:
-              (form.formState.errors[categoria] as any)?.[prop.key]
-                ? "text-red-500"
-                : "text-slate-500"
+              error ? "text-red-500" : "text-slate-500"
             }`}
           >
             {prop.label}
           </Label>
 
-          {/* El Controller conecta componentes UI complejos (como Select) con Hook Form */}
           <Controller
-            control={form.control}
+            control={control}
             name={fieldName}
             render={({ field }) => (
               <Select onValueChange={field.onChange} value={field.value}>
                 <SelectTrigger
                   className={`h-11 transition-all ${
-                    (form.formState.errors[categoria] as any)?.[prop.key]
+                    error
                       ? "border-red-500 focus:ring-red-500 bg-red-50/10"
                       : "bg-slate-50 border-slate-200 focus:ring-blue-500"
                   }`}
@@ -120,7 +96,6 @@ export default function PropertiesForm({
                   <SelectValue placeholder="Selecciona..." />
                 </SelectTrigger>
                 <SelectContent>
-                  {/* Usamos las constantes importadas del schema */}
                   {PROPERTY_OPTIONS.map((op) => (
                     <SelectItem key={op} value={op} className="cursor-pointer">
                       {op}
@@ -131,11 +106,9 @@ export default function PropertiesForm({
             )}
           />
 
-          {/* Mensaje de error */}
-          {(form.formState.errors[categoria] as any)?.[prop.key] && (
+          {error && (
             <p className="text-xs text-red-500 font-medium animate-in fade-in">
-              {(form.formState.errors[categoria] as any)?.[prop.key]?.message ||
-                "Selecciona una opción válida"}
+              {error.message || "Selecciona una opción válida"}
             </p>
           )}
         </div>
@@ -148,35 +121,35 @@ export default function PropertiesForm({
     props: { label: string; key: string }[]
   ) =>
     props.map((prop) => {
+      const error = (errors[categoria] as any)?.[prop.key] as
+        | FieldError
+        | undefined;
       const fieldName = `${categoria}.${prop.key}` as any;
 
       return (
         <div key={prop.key} className="space-y-2">
           <Label
             className={`text-xs font-semibold uppercase tracking-wide ${
-              (form.formState.errors[categoria] as any)?.[prop.key]
-                ? "text-red-500"
-                : "text-slate-500"
+              error ? "text-red-500" : "text-slate-500"
             }`}
           >
             {prop.label}
           </Label>
 
           <Textarea
-            {...form.register(fieldName)}
+            {...register(fieldName)}
             placeholder={`Describe la ${prop.label.toLowerCase()}...`}
             rows={2}
             className={`resize-none min-h-[5rem] transition-all ${
-              (form.formState.errors[categoria] as any)?.[prop.key]
+              error
                 ? "border-red-500 focus-visible:ring-red-500 bg-red-50/10"
                 : "bg-slate-50 border-slate-200 focus-visible:ring-purple-500"
             }`}
           />
 
-          {/* Mensaje de error */}
-          {(form.formState.errors[categoria] as any)?.[prop.key] && (
+          {error && (
             <p className="text-xs text-red-500 font-medium animate-in fade-in">
-              {(form.formState.errors[categoria] as any)?.[prop.key]?.message}
+              {error.message}
             </p>
           )}
         </div>
@@ -264,9 +237,8 @@ export default function PropertiesForm({
             Volver
           </Button>
 
-          {/* El botón ahora llama a handleNextStep para validar */}
           <Button
-            onClick={handleNextStep}
+            onClick={handleNextStep} // Valida y avanza
             size="lg"
             className="bg-green-600 hover:bg-green-700 text-white shadow-lg shadow-green-900/10 group"
           >
