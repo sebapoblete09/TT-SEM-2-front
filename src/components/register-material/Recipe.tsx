@@ -31,6 +31,13 @@ interface RecipeFormProps {
   // No recibe onSubmit ni setRecipeSteps, usa el contexto
 }
 
+export interface Step {
+  id: number;
+  orden_paso: number;
+  descripcion: string;
+  url_imagen: File | null;
+  url_video: File | null;
+}
 export default function RecipeForm({ onBack }: RecipeFormProps) {
   // Previsualizaciones locales
   const [previews, setPreviews] = useState<
