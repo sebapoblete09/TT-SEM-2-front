@@ -40,7 +40,7 @@ export default async function NotificationsPage() {
 
         {/* Lista en un contenedor limpio */}
         <div>
-          <NotificationsList notifications={notificaciones} />
+          <NotificationsList initialNotifications={notificaciones} />
         </div>
       </div>
     </div>
