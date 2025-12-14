@@ -201,8 +201,8 @@ export function MaterialCardItem({
                         <>
                           <Button
                             size="sm"
-                            variant="outline"
-                            className="text-red-600 border-red-200 hover:bg-red-50"
+                            variant="destructive"
+                            className=" border-red-200"
                             onClick={() => setShowRejectModal(true)}
                           >
                             <X className="h-4 w-4 md:mr-2" />

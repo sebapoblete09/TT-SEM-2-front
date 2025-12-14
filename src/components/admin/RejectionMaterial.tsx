@@ -66,7 +66,7 @@ export function RejectionDialog({
           <AlertDialogAction
             onClick={handleConfirm}
             disabled={isSubmitting || !reason.trim()}
-            className="bg-red-600 hover:bg-red-700 text-white"
+            className="bg-red-600 hover:bg-red-700 text-white cursor-pointer"
           >
             {isSubmitting ? "Enviando..." : "Enviar Corrección"}
           </AlertDialogAction>

@@ -4,8 +4,6 @@ import Link from "next/link";
 import Image from "next/image";
 import { useEffect, useState } from "react";
 import { useRouter, usePathname } from "next/navigation";
-import { createClient } from "@/lib/supabase/client";
-import type { User as SupabaseUser } from "@supabase/supabase-js";
 import { Button } from "@/components/ui/button";
 import {
   DropdownMenu,
@@ -24,16 +22,31 @@ import {
   SheetClose,
 } from "@/components/ui/sheet";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
-import { User, LogOut, Menu, PlusCircle, Bell } from "lucide-react";
+import {
+  User,
+  LogOut,
+  Menu,
+  PlusCircle,
+  Bell,
+  LogIn,
+  ShieldCheck,
+} from "lucide-react";
 
 import NotificationBell from "../ui/notificationBel";
+import { navLinks } from "@/const/Categories";
+
+import { useAuth } from "@/lib/hooks/useAuth";
+import { signOutAction } from "@/actions/auth";
+import { createClient } from "@/lib/supabase/client";
 
 export function Navigation() {
-  const [user, setUser] = useState<SupabaseUser | null>(null);
+  const { user, role, dbUser } = useAuth();
   const [isScrolled, setIsScrolled] = useState(false);
   const supabase = createClient();
-  const router = useRouter();
   const pathname = usePathname();
+
+  console.log("Usuario", user);
+  console.log("DbUser", dbUser);
 
   useEffect(() => {
     const handleScroll = () => setIsScrolled(window.scrollY > 10);
@@ -41,27 +54,18 @@ export function Navigation() {
     return () => window.removeEventListener("scroll", handleScroll);
   }, []);
 
-  // Sesión
-  useEffect(() => {
-    const getSession = async () => {
-      const {
-        data: { session },
-      } = await supabase.auth.getSession();
-      setUser(session?.user ?? null);
-    };
-    getSession();
-    const { data: listener } = supabase.auth.onAuthStateChange(
-      (_event, session) => {
-        setUser(session?.user ?? null);
-      }
-    );
-    return () => listener?.subscription.unsubscribe();
-  }, [supabase]);
-
   const handleLogout = async () => {
-    await supabase.auth.signOut();
-    router.push("/");
-    router.refresh();
+    try {
+      // 1. Cierre LOCAL (Cliente):
+      // Esto dispara el listener de useAuth y actualiza la UI instantáneamente a "No Logueado"
+      await supabase.auth.signOut();
+
+      // 2. Cierre SERVIDOR (Cookies):
+      // Asegura que las cookies httpOnly se borren
+      await signOutAction();
+    } catch (error) {
+      console.error("Error al cerrar sesión:", error);
+    }
   };
 
   const getInitials = (name?: string, email?: string) => {
@@ -78,12 +82,8 @@ export function Navigation() {
   const userAvatar = user?.user_metadata?.avatar_url;
   const googleId = user?.identities?.find((id) => id.provider === "google")?.id;
 
-  const navLinks = [
-    { name: "Inicio", href: "/" },
-    { name: "Descubrir", href: "/materials" },
-    { name: "Cómo Participar", href: "/#participar" },
-    { name: "Nosotros", href: "/#nosotros" },
-  ];
+  // Normalizamos el rol para evitar problemas de mayúsculas
+  const isAdmin = role?.toLowerCase() === "administrador";
 
   return (
     <nav
@@ -95,7 +95,7 @@ export function Navigation() {
     >
       <div className="container mx-auto max-w-7xl px-4">
         <div className="flex items-center justify-between h-16">
-          {/* 1. LOGO (Siempre visible) */}
+          {/* 1. LOGO */}
           <Link
             href="/"
             className="flex items-center gap-3 group z-50 shrink-0"
@@ -117,7 +117,7 @@ export function Navigation() {
             </div>
           </Link>
 
-          {/* 2. LINKS CENTRALES (Solo Desktop - hidden lg:flex) */}
+          {/* 2. LINKS CENTRALES (Desktop) */}
           <div className="hidden lg:flex items-center gap-8">
             {navLinks.map((link) => (
               <Link
@@ -134,11 +134,9 @@ export function Navigation() {
             ))}
           </div>
 
-          {/* 3. ZONA DE ACCIONES UNIFICADA (Derecha) 
-              Aquí manejamos la visibilidad elemento por elemento, no por bloque entero.
-          */}
+          {/* 3. ZONA DE ACCIONES (Derecha) */}
           <div className="flex items-center gap-2 sm:gap-3">
-            {/* Botón Registrar (Solo Desktop) */}
+            {/* Botón Registrar (Desktop) */}
             <div className="hidden lg:block">
               <Button
                 asChild
@@ -149,22 +147,18 @@ export function Navigation() {
               </Button>
             </div>
 
-            {/* Separador (Solo Desktop) */}
+            {/* Separador (Desktop) */}
             <div className="hidden lg:block h-5 w-px bg-slate-200 mx-1" />
 
-            {/* LÓGICA DE USUARIO */}
             {user ? (
               <>
-                {/* CAMPANA: Siempre visible si hay googleId, sin importar el tamaño de pantalla */}
                 {googleId && (
                   <div className="shrink-0">
                     <NotificationBell googleId={googleId} />
                   </div>
                 )}
 
-                {/* PERFIL DROPDOWN (Solo Desktop) 
-                    En móvil/tablet mostramos la info dentro del menú hamburguesa para no saturar.
-                */}
+                {/* PERFIL DROPDOWN (Desktop) */}
                 <div className="hidden lg:block">
                   <DropdownMenu>
                     <DropdownMenuTrigger asChild>
@@ -213,6 +207,15 @@ export function Navigation() {
                       </DropdownMenuItem>
                       <DropdownMenuItem
                         asChild
+                        className="cursor-pointer rounded-md hover:bg-slate-50 "
+                      >
+                        <Link href="/admin">
+                          <ShieldCheck className="h-4 w-4" />
+                          Panel Admin
+                        </Link>
+                      </DropdownMenuItem>
+                      <DropdownMenuItem
+                        asChild
                         className="cursor-pointer rounded-md hover:bg-slate-50"
                       >
                         <Link
@@ -235,9 +238,7 @@ export function Navigation() {
                   </DropdownMenu>
                 </div>
 
-                {/* MENÚ HAMBURGUESA (Tablet y Móvil - lg:hidden) 
-                    Contiene la navegación Y la información de perfil
-                */}
+                {/* MENÚ MÓVIL (Logueado) */}
                 <div className="lg:hidden">
                   <Sheet>
                     <SheetTrigger asChild>
@@ -254,7 +255,6 @@ export function Navigation() {
                       className="w-[300px] bg-white flex flex-col z-[60]"
                     >
                       <SheetHeader className="text-left border-b border-slate-100 pb-4 mb-4">
-                        {/* Cabecera del menú: Muestra el perfil aquí en móvil */}
                         <SheetTitle className="flex items-center gap-3">
                           <Avatar className="h-10 w-10 border border-slate-200">
                             <AvatarImage src={userAvatar} alt={userName} />
@@ -272,7 +272,6 @@ export function Navigation() {
                           </div>
                         </SheetTitle>
                       </SheetHeader>
-
                       <div className="flex flex-col gap-2 flex-1 overflow-y-auto">
                         {navLinks.map((link) => (
                           <SheetClose asChild key={link.href}>
@@ -288,17 +287,13 @@ export function Navigation() {
                             </Link>
                           </SheetClose>
                         ))}
-
                         <div className="border-t border-slate-100 my-2" />
-
-                        {/* Enlaces de perfil dentro del menú móvil */}
                         <SheetClose asChild>
                           <Link
                             href="/user"
                             className="flex items-center gap-3 text-base font-medium p-3 rounded-lg text-slate-600 hover:bg-slate-50"
                           >
-                            <User className="h-5 w-5" />
-                            Mi Perfil
+                            <User className="h-5 w-5" /> Mi Perfil
                           </Link>
                         </SheetClose>
                         <SheetClose asChild>
@@ -306,12 +301,22 @@ export function Navigation() {
                             href="/register-material"
                             className="flex items-center gap-3 text-base font-medium p-3 rounded-lg text-green-700 bg-green-50/50 hover:bg-green-50"
                           >
-                            <PlusCircle className="h-5 w-5" />
-                            Registrar Material
+                            <PlusCircle className="h-5 w-5" /> Registrar
+                            Material
                           </Link>
                         </SheetClose>
+                        {user && isAdmin && (
+                          <SheetClose asChild>
+                            <Link
+                              href="/admin"
+                              className="flex items-center gap-3 text-base font-medium p-3 rounded-lg text-amber-700 bg-amber-50 hover:bg-amber-100 mt-2 border border-amber-100"
+                            >
+                              <ShieldCheck className="h-5 w-5" />
+                              Panel Admin
+                            </Link>
+                          </SheetClose>
+                        )}
                       </div>
-
                       <div className="mt-auto border-t border-slate-100 pt-4">
                         <SheetClose asChild>
                           <Button
@@ -319,8 +324,7 @@ export function Navigation() {
                             variant="ghost"
                             className="w-full justify-start text-red-600 hover:text-red-700 hover:bg-red-50 gap-3"
                           >
-                            <LogOut className="h-5 w-5" />
-                            Cerrar Sesión
+                            <LogOut className="h-5 w-5" /> Cerrar Sesión
                           </Button>
                         </SheetClose>
                       </div>
@@ -329,9 +333,8 @@ export function Navigation() {
                 </div>
               </>
             ) : (
-              // ESTADO: NO LOGUEADO
+              // NO LOGUEADO
               <div className="flex items-center gap-2">
-                {/* Botón Login Desktop */}
                 <div className="hidden lg:block">
                   <Button
                     asChild
@@ -340,16 +343,83 @@ export function Navigation() {
                     <Link href="/login">Iniciar Sesión</Link>
                   </Button>
                 </div>
-
-                {/* Botón Login Móvil (Icono o Texto corto) */}
+                {/* Menú Móvil No Logueado (sin cambios significativos) */}
                 <div className="lg:hidden">
-                  <Button
-                    asChild
-                    size="sm"
-                    className="bg-green-600 hover:bg-green-700"
-                  >
-                    <Link href="/login">Entrar</Link>
-                  </Button>
+                  <Sheet>
+                    <SheetTrigger asChild>
+                      <Button
+                        variant="ghost"
+                        size="icon"
+                        className="text-slate-700 hover:bg-slate-100"
+                      >
+                        <Menu className="h-6 w-6" />
+                      </Button>
+                    </SheetTrigger>
+                    <SheetContent
+                      side="right"
+                      className="w-[300px] bg-white flex flex-col z-[60]"
+                    >
+                      <SheetHeader className="text-left border-b border-slate-100 pb-4 mb-4">
+                        <SheetTitle className="flex items-center gap-3">
+                          <div className="p-2 bg-green-50 rounded-lg">
+                            <Image
+                              src="/images/Utem.webp"
+                              alt="Logo"
+                              width={24}
+                              height={24}
+                              className="w-6 h-6"
+                            />
+                          </div>
+                          <div className="flex flex-col text-left">
+                            <span className="font-bold text-slate-900">
+                              Biomateriales
+                            </span>
+                            <span className="text-xs text-slate-500 font-medium uppercase tracking-wide">
+                              Menú Principal
+                            </span>
+                          </div>
+                        </SheetTitle>
+                      </SheetHeader>
+                      <div className="flex flex-col gap-2 flex-1 overflow-y-auto">
+                        {navLinks.map((link) => (
+                          <SheetClose asChild key={link.href}>
+                            <Link
+                              href={link.href}
+                              className={`text-base font-medium p-3 rounded-lg transition-colors ${
+                                pathname === link.href
+                                  ? "bg-green-50 text-green-700"
+                                  : "text-slate-600 hover:bg-slate-50"
+                              }`}
+                            >
+                              {link.name}
+                            </Link>
+                          </SheetClose>
+                        ))}
+                        <div className="border-t border-slate-100 my-2" />
+                        <SheetClose asChild>
+                          <Link
+                            href="/register-material"
+                            className="flex items-center gap-3 text-base font-medium p-3 rounded-lg text-green-700 bg-green-50/50 hover:bg-green-50"
+                          >
+                            <PlusCircle className="h-5 w-5" /> Registrar
+                            Material
+                          </Link>
+                        </SheetClose>
+                      </div>
+                      <div className="mt-auto border-t border-slate-100 pt-4">
+                        <SheetClose asChild>
+                          <Button
+                            asChild
+                            className="w-full bg-green-600 hover:bg-green-700 text-white gap-2 shadow-sm"
+                          >
+                            <Link href="/login">
+                              <LogIn className="h-4 w-4" /> Iniciar Sesión
+                            </Link>
+                          </Button>
+                        </SheetClose>
+                      </div>
+                    </SheetContent>
+                  </Sheet>
                 </div>
               </div>
             )}

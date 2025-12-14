@@ -101,10 +101,6 @@ export default async function ProfilePage() {
   return (
     <div className="container mx-auto max-w-7xl py-10 px-4 space-y-10">
       {/* --- GRID SUPERIOR (Header + Stats) --- */}
-      {/* Usamos un Grid responsivo:
-          - Móvil: 1 columna (se apilan)
-          - Desktop (lg): 3 columnas (2 para info usuario, 1 para stats)
-      */}
 
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-6 items-stretch">
         {/* Columna Izquierda (Info Principal) */}

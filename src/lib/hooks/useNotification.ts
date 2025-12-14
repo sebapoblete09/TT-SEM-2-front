@@ -13,14 +13,14 @@ export const useNotifications = (userGoogleId: string | undefined) => {
   useEffect(() => {
     if (!userGoogleId) return;
 
-    // 1. Cargar historial (últimas 10 no leídas o recientes)
+    // 1. Carga inicial
     const fetchNotificaciones = async () => {
       const { data, error } = await supabase
         .from("notificaciones")
         .select("*")
         .eq("usuario_id", userGoogleId)
         .order("created_at", { ascending: false })
-        .limit(15);
+        .limit(20); // Aumenté un poco el límite
 
       if (!error && data) {
         setNotificaciones(data as Notificacion[]);
@@ -30,23 +30,30 @@ export const useNotifications = (userGoogleId: string | undefined) => {
 
     fetchNotificaciones();
 
-    // 2. Suscribirse a Realtime (INSERT)
-    // Esto escucha cuando Go crea una nueva fila
+    // 2. Suscripción Realtime (INSERT y UPDATE)
     const channel = supabase
       .channel("notificaciones-realtime")
       .on(
         "postgres_changes",
         {
-          event: "INSERT",
+          event: "*", // <--- CAMBIO: Escuchamos TODO (INSERT, UPDATE, DELETE)
           schema: "public",
           table: "notificaciones",
-          filter: `usuario_id=eq.${userGoogleId}`, // ¡Clave! Solo escucha las de este usuario
+          filter: `usuario_id=eq.${userGoogleId}`,
         },
         (payload) => {
-          console.log("🔔 Nueva notificación recibida:", payload.new);
-          const nueva = payload.new as Notificacion;
-          // Agregamos la nueva al principio del array
-          setNotificaciones((prev) => [nueva, ...prev]);
+          // CASO 1: Nueva notificación
+          if (payload.eventType === "INSERT") {
+            setNotificaciones((prev) => [payload.new as Notificacion, ...prev]);
+          }
+          // CASO 2: Actualización (ej: Se marcó como leída en otro lado)
+          else if (payload.eventType === "UPDATE") {
+            setNotificaciones((prev) =>
+              prev.map((n) =>
+                n.id === payload.new.id ? (payload.new as Notificacion) : n
+              )
+            );
+          }
         }
       )
       .subscribe();
@@ -58,16 +65,15 @@ export const useNotifications = (userGoogleId: string | undefined) => {
 
   // Función para marcar como leída
   const marcarComoLeida = async (id: string) => {
-    // Optimistic update (actualizamos UI primero para que se sienta rápido)
+    // 1. Optimistic Update Local (Para que se sienta instantáneo en este componente)
     setNotificaciones((prev) =>
       prev.map((n) => (n.id === id ? { ...n, leido: true } : n))
     );
 
-    // Actualizamos en BD
+    // 2. Update en BD (Esto disparará el evento UPDATE de arriba para el Navbar)
     await supabase.from("notificaciones").update({ leido: true }).eq("id", id);
   };
 
-  // Contador de no leídas
   const unreadCount = notificaciones.filter((n) => !n.leido).length;
 
   return {

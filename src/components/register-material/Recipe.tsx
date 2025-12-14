@@ -129,7 +129,6 @@ export default function RecipeForm({ onBack }: RecipeFormProps) {
 
   // VALIDACIÓN FINAL Y SUBMIT (Disparado por el botón submit real)
   // Nota: En realidad, el botón type="submit" disparará el onSubmit del <form> en page.tsx.
-  // Pero si quieres validar SOLO este paso antes de dejar enviar, puedes hacer esto:
   const handleFinalSubmit = async (e: React.MouseEvent) => {
     // Prevenimos el submit default si la validación falla
     e.preventDefault();
@@ -138,8 +137,6 @@ export default function RecipeForm({ onBack }: RecipeFormProps) {
 
     if (isValid) {
       // Disparamos el evento submit nativo del formulario para que page.tsx lo capture
-      // Ojo: Como estamos dentro de un form, un botón type="submit" lo haría solo.
-      // Pero si queremos validación manual pre-submit, usamos requestSubmit()
       const formElement = document.querySelector("form");
       formElement?.requestSubmit();
     }
