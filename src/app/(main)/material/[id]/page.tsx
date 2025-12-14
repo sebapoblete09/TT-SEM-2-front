@@ -38,7 +38,6 @@ export default async function MaterialDetailPage({ params }: PageProps) {
   }
 
   // 3. Manejo de "No encontrado"
-  // Next.js mostrará automáticamente tu archivo not-found.tsx si existe
   if (!material) {
     return notFound();
   }

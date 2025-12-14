@@ -11,9 +11,10 @@ import { useState } from "react";
 
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { useRouter } from "next/navigation";
 
 import Image from "next/image";
-import { ArrowRight, BookOpen, FlaskConical } from "lucide-react";
+import { ArrowRight, BookOpen, FlaskConical, ArrowLeft } from "lucide-react";
 
 import { createClient } from "@/lib/supabase/client";
 
@@ -23,6 +24,8 @@ export default function Page() {
 
   // Instancia del cliente Supabase para el navegador
   const supabase = createClient();
+
+  const router = useRouter();
 
   /**
    * Maneja el flujo de inicio de sesión con Google.
@@ -69,7 +72,16 @@ export default function Page() {
           <div className="absolute top-0 left-0 w-[500px] h-[500px] bg-green-100/40 rounded-full blur-[100px] -translate-x-1/2 -translate-y-1/2" />
           <div className="absolute bottom-0 right-0 w-[500px] h-[500px] bg-blue-100/40 rounded-full blur-[100px] translate-x-1/2 translate-y-1/2" />
         </div>
-
+        <div className="absolute top-6 left-6 z-20">
+          <Button
+            variant="ghost"
+            onClick={() => router.back()}
+            className="group flex items-center gap-2 text-slate-500 hover:text-slate-900 hover:bg-white/50 transition-all"
+          >
+            <ArrowLeft className="w-4 h-4 transition-transform group-hover:-translate-x-1" />
+            Volver
+          </Button>
+        </div>
         {/* Tarjeta Principal con efecto Glassmorphism */}
         <Card className="w-full max-w-md shadow-2xl shadow-slate-200/50 border-none bg-white/80 backdrop-blur-xl relative z-10">
           <CardHeader className="space-y-2 text-center pb-2">

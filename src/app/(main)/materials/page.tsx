@@ -1,6 +1,6 @@
 import Materials_Section from "@/components/MaterialPage/Materials-Section";
 import { getMaterialsService } from "@/services/materialServices";
-
+export const dynamic = "force-dynamic";
 export default async function Home() {
   let materials = [];
   try {

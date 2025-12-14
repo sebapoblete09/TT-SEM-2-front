@@ -6,9 +6,9 @@ export function ProfileStats({ estadisticas }: { estadisticas: estadisticas }) {
   const statsList = getStatsList(estadisticas);
 
   return (
-    <div className="bg-white rounded-2xl border border-slate-200 shadow-sm h-full overflow-hidden">
+    <div className="bg-white rounded-2xl border border-slate-200 shadow-sm h-full flex flex-col overflow-hidden">
       {/* Encabezado */}
-      <div className="bg-slate-50/50 px-6 py-4 border-b border-slate-100 flex items-center gap-2">
+      <div className="bg-slate-50/50 px-6 py-4 border-b border-slate-100 flex items-center gap-2 shrink-0">
         <LayoutDashboard className="w-4 h-4 text-slate-400" />
         <h3 className="text-xs font-bold text-slate-500 uppercase tracking-wider">
           Resumen de Actividad
@@ -16,7 +16,7 @@ export function ProfileStats({ estadisticas }: { estadisticas: estadisticas }) {
       </div>
 
       {/* Lista de filas */}
-      <div className="p-2 flex flex-col gap-1">
+      <div className="p-4 flex flex-col gap-1 flex-1 justify-center">
         {statsList.map((stat, index) => (
           <div
             key={index}

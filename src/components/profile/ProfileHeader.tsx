@@ -23,9 +23,11 @@ export function ProfileHeader({ usuario, userAvatar }: ProfileHeaderProps) {
   const isAdmin = usuario.rol?.toLowerCase() === "administrador";
 
   return (
-    <div className="w-full bg-white rounded-2xl shadow-sm border border-slate-200 overflow-hidden mb-8">
+    <div className="w-full bg-white rounded-2xl shadow-sm border border-slate-200 overflow-hidden h-full flex flex-col">
+      {" "}
       {/* 1. BANNER DE FONDO */}
-      <div className="h-32 md:h-48 w-full bg-gradient-to-r from-emerald-500 to-teal-600 relative">
+      <div className="h-32 md:h-48 w-full bg-gradient-to-r from-emerald-500 to-teal-600 relative shrink-0">
+        {" "}
         {/* Botón de Admin flotante en la esquina del banner */}
         {isAdmin && (
           <div className="absolute top-4 right-4">
@@ -43,8 +45,9 @@ export function ProfileHeader({ usuario, userAvatar }: ProfileHeaderProps) {
           </div>
         )}
       </div>
-
-      <div className="px-6 md:px-10 pb-8">
+      <div className="px-6 md:px-10 pb-8 flex-1 flex flex-col justify-end">
+        {" "}
+        {/* flex-1 empuja contenido */}
         <div className="flex flex-col md:flex-row items-start md:items-end -mt-12 mb-6 gap-6">
           {/* 2. AVATAR SUPERPUESTO */}
           <div className="relative">
