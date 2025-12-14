@@ -207,15 +207,6 @@ export function Navigation() {
                       </DropdownMenuItem>
                       <DropdownMenuItem
                         asChild
-                        className="cursor-pointer rounded-md hover:bg-slate-50 "
-                      >
-                        <Link href="/admin">
-                          <ShieldCheck className="h-4 w-4" />
-                          Panel Admin
-                        </Link>
-                      </DropdownMenuItem>
-                      <DropdownMenuItem
-                        asChild
                         className="cursor-pointer rounded-md hover:bg-slate-50"
                       >
                         <Link
@@ -226,6 +217,16 @@ export function Navigation() {
                           <span>Notificaciones</span>
                         </Link>
                       </DropdownMenuItem>
+                      <DropdownMenuItem
+                        asChild
+                        className="cursor-pointer rounded-md hover:bg-slate-50 "
+                      >
+                        <Link href="/admin">
+                          <ShieldCheck className="h-4 w-4" />
+                          Panel Admin
+                        </Link>
+                      </DropdownMenuItem>
+
                       <DropdownMenuSeparator className="bg-slate-100" />
                       <DropdownMenuItem
                         className="text-red-600 focus:text-red-600 focus:bg-red-50 cursor-pointer rounded-md gap-2"
@@ -298,6 +299,15 @@ export function Navigation() {
                         </SheetClose>
                         <SheetClose asChild>
                           <Link
+                            href="/notification"
+                            className="flex items-center gap-3 text-base font-medium p-3 rounded-lg text-slate-600 hover:bg-slate-50"
+                          >
+                            <Bell className="h-4 w-4 text-slate-500" />{" "}
+                            Notificacones
+                          </Link>
+                        </SheetClose>
+                        <SheetClose asChild>
+                          <Link
                             href="/register-material"
                             className="flex items-center gap-3 text-base font-medium p-3 rounded-lg text-green-700 bg-green-50/50 hover:bg-green-50"
                           >
@@ -309,7 +319,7 @@ export function Navigation() {
                           <SheetClose asChild>
                             <Link
                               href="/admin"
-                              className="flex items-center gap-3 text-base font-medium p-3 rounded-lg text-amber-700 bg-amber-50 hover:bg-amber-100 mt-2 border border-amber-100"
+                              className="flex items-center gap-3 text-base font-medium p-3  text-amber-700 mt-2  "
                             >
                               <ShieldCheck className="h-5 w-5" />
                               Panel Admin
