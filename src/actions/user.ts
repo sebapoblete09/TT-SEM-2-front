@@ -1,9 +1,12 @@
 // app/actions/users.ts
 "use server";
 
+const BACKEND_URL = process.env.NEXT_PUBLIC_BACK_URL || "http://localhost:8080";
+
 import { createClient } from "@/lib/supabase/server";
 import { revalidatePath } from "next/cache";
 
+//Cambiar rol de un usuario
 export async function updateUserRoleAction(userId: number, newRole: string) {
   const supabase = await createClient();
 
@@ -40,4 +43,37 @@ export async function updateUserRoleAction(userId: number, newRole: string) {
   revalidatePath("/admin/users"); // Ajusta esta ruta a donde esté tu página
 
   return { success: true };
+}
+
+//Solicitar cambio de rol
+export async function requestCollaboratorAction() {
+  const supabase = await createClient();
+  const {
+    data: { session },
+  } = await supabase.auth.getSession();
+
+  if (!session) return { success: false, message: "No autenticado" };
+
+  try {
+    const res = await fetch(`${BACKEND_URL}/users/request-role`, {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+        Authorization: `Bearer ${session.access_token}`,
+      },
+    });
+
+    if (!res.ok) {
+      const errorData = await res.json();
+      return {
+        success: false,
+        message: errorData.error || "Error en la solicitud",
+      };
+    }
+
+    return { success: true, message: "Solicitud enviada correctamente" };
+  } catch (error) {
+    console.error("Error connecting to backend:", error);
+    return { success: false, message: "Error de conexión" };
+  }
 }

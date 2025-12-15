@@ -45,9 +45,6 @@ export function Navigation() {
   const supabase = createClient();
   const pathname = usePathname();
 
-  console.log("Usuario", user);
-  console.log("DbUser", dbUser);
-
   useEffect(() => {
     const handleScroll = () => setIsScrolled(window.scrollY > 10);
     window.addEventListener("scroll", handleScroll);
@@ -217,16 +214,17 @@ export function Navigation() {
                           <span>Notificaciones</span>
                         </Link>
                       </DropdownMenuItem>
-                      <DropdownMenuItem
-                        asChild
-                        className="cursor-pointer rounded-md hover:bg-slate-50 "
-                      >
-                        <Link href="/admin">
-                          <ShieldCheck className="h-4 w-4" />
-                          Panel Admin
-                        </Link>
-                      </DropdownMenuItem>
-
+                      {user && isAdmin && (
+                        <DropdownMenuItem
+                          asChild
+                          className="cursor-pointer rounded-md hover:bg-slate-50 "
+                        >
+                          <Link href="/admin">
+                            <ShieldCheck className="h-4 w-4" />
+                            Panel Admin
+                          </Link>
+                        </DropdownMenuItem>
+                      )}
                       <DropdownMenuSeparator className="bg-slate-100" />
                       <DropdownMenuItem
                         className="text-red-600 focus:text-red-600 focus:bg-red-50 cursor-pointer rounded-md gap-2"
