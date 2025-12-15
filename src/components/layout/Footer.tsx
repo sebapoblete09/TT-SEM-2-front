@@ -129,20 +129,12 @@ export default function Footer() {
           <div className="flex gap-6">
             <span>
               Desarrollado por{" "}
-              <span className="text-slate-300 font-medium">Tu Nombre</span>
+              <span className="text-slate-300 font-medium">Samuel Llach</span>
+              {" - "}
+              <span className="text-slate-300 font-medium">
+                Sebastian Poblete
+              </span>
             </span>
-            <Link
-              href="/privacy"
-              className="hover:text-slate-300 transition-colors"
-            >
-              Privacidad
-            </Link>
-            <Link
-              href="/terms"
-              className="hover:text-slate-300 transition-colors"
-            >
-              Términos
-            </Link>
           </div>
         </div>
       </div>

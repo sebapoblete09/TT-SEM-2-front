@@ -51,7 +51,6 @@ export async function middleware(request: NextRequest) {
     "/admin",
     "/pending-approval",
     "/user",
-    "/admin",
   ];
 
   // 2. Comprueba si la ruta actual está en las rutas protegidas
@@ -81,6 +80,6 @@ export const config = {
     "/admin",
     "/pending-approval",
     "/user",
-    "/admin",
+    "/login",
   ],
 };

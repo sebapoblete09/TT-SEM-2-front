@@ -1,7 +1,8 @@
 // components/admin/RejectionDialog.tsx
 "use client";
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
+import { z } from "zod"; // 1. Importamos Zod
 import {
   AlertDialog,
   AlertDialogAction,
@@ -14,6 +15,14 @@ import {
 } from "@/components/ui/alert-dialog";
 import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
+
+// 2. Definimos el Schema fuera del componente
+// Esto valida un string simple, no un objeto
+const reasonSchema = z
+  .string()
+  .trim() // Elimina espacios al inicio y final
+  .min(5, "El motivo debe ser descriptivo (mínimo 5 caracteres).")
+  .max(500, "El mensaje es demasiado largo (máximo 500 caracteres).");
 
 interface RejectionDialogProps {
   open: boolean;
@@ -29,34 +38,87 @@ export function DeleteMaterial({
   isSubmitting,
 }: RejectionDialogProps) {
   const [reason, setReason] = useState("");
+  const [error, setError] = useState<string | null>(null); // Estado para el error
+
+  // Limpiar el formulario cuando se abre/cierra el modal
+  useEffect(() => {
+    if (open) {
+      setReason("");
+      setError(null);
+    }
+  }, [open]);
 
   const handleConfirm = (e: React.MouseEvent) => {
-    e.preventDefault(); // Evita cierre automático
-    if (!reason.trim()) return;
-    onConfirm(reason);
+    e.preventDefault();
+
+    // 3. Validamos usando safeParse
+    const result = reasonSchema.safeParse(reason);
+
+    if (!result.success) {
+      // format() devuelve un objeto con los errores estructurados
+      // Para un string simple, el error está en _errors
+      const formatted = result.error.format();
+      // formatted._errors es un array de strings con los mensajes
+      setError(formatted._errors[0]);
+      return;
+    }
+
+    // Si pasa la validación, limpiamos error y enviamos
+    setError(null);
+    onConfirm(result.data);
+  };
+
+  const handleChange = (e: React.ChangeEvent<HTMLTextAreaElement>) => {
+    setReason(e.target.value);
+    if (error) setError(null);
   };
 
   return (
     <AlertDialog open={open} onOpenChange={onOpenChange}>
-      <AlertDialogContent className="max-w-md">
+      <AlertDialogContent className="max-w-md border-2">
         <AlertDialogHeader>
-          <AlertDialogTitle>Eliminación de material</AlertDialogTitle>
+          <AlertDialogTitle className="text-red-600 flex items-center gap-2">
+            Eliminación de material
+          </AlertDialogTitle>
           <AlertDialogDescription>
-            El material se eliminara del sistema y se notificará al usuario.
-            Escribe el motivo..
+            Esta acción es irreversible. El material se eliminará del sistema y
+            se notificará al usuario. Por favor, justifica la decisión.
           </AlertDialogDescription>
         </AlertDialogHeader>
 
-        <div className="py-4 space-y-2">
-          <Label htmlFor="reason">Motivo de la eliminación:</Label>
+        <div className="py-4 space-y-3">
+          <Label htmlFor="reason" className="font-semibold text-slate-700">
+            Motivo de la eliminación <span className="text-red-500">*</span>
+          </Label>
+
           <Textarea
             id="reason"
-            placeholder="Ej: La imagen 3 está borrosa, falta describir la textura..."
+            placeholder="Ej: La imagen 3 infringe derechos de autor o la descripción técnica es incoherente..."
             value={reason}
-            onChange={(e) => setReason(e.target.value)}
-            className="resize-none"
+            onChange={handleChange}
+            className={`resize-none transition-all ${
+              error ? "border-red-500 focus-visible:ring-red-500" : ""
+            }`}
             rows={4}
           />
+
+          {/* 4. Mostrar el mensaje de error si existe */}
+          {error && (
+            <p className="text-xs text-red-500 font-medium animate-in slide-in-from-top-1">
+              {error}
+            </p>
+          )}
+
+          {/* Contador de caracteres (opcional pero útil) */}
+          <div className="text-right">
+            <span
+              className={`text-[10px] ${
+                reason.length > 500 ? "text-red-500" : "text-slate-400"
+              }`}
+            >
+              {reason.length}/500
+            </span>
+          </div>
         </div>
 
         <AlertDialogFooter>
@@ -65,10 +127,10 @@ export function DeleteMaterial({
           </AlertDialogCancel>
           <AlertDialogAction
             onClick={handleConfirm}
-            disabled={isSubmitting || !reason.trim()}
-            className="bg-red-600 hover:bg-red-700 text-white"
+            disabled={isSubmitting} // Ya no deshabilitamos por !reason, dejamos que Zod maneje el error
+            className="bg-red-600 hover:bg-red-700 text-white border-red-700"
           >
-            {isSubmitting ? "Enviando..." : "Enviar Corrección"}
+            {isSubmitting ? "Eliminando..." : "Eliminar Definitivamente"}
           </AlertDialogAction>
         </AlertDialogFooter>
       </AlertDialogContent>
