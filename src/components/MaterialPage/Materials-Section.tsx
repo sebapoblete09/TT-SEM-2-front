@@ -3,7 +3,7 @@
 import { useState, useEffect, useMemo } from "react";
 import FilterSection, { FilterOptions } from "./Filter-Section";
 import { MaterialCard } from "@/components/ui/materialCard";
-import { SearchX, Sparkles } from "lucide-react"; // Nuevos iconos
+import { SearchX, Sparkles } from "lucide-react";
 import {
   Select,
   SelectContent,
@@ -13,7 +13,7 @@ import {
 } from "@/components/ui/select";
 import { Material_Card } from "@/types/materials";
 import { getFilterServices } from "@/services/materialServices";
-import ScrollReveal from "@/components/ui/scrollReveal"; // <--- 1. Importamos la animación
+import ScrollReveal from "@/components/ui/scrollReveal";
 import HeroMaterial from "./Header";
 
 type Props = {
@@ -21,7 +21,7 @@ type Props = {
 };
 
 export default function Materials_Section({ initialMaterials }: Props) {
-  // --- ESTADOS DE FILTRO (Igual que antes) ---
+  // --- ESTADOS DE FILTRO ---
   const [searchTerm, setSearchTerm] = useState("");
   const [isDerivados, setIsDerivados] = useState(false);
   const [selectedHerramientas, setSelectedHerramientas] = useState<string[]>(
@@ -51,17 +51,20 @@ export default function Materials_Section({ initialMaterials }: Props) {
 
   const filteredMaterials = useMemo(() => {
     const result = initialMaterials.filter((mat) => {
+      // 1. Filtro Texto (Nombre y Descripción)
       const term = searchTerm.toLowerCase();
       const matchesSearch =
         mat.nombre.toLowerCase().includes(term) ||
         mat.descripcion.toLowerCase().includes(term);
 
+      // 2. Filtro Derivados
       const emptyUUID = "00000000-0000-0000-0000-000000000000";
       let matchesDerivado = true;
       if (isDerivados) {
         matchesDerivado = !!mat.derivado_de && mat.derivado_de !== emptyUUID;
       }
 
+      // 3. Filtro Composición
       let matchesComposicion = true;
       if (selectedComposicion.length > 0) {
         if (!mat.composicion || mat.composicion.length === 0) {
@@ -70,19 +73,43 @@ export default function Materials_Section({ initialMaterials }: Props) {
           matchesComposicion = selectedComposicion.some((selected) => {
             const selectedLower = selected.toLowerCase();
             return mat.composicion?.some((matComp) =>
-              matComp.toLowerCase().includes(selectedLower)
+              // matComp podría ser un objeto si cambiaste el tipo, asumo string por ahora
+              String(matComp).toLowerCase().includes(selectedLower)
             );
           });
         }
       }
 
-      return matchesSearch && matchesDerivado && matchesComposicion;
+      // 4. NUEVO: Filtro Herramientas (Faltaba implementarlo)
+      let matchesHerramientas = true;
+      if (selectedHerramientas.length > 0) {
+        if (!mat.herramientas || mat.herramientas.length === 0) {
+          matchesHerramientas = false;
+        } else {
+          matchesHerramientas = selectedHerramientas.some((selected) => {
+            const selectedLower = selected.toLowerCase();
+            return mat.herramientas?.some((matTool) =>
+              String(matTool).toLowerCase().includes(selectedLower)
+            );
+          });
+        }
+      }
+
+      return (
+        matchesSearch &&
+        matchesDerivado &&
+        matchesComposicion &&
+        matchesHerramientas
+      );
     });
 
+    // Ordenamiento
     return result.sort((a, b) => {
       if (sortOrder === "a-z") return a.nombre.localeCompare(b.nombre);
       if (sortOrder === "z-a") return b.nombre.localeCompare(a.nombre);
-      return 0; // Backend default (newest)
+      // Para "newest", asumimos que el array inicial ya viene ordenado por fecha o usamos ID si es secuencial/uuidv7
+      // Si tienes un campo 'created_at' en el tipo, úsalo aquí. Si no, retornamos 0 (orden original).
+      return 0;
     });
   }, [
     initialMaterials,
@@ -95,12 +122,12 @@ export default function Materials_Section({ initialMaterials }: Props) {
 
   return (
     <div className="min-h-screen bg-slate-50/50">
-      <div className="container mx-auto  px-12 py-8">
-        {/* 2. NUEVO ENCABEZADO "HERO"*/}
+      <div className="container mx-auto px-4 md:px-12 py-8">
+        {/* HERO HEADER */}
         <HeroMaterial totalMaterials={initialMaterials.length} />
 
-        <div className="flex flex-col lg:flex-row gap-8 items-start">
-          {/* SIDEBAR */}
+        <div className="flex flex-col lg:flex-row gap-8 items-start mt-8">
+          {/* SIDEBAR FILTROS */}
           <aside className="w-full lg:w-72 flex-shrink-0 relative lg:sticky lg:top-24 z-10">
             <ScrollReveal className="delay-100">
               <FilterSection
@@ -117,9 +144,9 @@ export default function Materials_Section({ initialMaterials }: Props) {
             </ScrollReveal>
           </aside>
 
-          {/* RESULTADOS */}
-          <main className="flex-1 w-full">
-            {/* BARRA DE CONTROL */}
+          {/* AREA PRINCIPAL */}
+          <main className="flex-1 w-full min-w-0">
+            {/* BARRA DE CONTROL (Ordenamiento) */}
             <ScrollReveal className="delay-200">
               <div className="flex flex-col sm:flex-row justify-between items-center mb-6 pb-4 border-b border-slate-200 gap-4">
                 <span className="text-sm font-medium text-slate-500 flex items-center gap-2">
@@ -128,10 +155,12 @@ export default function Materials_Section({ initialMaterials }: Props) {
                   resultados
                 </span>
 
-                <div className="flex items-center gap-2">
-                  <span className="text-sm text-slate-400">Ordenar por:</span>
+                <div className="flex items-center gap-2 w-full sm:w-auto">
+                  <span className="text-sm text-slate-400 whitespace-nowrap">
+                    Ordenar por:
+                  </span>
                   <Select value={sortOrder} onValueChange={setSortOrder}>
-                    <SelectTrigger className="w-[180px] bg-white border-slate-200 shadow-sm">
+                    <SelectTrigger className="w-full sm:w-[180px] bg-white border-slate-200 shadow-sm">
                       <SelectValue placeholder="Ordenar por" />
                     </SelectTrigger>
                     <SelectContent>
@@ -144,7 +173,7 @@ export default function Materials_Section({ initialMaterials }: Props) {
               </div>
             </ScrollReveal>
 
-            {/* LISTA DE RESULTADOS */}
+            {/* GRID DE MATERIALES */}
             {filteredMaterials.length === 0 ? (
               <ScrollReveal>
                 <div className="py-20 text-center flex flex-col items-center bg-white rounded-2xl border border-dashed border-slate-200">
@@ -154,16 +183,28 @@ export default function Materials_Section({ initialMaterials }: Props) {
                   <h3 className="text-lg font-semibold text-slate-800">
                     No se encontraron materiales
                   </h3>
-                  <p className="text-slate-500 mt-1">
-                    Intenta ajustar tus filtros de búsqueda o limpia los filtros
-                    actuales.
+                  <p className="text-slate-500 mt-1 max-w-xs mx-auto">
+                    Intenta ajustar tus términos de búsqueda o limpia los
+                    filtros activos.
                   </p>
+                  <button
+                    onClick={() => {
+                      setSearchTerm("");
+                      setSelectedComposicion([]);
+                      setSelectedHerramientas([]);
+                      setIsDerivados(false);
+                    }}
+                    className="mt-4 text-sm text-green-600 font-medium hover:text-green-700 hover:underline"
+                  >
+                    Limpiar todos los filtros
+                  </button>
                 </div>
               </ScrollReveal>
             ) : (
               <div className="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-3 gap-6">
-                {filteredMaterials.map((material, index) => (
+                {filteredMaterials.map((material) => (
                   <ScrollReveal key={material.id} className="h-full">
+                    {/* Pasamos el objeto material completo según tu nuevo tipo */}
                     <MaterialCard material={material} from="public" />
                   </ScrollReveal>
                 ))}

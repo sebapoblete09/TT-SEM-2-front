@@ -119,7 +119,7 @@ export function MaterialCard({
                   key={idx}
                   className="inline-flex items-center px-2 py-1 rounded-md text-xs font-medium bg-teal-50 text-teal-700 border border-teal-100"
                 >
-                  {comp}
+                  {comp.elemento}: {comp.cantidad}
                 </span>
               ))
             ) : (

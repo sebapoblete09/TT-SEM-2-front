@@ -1,6 +1,10 @@
 "use client";
 
-import { Material } from "@/types/materials";
+import {
+  Material,
+  prop_emocionales,
+  prop_perceptivas,
+} from "@/types/materials";
 import { Badge } from "@/components/ui/badge";
 import { TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Avatar, AvatarFallback } from "@/components/ui/avatar";
@@ -13,6 +17,8 @@ import {
   Eye,
 } from "lucide-react";
 import Image from "next/image";
+
+import { prop_mecanicas } from "@/types/materials";
 
 // Helper para iniciales
 const getInitials = (name: string) =>
@@ -110,7 +116,7 @@ export function MaterialModalContent({ material }: { material: Material }) {
                     variant="secondary"
                     className="bg-teal-50 text-teal-700 border border-teal-100 hover:bg-teal-100"
                   >
-                    {c}
+                    {c.elemento + " " + c.cantidad}
                   </Badge>
                 ))}
               </div>
@@ -136,7 +142,6 @@ export function MaterialModalContent({ material }: { material: Material }) {
         </TabsContent>
 
         {/* --- TAB 2: PROPIEDADES (Colores Preservados) --- */}
-        {/* 2. Eliminamos 'max-h' y 'overflow-y-auto' de aquí para evitar doble scroll */}
         <TabsContent
           value="propiedades"
           className="mt-0 space-y-6 animate-in fade-in slide-in-from-bottom-2 duration-300"
@@ -147,21 +152,33 @@ export function MaterialModalContent({ material }: { material: Material }) {
               <Layers className="w-4 h-4" /> Mecánicas
             </h4>
             <div className="grid grid-cols-2 sm:grid-cols-3 gap-3">
-              {Object.entries(material.prop_mecanicas || {})
-                .filter(([k]) => k !== "id" && k !== "material_id")
-                .map(([k, v]) => (
+              {/* Usamos map directo porque es un Array, el '?' evita errores si es null */}
+              {material.prop_mecanicas?.map(
+                (prop: prop_mecanicas, index: number) => (
                   <div
-                    key={k}
+                    // Usamos el nombre como key (o el index si el nombre pudiera repetirse)
+                    key={`${prop.nombre}-${index}`}
                     className="bg-white p-3 rounded-lg border border-blue-100/60 shadow-sm"
                   >
+                    {/* NOMBRE DE LA PROPIEDAD */}
                     <span className="text-[10px] text-blue-400 font-bold uppercase block mb-1 break-words">
-                      {k.replace(/_/g, " ")}
+                      {prop.nombre}
                     </span>
+
+                    {/* VALOR Y UNIDAD */}
                     <span className="text-sm font-medium text-slate-800 capitalize">
-                      {String(v)}
+                      {prop.valor}
+
+                      {/* Lógica para mostrar la unidad solo si existe y no es 'n/a' */}
+                      {prop.unidad && prop.unidad.toLowerCase() !== "n/a" && (
+                        <span className="text-slate-400 ml-1 text-xs lowercase">
+                          {prop.unidad}
+                        </span>
+                      )}
                     </span>
                   </div>
-                ))}
+                )
+              )}
             </div>
           </div>
 
@@ -171,21 +188,25 @@ export function MaterialModalContent({ material }: { material: Material }) {
               <Eye className="w-4 h-4" /> Sensoriales
             </h4>
             <div className="grid grid-cols-1 gap-3">
-              {Object.entries(material.prop_perceptivas || {})
-                .filter(([k]) => k !== "id" && k !== "material_id")
-                .map(([k, v]) => (
+              {material.prop_perceptivas?.map(
+                (prop: prop_perceptivas, index: number) => (
                   <div
-                    key={k}
-                    className="bg-white p-3 rounded-lg border border-purple-100/60 shadow-sm"
+                    // Usamos el nombre como key (o el index si el nombre pudiera repetirse)
+                    key={`${prop.nombre}-${index}`}
+                    className="bg-white p-3 rounded-lg border border-blue-100/60 shadow-sm"
                   >
-                    <span className="text-[10px] text-purple-400 font-bold uppercase block mb-1">
-                      {k.replace(/_/g, " ")}
+                    {/* NOMBRE DE LA PROPIEDAD */}
+                    <span className="text-[10px] text-blue-400 font-bold uppercase block mb-1 break-words">
+                      {prop.nombre}
                     </span>
-                    <span className="text-sm text-slate-700 leading-snug">
-                      {String(v)}
+
+                    {/* VALOR Y UNIDAD */}
+                    <span className="text-sm font-medium text-slate-800 capitalize">
+                      {prop.valor}
                     </span>
                   </div>
-                ))}
+                )
+              )}
             </div>
           </div>
 
@@ -195,21 +216,25 @@ export function MaterialModalContent({ material }: { material: Material }) {
               <Heart className="w-4 h-4" /> Emocionales
             </h4>
             <div className="grid grid-cols-2 sm:grid-cols-3 gap-3">
-              {Object.entries(material.prop_emocionales || {})
-                .filter(([k]) => k !== "id" && k !== "material_id")
-                .map(([k, v]) => (
+              {material.prop_emocionales?.map(
+                (prop: prop_emocionales, index: number) => (
                   <div
-                    key={k}
-                    className="bg-white p-3 rounded-lg border border-rose-100/60 shadow-sm"
+                    // Usamos el nombre como key (o el index si el nombre pudiera repetirse)
+                    key={`${prop.nombre}-${index}`}
+                    className="bg-white p-3 rounded-lg border border-blue-100/60 shadow-sm"
                   >
-                    <span className="text-[10px] text-rose-400 font-bold uppercase block mb-1 break-words">
-                      {k.replace(/_/g, " ")}
+                    {/* NOMBRE DE LA PROPIEDAD */}
+                    <span className="text-[10px] text-blue-400 font-bold uppercase block mb-1 break-words">
+                      {prop.nombre}
                     </span>
+
+                    {/* VALOR Y UNIDAD */}
                     <span className="text-sm font-medium text-slate-800 capitalize">
-                      {String(v)}
+                      {prop.valor}
                     </span>
                   </div>
-                ))}
+                )
+              )}
             </div>
           </div>
         </TabsContent>

@@ -34,30 +34,24 @@ export type galeriaItem = {
 };
 
 export type prop_mecanicas = {
-  material_id: string;
-  resistencia: string;
-  dureza: string;
-  elasticidad: string;
-  ductilidad: string;
-  fragilidad: string;
+  valor: number;
+  nombre: string;
+  unidad: string;
 };
 
 export type prop_perceptivas = {
-  material_id: string;
-  color: string;
-  brillo: string;
-  textura: string;
-  transparencia: string;
-  sensacion_termica: string;
+  valor: string;
+  nombre: string;
 };
 
 export type prop_emocionales = {
-  material_id: string;
-  calidez_emocional: string;
-  inspiracion: string;
-  sostenibilidad_percibida: string;
-  armonia: string;
-  innovacion_emocional: string;
+  valor: string;
+  nombre: string;
+};
+
+export type composicion = {
+  cantidad: string;
+  elemento: string;
 };
 
 export type Material = {
@@ -65,7 +59,7 @@ export type Material = {
   nombre: string;
   descripcion: string;
   herramientas: string[];
-  composicion: string[];
+  composicion: composicion[];
   derivado_de: string;
   created_at: number;
   creado_en: string;
@@ -74,19 +68,20 @@ export type Material = {
   colaboradores: creador[];
   pasos: Paso[];
   galeria: galeriaItem[];
-  prop_mecanicas: prop_mecanicas;
-  prop_perceptivas: prop_perceptivas;
-  prop_emocionales: prop_emocionales;
+  prop_mecanicas: prop_mecanicas[];
+  prop_perceptivas: prop_perceptivas[];
+  prop_emocionales: prop_emocionales[];
   estado: boolean;
 };
 
 export type Material_Card = {
-  id: string; // uuid
+  id: string;
   nombre: string;
   descripcion: string;
-  composicion: string[];
+  composicion: composicion[];
   derivado_de: string;
-  primera_imagen_galeria: string;
+  herramientas: string[];
+  primera_imagen_galeria?: string;
   estado?: boolean;
 };
 

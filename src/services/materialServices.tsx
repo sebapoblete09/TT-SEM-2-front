@@ -79,7 +79,7 @@ export const getDerivedMaterialsService = async (parentId: string) => {
 export const getFilterServices = async () => {
   const response = await fetch(`${BASE_URL}/materials/filters`, {
     method: "GET",
-    cache: "force-cache",
+    cache: "no-store",
   });
   if (!response.ok) throw new Error("Error cargando opciones de filtro");
   return response.json();

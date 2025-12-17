@@ -17,7 +17,6 @@ interface PageProps {
   params: Promise<{ id: string }>;
 }
 
-// BONUS: Metadata Dinámica para SEO (Título de la pestaña)
 export async function generateMetadata({
   params,
 }: PageProps): Promise<Metadata> {
@@ -63,6 +62,7 @@ export default async function PublicProfilePage({ params }: PageProps) {
     descripcion: m.descripcion,
     composicion: m.composicion,
     derivado_de: m.derivado_de,
+    herramientas: m.herramientas,
     // Tu lógica de imagen segura:
     primera_imagen_galeria: m.galeria?.[0]?.url_imagen || "",
     estado: m.estado,
