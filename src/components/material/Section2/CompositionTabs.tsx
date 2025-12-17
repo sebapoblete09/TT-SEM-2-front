@@ -2,11 +2,12 @@
 
 import { Card, CardHeader, CardTitle, CardContent } from "@/components/ui/card";
 import { FlaskConical, Dna } from "lucide-react";
+import { composicion } from "@/types/materials";
 
 export default function CompositionCard({
   composicion,
 }: {
-  composicion?: string[];
+  composicion?: composicion[];
 }) {
   return (
     <Card className=" bg-white rounded-2xl overflow-hidden h-fit">
@@ -39,7 +40,7 @@ export default function CompositionCard({
 
                 {/* Texto completo sin separar */}
                 <span className="font-medium text-slate-700 text-sm capitalize leading-tight">
-                  {item}
+                  {item.elemento + " " + item.cantidad}
                 </span>
               </div>
             ))}

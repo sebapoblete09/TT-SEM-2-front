@@ -123,8 +123,6 @@ export default function MaterialHeader({ material }: { material: Material }) {
       </p>
 
       {/* 3. TARJETA DE METADATOS (SÚPER COMPACTA) */}
-      {/* CAMBIO 2: Agregamos 'mt-auto'. 
-         Esto empuja la tarjeta amarilla al fondo del contenedor padre flex. */}
       <div className="mt-auto  p-3 sm:p-4 rounded-xl border border-slate-200 shadow-sm w-full lg:w-fit max-w-full">
         {/* Contenedor Flex: Vertical en móvil/tablet, Fila en Desktop (lg) */}
         <div className="flex flex-col lg:flex-row gap-4 lg:gap-6 lg:items-center">
@@ -175,10 +173,10 @@ export default function MaterialHeader({ material }: { material: Material }) {
                 <Users className="w-3 h-3" /> Colaboradores
               </div>
               <div className="flex flex-wrap gap-1.5 sm:gap-2">
-                {material.colaboradores.map((colab) => (
+                {material.colaboradores.map((colab, index) => (
                   <Link
                     href={`/profile/${colab.google_id}`}
-                    key={colab.ID}
+                    key={index}
                     className="min-w-0 max-w-full"
                   >
                     <Badge

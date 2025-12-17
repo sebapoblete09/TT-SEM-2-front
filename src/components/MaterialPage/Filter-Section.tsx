@@ -207,7 +207,7 @@ export default function FilterSection({
                 )}
               </button>
 
-              {/* Opción: HERRAMIENTAS (Lista Desplegable)
+              {/* Opción: HERRAMIENTAS (Lista Desplegable)*/}
               <div>
                 <button
                   onClick={() => setExpandHerramientas(!expandHerramientas)}
@@ -228,7 +228,7 @@ export default function FilterSection({
                   )}
                 </button>
 
-                {/* Lista de Checkboxes 
+                {/*Lista de Checkboxes */}
                 {expandHerramientas && (
                   <div className="pl-4 mt-1 space-y-1 border-l-2 border-slate-100 ml-2 animate-in slide-in-from-top-2 duration-200 max-h-60 overflow-y-auto custom-scrollbar">
                     {options.herramientas?.length > 0 ? (
@@ -268,7 +268,7 @@ export default function FilterSection({
                     )}
                   </div>
                 )}
-              </div>*/}
+              </div>
 
               {/* Opción: COMPOSICIÓN (Lista Desplegable) */}
               <div>
