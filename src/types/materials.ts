@@ -34,7 +34,7 @@ export type galeriaItem = {
 };
 
 export type prop_mecanicas = {
-  valor: number;
+  valor: string;
   nombre: string;
   unidad: string;
 };

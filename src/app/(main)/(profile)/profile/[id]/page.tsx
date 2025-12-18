@@ -63,7 +63,6 @@ export default async function PublicProfilePage({ params }: PageProps) {
     composicion: m.composicion,
     derivado_de: m.derivado_de,
     herramientas: m.herramientas,
-    // Tu lógica de imagen segura:
     primera_imagen_galeria: m.galeria?.[0]?.url_imagen || "",
     estado: m.estado,
   });
