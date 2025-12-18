@@ -3,18 +3,15 @@
 import { useState } from "react";
 import { useForm, FormProvider } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
-import {
-  editMaterialSchema,
-  EditMaterialFormValues,
-} from "@/components/register-material/schemas";
+import { editMaterialSchema } from "@/components/register-material/schemas";
 import { Material } from "@/types/materials";
 import { updateMaterialAction } from "@/actions/materials";
 import { toast } from "sonner";
 import { Button } from "@/components/ui/button";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Card } from "@/components/ui/card";
-import { CheckCircle2, Home, Plus } from "lucide-react"; // Importar iconos
-import { useRouter } from "next/navigation"; // Importar router
+import { CheckCircle2, Home } from "lucide-react";
+import { useRouter } from "next/navigation";
 
 import { BasicInfoSection } from "./BasicInfoSection";
 import { PropertiesSection } from "./PropertiesSection";
@@ -32,43 +29,54 @@ export default function EditMaterialForm({
 }: EditProps) {
   const router = useRouter();
   const [loading, setLoading] = useState(false);
-  const [success, setSuccess] = useState(false); // Estado para el modal de éxito
+  const [success, setSuccess] = useState(false);
 
   // 1. INICIALIZAR EL FORMULARIO
-  const methods = useForm<EditMaterialFormValues>({
+  // Nota: No pasamos el genérico <EditMaterialFormValues> para dejar que Zod infiera
+  // y evitar conflictos de tipos con los arrays.
+  const methods = useForm({
     resolver: zodResolver(editMaterialSchema),
     defaultValues: {
       nombre: material.nombre || "",
       descripcion: material.descripcion || "",
       derivadoDe: material.derivado_de || "",
       herramientas: material.herramientas || [],
-      composicion: material.composicion || [],
-      mecanicas: material.prop_mecanicas || {
-        resistencia: "",
-        dureza: "",
-        elasticidad: "",
-        ductilidad: "",
-        fragilidad: "",
-      },
-      perceptivas: material.prop_perceptivas || {
-        color: "",
-        brillo: "",
-        textura: "",
-        transparencia: "",
-        sensacion_termica: "",
-      },
-      emocionales: material.prop_emocionales || {
-        calidez_emocional: "",
-        inspiracion: "",
-        sostenibilidad_percibida: "",
-        armonia: "",
-        innovacion_emocional: "",
-      },
+
+      // Mapeo de Composición (Array de objetos)
+      composicion:
+        material.composicion?.map((c) => ({
+          elemento: c.elemento,
+          cantidad: c.cantidad === "n/a" ? "" : c.cantidad,
+        })) || [],
+
+      // Mapeo de Mecánicas (DB devuelve number, Form usa string)
+      mecanicas:
+        material.prop_mecanicas?.map((p) => ({
+          nombre: p.nombre,
+          valor: String(p.valor), // Convertimos a string para el input
+          unidad: p.unidad === "n/a" ? "" : p.unidad,
+        })) || [],
+
+      // Mapeo de Perceptivas
+      perceptivas:
+        material.prop_perceptivas?.map((p) => ({
+          nombre: p.nombre,
+          valor: p.valor,
+        })) || [],
+
+      // Mapeo de Emocionales
+      emocionales:
+        material.prop_emocionales?.map((p) => ({
+          nombre: p.nombre,
+          valor: p.valor,
+        })) || [],
+
+      // Mapeo de Pasos
       pasos: material.pasos
         ? material.pasos
             .sort((a, b) => a.orden_paso - b.orden_paso)
             .map((p) => ({
-              id: p.ID || p.ID,
+              id: p.ID || Math.random(), // Asegurar ID para keys de React
               orden_paso: p.orden_paso,
               descripcion: p.descripcion,
               url_imagen: p.url_imagen,
@@ -76,58 +84,80 @@ export default function EditMaterialForm({
               newFile: null,
             }))
         : [],
+
+      // Mapeo de Galería
       galeria:
         material.galeria?.map((g) => ({
-          id: g.ID || g.ID,
+          id: g.ID || Math.random(),
           url_imagen: g.url_imagen,
           caption: g.caption || "",
         })) || [],
+
       newGalleryFiles: [],
     },
   });
 
-  const { handleSubmit, getValues } = methods; // getValues para leer nombre en el modal
+  const { handleSubmit, getValues } = methods;
 
   // 2. MANEJO DEL SUBMIT
-  const onSubmit = async (data: EditMaterialFormValues) => {
+  const onSubmit = async (data: any) => {
     setLoading(true);
     try {
       const formData = new FormData();
+
+      // Campos Simples
       formData.append("nombre", data.nombre);
       formData.append("descripcion", data.descripcion);
       if (data.derivadoDe) formData.append("derivado_de", data.derivadoDe);
+
+      // Arrays JSON
       formData.append("herramientas", JSON.stringify(data.herramientas));
+
+      // Composición (Ya es un array de objetos correcto)
       formData.append("composicion", JSON.stringify(data.composicion));
+
+      // Propiedades (Ya son arrays de objetos correctos)
       formData.append("prop_mecanicas", JSON.stringify(data.mecanicas));
       formData.append("prop_perceptivas", JSON.stringify(data.perceptivas));
       formData.append("prop_emocionales", JSON.stringify(data.emocionales));
 
-      const pasosPayload = data.pasos.map((s, i) => ({
+      // Pasos (JSON estructura)
+      const pasosPayload = data.pasos.map((s: any, i: number) => ({
         orden_paso: i + 1,
         descripcion: s.descripcion,
       }));
       formData.append("pasos", JSON.stringify(pasosPayload));
 
-      data.pasos.forEach((step: any, i) => {
+      // Archivos de Pasos (Nuevos)
+      data.pasos.forEach((step: any, i: number) => {
         if (step.newFile instanceof File) {
           formData.append(`paso_images[${i}]`, step.newFile);
         }
       });
 
+      // Archivos de Galería (Nuevos)
       if (data.newGalleryFiles && data.newGalleryFiles.length > 0) {
-        (data.newGalleryFiles as File[]).forEach((file) => {
-          formData.append("galeria_images[]", file);
+        // Manejar si es FileList o Array
+        const files = Array.isArray(data.newGalleryFiles)
+          ? data.newGalleryFiles
+          : Array.from(data.newGalleryFiles);
+
+        files.forEach((file: any) => {
+          if (file instanceof File) {
+            formData.append("galeria_images[]", file);
+          }
         });
-      } else {
-        const captions = data.galeria?.map((g) => g.caption || "") || [];
-        formData.append("galeria_captions", JSON.stringify(captions));
       }
 
+      // Captions de Galería Existente
+      const captions = data.galeria?.map((g: any) => g.caption || "") || [];
+      formData.append("galeria_captions", JSON.stringify(captions));
+
+      // Enviar al Server Action
       const res = await updateMaterialAction(material.id, formData);
 
       if (res.success) {
-        setSuccess(true); // <--- ACTIVAR MODAL DE ÉXITO
-        // Opcional: toast.success("Material actualizado");
+        setSuccess(true);
       } else {
         toast.error(res.message);
       }
@@ -140,25 +170,23 @@ export default function EditMaterialForm({
   };
 
   const onError = (errors: any) => {
-    console.log("Errores:", errors);
+    console.log("Errores de validación:", errors);
     toast.error("Revisa el formulario, hay campos inválidos.");
   };
 
-  // Handler para el botón "Volver a Mis Materiales"
   const handleSuccessRedirect = () => {
     if (onSuccessClose) {
-      onSuccessClose(); // Cierra el modal del padre
+      onSuccessClose();
     } else {
-      router.push("/user"); // Fallback si es página
+      router.push("/user");
     }
   };
 
-  // 1. SI HUBO ÉXITO: Mostramos SOLO la tarjeta de éxito
+  // --- RENDER: ÉXITO ---
   if (success) {
     return (
       <div className="flex justify-center py-10 animate-in fade-in slide-in-from-bottom-4 duration-500">
         <Card className="w-full max-w-md p-8 shadow-xl border bg-white text-center relative overflow-hidden rounded-2xl">
-          {/* Decoración superior */}
           <div className="absolute top-0 left-0 w-full h-2 bg-gradient-to-r from-green-400 to-teal-500" />
 
           <div className="flex flex-col items-center">
@@ -190,7 +218,7 @@ export default function EditMaterialForm({
     );
   }
 
-  // 2. SI NO (ESTADO NORMAL): Mostramos el formulario
+  // --- RENDER: FORMULARIO ---
   return (
     <FormProvider {...methods}>
       <form
@@ -209,7 +237,10 @@ export default function EditMaterialForm({
 
           <div className="p-6 min-h-[500px]">
             <TabsContent value="general" className="mt-0">
-              <BasicInfoSection />
+              <BasicInfoSection
+                derivadoDe={material.derivado_de}
+                colaboradores={material.colaboradores} // Se pasan como props de lectura
+              />
             </TabsContent>
 
             <TabsContent value="propiedades" className="mt-0">

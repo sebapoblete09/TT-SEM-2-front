@@ -1,6 +1,6 @@
 "use client";
 
-import { useFormContext, Controller, FieldError } from "react-hook-form"; // <--- Agrega FieldError
+import { useFormContext, useFieldArray } from "react-hook-form";
 import {
   Card,
   CardHeader,
@@ -9,14 +9,7 @@ import {
   CardDescription,
 } from "@/components/ui/card";
 import { Label } from "@/components/ui/label";
-import {
-  Select,
-  SelectTrigger,
-  SelectValue,
-  SelectContent,
-  SelectItem,
-} from "@/components/ui/select";
-import { Textarea } from "@/components/ui/textarea";
+import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import {
   ArrowLeft,
@@ -25,136 +18,177 @@ import {
   Heart,
   Layers,
   ArrowRight,
+  Plus,
+  Trash2,
+  LucideIcon,
 } from "lucide-react";
 
-// Importamos el esquema y tipo global
-import { PROPERTY_OPTIONS, RegisterMaterialFormValues } from "./schemas";
+import { RegisterMaterialFormValues } from "./schemas";
 
 interface PropertiesFormProps {
   onNext: () => void;
   onBack: () => void;
-  // Ya no recibe data ni setData
 }
 
-export default function PropertiesForm({
-  onNext,
-  onBack,
-}: PropertiesFormProps) {
-  // Conectamos al contexto global
+// --- SUB-COMPONENTE PARA CADA SECCIÓN (Mecánica, Perceptiva, Emocional) ---
+interface PropertySectionProps {
+  name: "mecanicas" | "perceptivas" | "emocionales"; // Nombre en el schema
+  title: string;
+  icon: LucideIcon;
+  iconColor: string; // Ej: "text-blue-700 bg-blue-100"
+  isNumeric?: boolean; // Si es true, muestra input de unidad y valida números
+}
+
+const PropertySection = ({
+  name,
+  title,
+  icon: Icon,
+  iconColor,
+  isNumeric = false,
+}: PropertySectionProps) => {
   const {
     control,
     register,
     formState: { errors },
-    trigger,
   } = useFormContext<RegisterMaterialFormValues>();
 
-  // Manejo del avance (Valida solo los campos de propiedades)
-  const handleNextStep = async () => {
-    // Validamos las 3 categorías
-    const isValid = await trigger(["mecanicas", "perceptivas", "emocionales"]);
+  const { fields, append, remove } = useFieldArray({
+    control,
+    name: name,
+  });
 
+  // Acceso seguro a errores de arrays (puede ser undefined)
+  const sectionErrors = errors[name] as any;
+
+  return (
+    <section className="space-y-4">
+      {/* Título de la Sección */}
+      <div className="flex items-center justify-between border-b pb-2">
+        <div className={`flex items-center gap-2 ${iconColor.split(" ")[0]}`}>
+          <Icon className="w-5 h-5" />
+          <h3 className="font-bold text-lg">{title}</h3>
+        </div>
+        <Button
+          type="button"
+          variant="ghost"
+          size="sm"
+          onClick={() =>
+            append(
+              isNumeric
+                ? ({ nombre: "", valor: "", unidad: "" } as any)
+                : ({ nombre: "", valor: "" } as any)
+            )
+          }
+          className="text-slate-500 hover:text-green-600 hover:bg-green-50"
+        >
+          <Plus className="w-4 h-4 mr-1" /> Añadir
+        </Button>
+      </div>
+
+      {/* Lista de Campos */}
+      <div className="space-y-3">
+        {fields.length === 0 && (
+          <p className="text-sm text-slate-400 italic py-2">
+            No has añadido propiedades {title.toLowerCase()}.
+          </p>
+        )}
+
+        {fields.map((field, index) => (
+          <div
+            key={field.id}
+            className="flex flex-col md:flex-row gap-3 items-start md:items-center bg-slate-50 p-3 rounded-lg border border-slate-100"
+          >
+            {/* Input: NOMBRE (Ej: Resistencia) */}
+            <div className="flex-1 w-full">
+              <Label className="text-[10px] uppercase text-slate-400 font-bold mb-1 block">
+                Propiedad
+              </Label>
+              <Input
+                placeholder="Ej: Resistencia"
+                {...register(`${name}.${index}.nombre` as any)}
+                className={`bg-white h-9 ${
+                  sectionErrors?.[index]?.nombre ? "border-red-500" : ""
+                }`}
+              />
+            </div>
+
+            {/* Input: VALOR */}
+            <div className="flex-1 w-full">
+              <Label className="text-[10px] uppercase text-slate-400 font-bold mb-1 block">
+                Valor {isNumeric ? "(Texto/Núm)" : "(Texto)"}
+              </Label>
+              <Input
+                // CAMBIO: Siempre texto, para que coincida con el schema string
+                type="text"
+                // CAMBIO: Quitamos step y placeholder numérico estricto
+                placeholder={isNumeric ? "Ej: 10 o 10-20" : "Descripción..."}
+                {...register(`${name}.${index}.valor` as any)}
+                className={`bg-white h-9 ${
+                  sectionErrors?.[index]?.valor ? "border-red-500" : ""
+                }`}
+              />
+            </div>
+
+            {/* Input: UNIDAD (Solo para mecánicas) */}
+            {isNumeric && (
+              <div className="w-full md:w-24">
+                <Label className="text-[10px] uppercase text-slate-400 font-bold mb-1 block">
+                  Unidad
+                </Label>
+                <Input
+                  placeholder="Ej: MPa"
+                  {...register(`${name}.${index}.unidad` as any)}
+                  className="bg-white h-9"
+                />
+              </div>
+            )}
+
+            {/* Botón Eliminar */}
+            <div className="pt-6 md:pt-0 self-end md:self-center">
+              <Button
+                type="button"
+                variant="ghost"
+                size="icon"
+                onClick={() => remove(index)}
+                className="text-slate-400 hover:text-red-500 hover:bg-red-50 h-9 w-9"
+              >
+                <Trash2 className="w-4 h-4" />
+              </Button>
+            </div>
+          </div>
+        ))}
+
+        {/* Mostrar errores genéricos de validación si existen (ej: tipos incorrectos) */}
+        {fields.map(
+          (_, index) =>
+            (sectionErrors?.[index]?.nombre ||
+              sectionErrors?.[index]?.valor) && (
+              <p key={index} className="text-xs text-red-500 mt-1">
+                * Revisa la fila {index + 1}:{" "}
+                {sectionErrors?.[index]?.nombre?.message ||
+                  sectionErrors?.[index]?.valor?.message}
+              </p>
+            )
+        )}
+      </div>
+    </section>
+  );
+};
+
+// --- COMPONENTE PRINCIPAL ---
+export default function PropertiesForm({
+  onNext,
+  onBack,
+}: PropertiesFormProps) {
+  const { trigger } = useFormContext<RegisterMaterialFormValues>();
+
+  const handleNextStep = async () => {
+    // Validamos los arrays completos
+    const isValid = await trigger(["mecanicas", "perceptivas", "emocionales"]);
     if (isValid) {
       onNext();
     }
   };
-
-  // --- HELPER 1: SELECTS (Controlados con Controller) ---
-  const renderSelects = (
-    categoria: "mecanicas" | "emocionales",
-    props: { label: string; key: string }[]
-  ) =>
-    props.map((prop) => {
-      // Tipado dinámico para acceder a errores anidados
-      const error = (errors[categoria] as any)?.[prop.key] as
-        | FieldError
-        | undefined;
-      // Nombre del campo completo (ej: "mecanicas.resistencia")
-      const fieldName = `${categoria}.${prop.key}` as any;
-
-      return (
-        <div key={prop.key} className="space-y-2">
-          <Label
-            className={`text-xs font-semibold uppercase tracking-wide ${
-              error ? "text-red-500" : "text-slate-500"
-            }`}
-          >
-            {prop.label}
-          </Label>
-
-          <Controller
-            control={control}
-            name={fieldName}
-            render={({ field }) => (
-              <Select onValueChange={field.onChange} value={field.value}>
-                <SelectTrigger
-                  className={`h-11 transition-all ${
-                    error
-                      ? "border-red-500 focus:ring-red-500 bg-red-50/10"
-                      : "bg-slate-50 border-slate-200 focus:ring-blue-500"
-                  }`}
-                >
-                  <SelectValue placeholder="Selecciona..." />
-                </SelectTrigger>
-                <SelectContent>
-                  {PROPERTY_OPTIONS.map((op) => (
-                    <SelectItem key={op} value={op} className="cursor-pointer">
-                      {op}
-                    </SelectItem>
-                  ))}
-                </SelectContent>
-              </Select>
-            )}
-          />
-
-          {error && (
-            <p className="text-xs text-red-500 font-medium animate-in fade-in">
-              {error.message || "Selecciona una opción válida"}
-            </p>
-          )}
-        </div>
-      );
-    });
-
-  // --- HELPER 2: TEXTAREAS (Conectados con register) ---
-  const renderTextareas = (
-    categoria: "perceptivas",
-    props: { label: string; key: string }[]
-  ) =>
-    props.map((prop) => {
-      const error = (errors[categoria] as any)?.[prop.key] as
-        | FieldError
-        | undefined;
-      const fieldName = `${categoria}.${prop.key}` as any;
-
-      return (
-        <div key={prop.key} className="space-y-2">
-          <Label
-            className={`text-xs font-semibold uppercase tracking-wide ${
-              error ? "text-red-500" : "text-slate-500"
-            }`}
-          >
-            {prop.label}
-          </Label>
-
-          <Textarea
-            {...register(fieldName)}
-            placeholder={`Describe la ${prop.label.toLowerCase()}...`}
-            rows={2}
-            className={`resize-none min-h-[5rem] transition-all ${
-              error
-                ? "border-red-500 focus-visible:ring-red-500 bg-red-50/10"
-                : "bg-slate-50 border-slate-200 focus-visible:ring-purple-500"
-            }`}
-          />
-
-          {error && (
-            <p className="text-xs text-red-500 font-medium animate-in fade-in">
-              {error.message}
-            </p>
-          )}
-        </div>
-      );
-    });
 
   return (
     <Card className="border-2 border-slate-500/30 shadow-2xl shadow-slate-200/60 bg-white rounded-2xl overflow-hidden">
@@ -169,62 +203,38 @@ export default function PropertiesForm({
           </CardTitle>
         </div>
         <CardDescription className="text-slate-500 ml-12">
-          Define las características técnicas y sensoriales para clasificar tu
-          biomaterial.
+          Define las características técnicas, sensoriales y emocionales de
+          forma dinámica.
         </CardDescription>
       </CardHeader>
 
       <CardContent className="space-y-10 p-6 md:p-8">
-        {/* 1. PROPIEDADES MECÁNICAS (Selects) */}
-        <section className="space-y-4">
-          <div className="flex items-center gap-2 text-blue-700 border-b border-blue-100 pb-2">
-            <Activity className="w-5 h-5" />
-            <h3 className="font-bold text-lg">Propiedades Mecánicas</h3>
-          </div>
-          <div className="grid grid-cols-2 md:grid-cols-3 gap-6 pt-2">
-            {renderSelects("mecanicas", [
-              { label: "Resistencia", key: "resistencia" },
-              { label: "Dureza", key: "dureza" },
-              { label: "Elasticidad", key: "elasticidad" },
-              { label: "Ductilidad", key: "ductilidad" },
-              { label: "Fragilidad", key: "fragilidad" },
-            ])}
-          </div>
-        </section>
+        {/* 1. PROPIEDADES MECÁNICAS (Numéricas) */}
+        <PropertySection
+          name="mecanicas"
+          title="Propiedades Mecánicas"
+          icon={Activity}
+          iconColor="text-blue-700 bg-blue-100"
+          isNumeric={true}
+        />
 
-        {/* 2. PROPIEDADES PERCEPTIVAS (Textareas) */}
-        <section className="space-y-4">
-          <div className="flex items-center gap-2 text-purple-700 border-b border-purple-100 pb-2">
-            <Eye className="w-5 h-5" />
-            <h3 className="font-bold text-lg">Propiedades Perceptivas</h3>
-          </div>
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 pt-2">
-            {renderTextareas("perceptivas", [
-              { label: "Color", key: "color" },
-              { label: "Brillo", key: "brillo" },
-              { label: "Textura", key: "textura" },
-              { label: "Transparencia", key: "transparencia" },
-              { label: "Sensación Térmica", key: "sensacion_termica" },
-            ])}
-          </div>
-        </section>
+        {/* 2. PROPIEDADES PERCEPTIVAS (Texto) */}
+        <PropertySection
+          name="perceptivas"
+          title="Propiedades Perceptivas"
+          icon={Eye}
+          iconColor="text-purple-700 bg-purple-100"
+          isNumeric={false}
+        />
 
-        {/* 3. PROPIEDADES EMOCIONALES (Selects) */}
-        <section className="space-y-4">
-          <div className="flex items-center gap-2 text-rose-600 border-b border-rose-100 pb-2">
-            <Heart className="w-5 h-5" />
-            <h3 className="font-bold text-lg">Propiedades Emocionales</h3>
-          </div>
-          <div className="grid grid-cols-2 md:grid-cols-3 gap-6 pt-2">
-            {renderSelects("emocionales", [
-              { label: "Calidez", key: "calidez_emocional" },
-              { label: "Inspiración", key: "inspiracion" },
-              { label: "Sostenibilidad", key: "sostenibilidad_percibida" },
-              { label: "Armonía", key: "armonia" },
-              { label: "Innovación", key: "innovacion_emocional" },
-            ])}
-          </div>
-        </section>
+        {/* 3. PROPIEDADES EMOCIONALES (Texto) */}
+        <PropertySection
+          name="emocionales"
+          title="Propiedades Emocionales"
+          icon={Heart}
+          iconColor="text-rose-600 bg-rose-100"
+          isNumeric={false}
+        />
 
         {/* BOTONES DE NAVEGACIÓN */}
         <div className="flex justify-between pt-8 border-t border-slate-100">
@@ -238,7 +248,7 @@ export default function PropertiesForm({
           </Button>
 
           <Button
-            onClick={handleNextStep} // Valida y avanza
+            onClick={handleNextStep}
             size="lg"
             className="bg-green-600 hover:bg-green-700 text-white shadow-lg shadow-green-900/10 group"
           >

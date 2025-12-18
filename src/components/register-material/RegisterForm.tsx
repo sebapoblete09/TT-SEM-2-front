@@ -30,7 +30,7 @@ export default function RegisterMaterialForm() {
   const [showSuccess, setShowSuccess] = useState(false);
 
   // Inicializar el formulario
-  const methods = useForm<RegisterMaterialFormValues>({
+  const methods = useForm({
     resolver: zodResolver(registerMaterialSchema),
     mode: "onChange",
     defaultValues: {
@@ -41,27 +41,9 @@ export default function RegisterMaterialForm() {
       colaboradores: [],
       imagenes: [],
       composicion: [],
-      mecanicas: {
-        resistencia: "",
-        dureza: "",
-        elasticidad: "",
-        ductilidad: "",
-        fragilidad: "",
-      },
-      perceptivas: {
-        color: "",
-        brillo: "",
-        textura: "",
-        transparencia: "",
-        sensacion_termica: "",
-      },
-      emocionales: {
-        calidez_emocional: "",
-        inspiracion: "",
-        sostenibilidad_percibida: "",
-        armonia: "",
-        innovacion_emocional: "",
-      },
+      mecanicas: [],
+      perceptivas: [],
+      emocionales: [],
       recipeSteps: [
         {
           id: Date.now(),
@@ -97,40 +79,59 @@ export default function RegisterMaterialForm() {
   };
 
   // Envío
+  // Envío
   const onSubmit = async (data: RegisterMaterialFormValues) => {
     setLoading(true);
     try {
       const formData = new FormData();
-      // ... (Misma lógica de mapeo que tenías antes) ...
+
+      // 1. CAMPOS DE TEXTO SIMPLE
       formData.append("nombre", data.nombre);
       formData.append("descripcion", data.descripcion);
       formData.append("derivado_de", data.derivadoDe || "");
+
+      // 2. ARRAYS DE STRINGS
       formData.append("herramientas", JSON.stringify(data.herramientas));
       formData.append(
         "colaboradores",
         JSON.stringify(data.colaboradores || [])
       );
+
+      // 3. ESTRUCTURAS COMPLEJAS (Ahora se envían directo)
+      // Antes tenías que armar el objeto, ahora 'data.composicion' ya es [{elemento, cantidad}, ...]
       formData.append("composicion", JSON.stringify(data.composicion));
+
+      // Propiedades: Ya son arrays [{nombre, valor, unidad?}, ...]
+      // El backend de Go podrá hacer Unmarshal directamente a sus structs.
       formData.append("prop_mecanicas", JSON.stringify(data.mecanicas));
       formData.append("prop_perceptivas", JSON.stringify(data.perceptivas));
       formData.append("prop_emocionales", JSON.stringify(data.emocionales));
 
+      // 4. PASOS (RECETA)
+      // Mapeamos para enviar solo la info de texto en el JSON
       const pasosPayload = data.recipeSteps.map((s, i) => ({
         orden_paso: i + 1,
         descripcion: s.descripcion,
       }));
       formData.append("pasos", JSON.stringify(pasosPayload));
 
+      // 5. ARCHIVOS (IMÁGENES DE PASOS)
+      // Buscamos si hay archivos reales (File) en los pasos
       data.recipeSteps.forEach((step: any, i) => {
+        // Nota: En tu schema usas 'url_imagen' o 'newFile' según cómo lo hayas definido.
+        // Si usas el mismo input file del navegador, suele ser un FileList o File.
         if (step.url_imagen instanceof File) {
           formData.append(`paso_images[${i}]`, step.url_imagen);
         }
       });
 
-      if (data.imagenes) {
+      // 6. GALERÍA PRINCIPAL
+      if (data.imagenes && data.imagenes.length > 0) {
+        // Aseguramos que sea iterable (por si viene como FileList)
         const files = Array.isArray(data.imagenes)
           ? data.imagenes
           : Array.from(data.imagenes);
+
         files.forEach((file: any) => {
           if (file instanceof File) {
             formData.append("galeria_images[]", file);
@@ -138,13 +139,20 @@ export default function RegisterMaterialForm() {
         });
       }
 
+      // 7. LLAMADA AL SERVER ACTION
       const result = await createMaterialAction(formData);
-      if (!result.success) throw new Error(result.message);
+
+      if (!result.success) {
+        throw new Error(
+          result.message || "Error desconocido al crear material"
+        );
+      }
 
       setShowSuccess(true);
     } catch (err: any) {
-      console.error(err);
-      alert(`Error: ${err.message}`);
+      console.error("Error en onSubmit:", err);
+      // Muestra el error en un alert o toast
+      alert(`Ocurrió un error: ${err.message}`);
     } finally {
       setLoading(false);
     }

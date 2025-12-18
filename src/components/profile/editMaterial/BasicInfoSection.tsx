@@ -1,50 +1,47 @@
 import { useState } from "react";
-import { useFormContext } from "react-hook-form"; // <--- Importante
+import { useFormContext, useFieldArray } from "react-hook-form"; // <--- Importamos useFieldArray
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
-import { LinkIcon, Plus, Users, X } from "lucide-react";
+import {
+  LinkIcon,
+  Plus,
+  Users,
+  X,
+  Trash2,
+  PenTool,
+  FlaskConical,
+} from "lucide-react";
 import { creador } from "@/types/materials";
-import { EditMaterialFormValues } from "@/components/register-material/schemas"; // Importa tu tipo inferido
+import { EditMaterialFormValues } from "@/components/register-material/schemas"; // O tu schema correspondiente
 
-// --- Props Reducidas ---
-// Ya no necesitamos setNombre, setDescripcion, etc.
-// Solo pasamos datos estáticos (read-only) que no están en el form context editable
 interface Props {
   derivadoDe?: string;
   colaboradores?: creador[];
 }
 
-// --- Componente Auxiliar ListInput (Adaptado a RHF) ---
-function ListInput({
-  label,
-  placeholder,
-  fieldName, // Nombre del campo en el schema (ej: "herramientas")
-}: {
-  label: string;
-  placeholder: string;
-  fieldName: "herramientas" | "composicion"; // Tipado estricto
-}) {
-  // Hook para acceder al form context
+// =========================================================
+// 1. COMPONENTE PARA HERRAMIENTAS (Array de Strings)
+//    Mantiene la lógica original de Badges + Input temporal
+// =========================================================
+function ToolsInput() {
   const {
     watch,
     setValue,
     formState: { errors },
   } = useFormContext<EditMaterialFormValues>();
 
-  // Estado local SOLO para el input de texto temporal (no se guarda en el form hasta dar Enter)
   const [inputValue, setInputValue] = useState("");
 
-  // Leemos el array actual del formulario
-  const items = watch(fieldName) || [];
+  // Observamos el array de strings
+  const items = watch("herramientas") || [];
 
   const handleAdd = () => {
     if (inputValue.trim() !== "") {
       const newItem = inputValue.trim();
-      // Evitar duplicados (opcional)
       if (!items.includes(newItem)) {
-        setValue(fieldName, [...items, newItem], {
+        setValue("herramientas", [...items, newItem], {
           shouldValidate: true,
           shouldDirty: true,
         });
@@ -54,10 +51,11 @@ function ListInput({
   };
 
   const handleRemove = (indexToRemove: number) => {
-    const newItems = items.filter(
-      (_: string, index: number) => index !== indexToRemove
-    );
-    setValue(fieldName, newItems, { shouldValidate: true, shouldDirty: true });
+    const newItems = items.filter((_, index) => index !== indexToRemove);
+    setValue("herramientas", newItems, {
+      shouldValidate: true,
+      shouldDirty: true,
+    });
   };
 
   const handleKeyDown = (e: React.KeyboardEvent<HTMLInputElement>) => {
@@ -67,24 +65,23 @@ function ListInput({
     }
   };
 
-  // Obtener error específico de este campo array
-  const errorMsg = errors[fieldName]?.message;
-
   return (
     <div>
-      <label className="block text-sm font-medium mb-1">
-        {label} <span className="text-red-500">*</span>
+      <label className="flex items-center gap-2 text-sm font-medium mb-1 text-slate-700">
+        <PenTool className="w-3 h-3" /> Herramientas{" "}
+        <span className="text-red-500">*</span>
       </label>
 
       <div className="flex gap-2">
         <Input
-          placeholder={placeholder}
+          placeholder="Ej: Olla, Batidora, Molde..."
           value={inputValue}
           onChange={(e) => setInputValue(e.target.value)}
           onKeyDown={handleKeyDown}
-          // Si hay error en el array (ej: min(1)), pintamos borde rojo al input
           className={
-            errorMsg ? "border-red-500 focus-visible:ring-red-500" : ""
+            errors.herramientas
+              ? "border-red-500 focus-visible:ring-red-500"
+              : ""
           }
         />
         <Button
@@ -97,19 +94,20 @@ function ListInput({
         </Button>
       </div>
 
-      {/* Mensaje de error de validación (ej: "Agrega al menos una herramienta") */}
-      {errorMsg && (
-        <p className="text-xs text-red-500 mt-1">{errorMsg as string}</p>
+      {errors.herramientas && (
+        <p className="text-xs text-red-500 mt-1">
+          {errors.herramientas.message}
+        </p>
       )}
 
-      {/* Área de lista */}
+      {/* Lista Visual de Badges */}
       <div className="mt-3 flex flex-wrap gap-2 min-h-[40px] p-2 border border-dashed rounded-lg bg-slate-50/50">
         {items.length === 0 ? (
           <span className="text-xs text-slate-400 w-full text-center self-center italic">
-            Los elementos agregados aparecerán aquí
+            Agrega las herramientas necesarias...
           </span>
         ) : (
-          items.map((item: string, index: number) => (
+          items.map((item, index) => (
             <Badge
               key={index}
               variant="secondary"
@@ -131,9 +129,104 @@ function ListInput({
   );
 }
 
-// --- Componente Principal ---
+// =========================================================
+// 2. COMPONENTE PARA COMPOSICIÓN (Array de Objetos)
+//    Usa useFieldArray para manejar filas editables
+// =========================================================
+function CompositionInput() {
+  const {
+    control,
+    register,
+    formState: { errors },
+  } = useFormContext<EditMaterialFormValues>();
+
+  // Usamos useFieldArray para manejar la lista dinámica de objetos
+  const { fields, append, remove } = useFieldArray({
+    control,
+    name: "composicion",
+  });
+
+  return (
+    <div>
+      <div className="flex justify-between items-center mb-2">
+        <label className="flex items-center gap-2 text-sm font-medium text-slate-700">
+          <FlaskConical className="w-3 h-3" /> Composición{" "}
+          <span className="text-red-500">*</span>
+        </label>
+        <Button
+          type="button"
+          variant="ghost"
+          size="sm"
+          onClick={() => append({ elemento: "", cantidad: "" })}
+          className="h-6 text-xs text-slate-500 hover:text-amber-600 hover:bg-amber-50"
+        >
+          <Plus className="w-3 h-3 mr-1" /> Agregar Fila
+        </Button>
+      </div>
+
+      <div className="space-y-2">
+        {fields.map((field, index) => (
+          <div key={field.id} className="flex gap-2 items-start">
+            {/* Input Elemento */}
+            <div className="flex-1">
+              <Input
+                placeholder="Ingrediente (ej: Agua)"
+                {...register(`composicion.${index}.elemento`)}
+                className={`h-9 ${
+                  errors.composicion?.[index]?.elemento ? "border-red-500" : ""
+                }`}
+              />
+            </div>
+
+            {/* Input Cantidad */}
+            <div className="w-1/3">
+              <Input
+                placeholder="Cant. (ej: 500ml)"
+                {...register(`composicion.${index}.cantidad`)}
+                className="h-9"
+              />
+            </div>
+
+            {/* Botón Borrar Fila */}
+            <Button
+              type="button"
+              variant="ghost"
+              size="icon"
+              onClick={() => remove(index)}
+              className="h-9 w-9 text-slate-400 hover:text-red-500 hover:bg-red-50 shrink-0"
+            >
+              <Trash2 className="w-4 h-4" />
+            </Button>
+          </div>
+        ))}
+
+        {fields.length === 0 && (
+          <div className="p-4 border border-dashed rounded-lg bg-slate-50 text-center text-xs text-slate-400 italic">
+            No hay ingredientes definidos. Haz clic en "Agregar Fila".
+          </div>
+        )}
+      </div>
+
+      {/* Error general del array (ej: min(1)) */}
+      {errors.composicion?.root && (
+        <p className="text-xs text-red-500 mt-2">
+          {errors.composicion.root.message}
+        </p>
+      )}
+      {/* Fallback si el error viene como string directo */}
+      {typeof errors.composicion?.message === "string" && (
+        <p className="text-xs text-red-500 mt-2">
+          {errors.composicion.message}
+        </p>
+      )}
+    </div>
+  );
+}
+
+// =========================================================
+// 3. COMPONENTE PRINCIPAL (BasicInfoSection)
+// =========================================================
 export function BasicInfoSection({ derivadoDe, colaboradores }: Props) {
-  // Accedemos al contexto RHF
   const {
     register,
     formState: { errors },
@@ -149,7 +242,7 @@ export function BasicInfoSection({ derivadoDe, colaboradores }: Props) {
           Nombre del Material <span className="text-red-500">*</span>
         </label>
         <Input
-          {...register("nombre")} // Vinculación automática
+          {...register("nombre")}
           className={
             errors.nombre ? "border-red-500 focus-visible:ring-red-500" : ""
           }
@@ -165,7 +258,7 @@ export function BasicInfoSection({ derivadoDe, colaboradores }: Props) {
           Descripción Corta
         </label>
         <Textarea
-          {...register("descripcion")} // Vinculación automática
+          {...register("descripcion")}
           rows={3}
           className={
             errors.descripcion
@@ -180,21 +273,16 @@ export function BasicInfoSection({ derivadoDe, colaboradores }: Props) {
         )}
       </div>
 
-      <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-        {/* Usamos el nuevo ListInput conectado a RHF */}
-        <ListInput
-          label="Herramientas"
-          placeholder="Agregar herramienta..."
-          fieldName="herramientas"
-        />
-        <ListInput
-          label="Composición"
-          placeholder="Agregar ingrediente..."
-          fieldName="composicion"
-        />
+      {/* --- GRID PARA HERRAMIENTAS Y COMPOSICIÓN --- */}
+      <div className="grid grid-cols-1 md:grid-cols-2 gap-8 items-start">
+        {/* Componente específico para string[] (Herramientas) */}
+        <ToolsInput />
+
+        {/* Componente específico para object[] (Composición) */}
+        <CompositionInput />
       </div>
 
-      {/* --- SECCIÓN DE SOLO LECTURA (Se mantiene igual) --- */}
+      {/* --- SECCIÓN DE SOLO LECTURA --- */}
       {(derivadoDe || (colaboradores && colaboradores.length > 0)) && (
         <div className="pt-4 mt-4 border-t border-slate-200">
           <h4 className="text-xs font-bold text-slate-400 uppercase tracking-wider mb-4">
@@ -202,7 +290,6 @@ export function BasicInfoSection({ derivadoDe, colaboradores }: Props) {
           </h4>
 
           <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-            {/* 1. DERIVADO DE */}
             {derivadoDe && (
               <div>
                 <label className="flex items-center gap-2 text-sm font-medium mb-1 text-slate-600">
@@ -213,16 +300,12 @@ export function BasicInfoSection({ derivadoDe, colaboradores }: Props) {
                   <Input
                     value={derivadoDe}
                     disabled
-                    className="bg-slate-100 border-slate-200 cursor-not-allowed"
+                    className="bg-slate-100 border-slate-200 cursor-not-allowed text-xs"
                   />
                 </div>
-                <p className="text-[10px] text-slate-400 mt-1">
-                  Este material es una iteración de otro existente.
-                </p>
               </div>
             )}
 
-            {/* 2. COLABORADORES */}
             {colaboradores && colaboradores.length > 0 && (
               <div>
                 <label className="flex items-center gap-2 text-sm font-medium mb-1 text-slate-600">
@@ -234,7 +317,7 @@ export function BasicInfoSection({ derivadoDe, colaboradores }: Props) {
                     <Badge
                       key={colab.ID || colab.google_id}
                       variant="outline"
-                      className="bg-white text-slate-600 border-slate-300 shadow-sm"
+                      className="bg-white text-slate-600 border-slate-300 shadow-sm font-normal"
                     >
                       {colab.nombre}
                     </Badge>

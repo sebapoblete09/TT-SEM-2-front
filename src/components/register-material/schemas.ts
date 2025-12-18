@@ -17,53 +17,50 @@ export type BasicInfoFormValues = z.infer<typeof basicInfoSchema>;
 
 // --- PASO 2: PROPIEDADES ---
 
-// 1. Definimos las opciones
-export const PROPERTY_OPTIONS = ["Baja", "Media", "Alta"] as const;
+// 1. Schema para Propiedades Mecánicas (Numérico + Unidad)
+const mecanicaItemSchema = z.object({
+  nombre: z.string().min(1, "El nombre de la propiedad es requerido"),
 
-// 2. SOLUCIÓN AL ERROR DE TIPOS:
-// Usamos z.string() vacío y validamos con .min() y .refine()
-const optionSchema = z
-  .string()
-  // Esta línea valida que no esté vacío (cubre el "required")
-  .min(1, { message: "Selecciona una opción válida" })
-  // Esta línea valida que el valor sea uno de los permitidos
-  .refine((val) => PROPERTY_OPTIONS.includes(val as any), {
-    message: "Opción no válida",
-  });
+  // CAMBIO: Ahora es string. Quitamos coerce.number()
+  valor: z.string().min(1, "El valor es requerido"),
 
+  unidad: z
+    .string()
+    .optional()
+    .transform((val) => (val === "" || val === undefined ? "n/a" : val)),
+});
+
+// 2. Schema para Propiedades de Texto (Perceptivas y Emocionales)
+const textPropertyItemSchema = z.object({
+  nombre: z.string().min(1, "El nombre es requerido"),
+  valor: z.string().min(1, "El valor es requerido"),
+});
+
+// 3. Schema Principal de Propiedades
 export const propertiesSchema = z.object({
-  mecanicas: z.object({
-    resistencia: optionSchema,
-    dureza: optionSchema,
-    elasticidad: optionSchema,
-    ductilidad: optionSchema,
-    fragilidad: optionSchema,
-  }),
-  perceptivas: z.object({
-    color: z.string().min(3, "Describe el color"),
-    brillo: z.string().min(3, "Describe el brillo"),
-    textura: z.string().min(3, "Describe la textura"),
-    transparencia: z.string().min(3, "Describe la transparencia"),
-    sensacion_termica: z.string().min(3, "Describe la sensación"),
-  }),
-  emocionales: z.object({
-    calidez_emocional: optionSchema,
-    inspiracion: optionSchema,
-    sostenibilidad_percibida: optionSchema,
-    armonia: optionSchema,
-    innovacion_emocional: optionSchema,
-  }),
+  // Inicializamos como arrays vacíos por defecto
+  mecanicas: z.array(mecanicaItemSchema).default([]),
+  perceptivas: z.array(textPropertyItemSchema).default([]),
+  emocionales: z.array(textPropertyItemSchema).default([]),
 });
 
 export type PropertiesFormValues = z.infer<typeof propertiesSchema>;
 
 // --- PASO 3: COMPOSICIÓN QUÍMICA ---
-export const compositionSchema = z.object({
-  composicion: z
-    .array(z.string())
-    .min(1, "Debes agregar al menos un componente (ej: Agua, Glicerina)"),
+
+// Definimos el esquema de un solo ítem
+const compositionItemSchema = z.object({
+  elemento: z.string().min(1, "El nombre del elemento es requerido"),
+  cantidad: z.string().min(1, "La cantidad es requerida").or(z.literal("")), // Opcional: permite vacío si prefieres
 });
 
+export const compositionSchema = z.object({
+  composicion: z
+    .array(compositionItemSchema)
+    .min(1, "Debes agregar al menos un componente a la lista"),
+});
+
+// Tipos inferidos
 export type CompositionFormValues = z.infer<typeof compositionSchema>;
 
 // --- PASO 4: RECETA ---
