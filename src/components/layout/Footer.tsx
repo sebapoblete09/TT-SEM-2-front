@@ -1,6 +1,6 @@
 import Link from "next/link";
 import Image from "next/image";
-import { Github, Linkedin, Mail, MapPin, Globe } from "lucide-react";
+import { Github, Linkedin, Mail, MapPin, Globe, Instagram } from "lucide-react";
 
 export default function Footer() {
   const currentYear = new Date().getFullYear();
@@ -30,10 +30,18 @@ export default function Footer() {
             </p>
             <div className="flex gap-4 pt-2">
               {/* Redes Sociales (Ejemplos) */}
-              <a href="#" className="hover:text-green-400 transition-colors">
-                <Github className="w-5 h-5" />
+              <a
+                href="https://www.instagram.com/innovautem"
+                target="_blank"
+                className="hover:text-green-400 transition-colors"
+              >
+                <Instagram className="w-5 h-5" />
               </a>
-              <a href="#" className="hover:text-blue-400 transition-colors">
+              <a
+                href="https://www.linkedin.com/company/innova-utem/"
+                target="_blank"
+                className="hover:text-blue-400 transition-colors"
+              >
                 <Linkedin className="w-5 h-5" />
               </a>
             </div>
@@ -85,13 +93,12 @@ export default function Footer() {
                 </a>
               </li>
               <li>
-                <a href="#" className="hover:text-green-400 transition-colors">
+                <a
+                  href="https://innova.utem.cl/"
+                  target="_blank"
+                  className="hover:text-green-400 transition-colors"
+                >
                   HUB de Innovación
-                </a>
-              </li>
-              <li>
-                <a href="#" className="hover:text-green-400 transition-colors">
-                  ProteinLab
                 </a>
               </li>
             </ul>
@@ -112,7 +119,7 @@ export default function Footer() {
               <li className="flex items-center gap-3">
                 <Mail className="w-4 h-4 text-green-500" />
                 <a
-                  href="mailto:contacto@utem.cl"
+                  href="mailto:spobletec@utem.cl"
                   className="hover:text-white transition-colors"
                 >
                   contacto@utem.cl
