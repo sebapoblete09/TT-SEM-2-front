@@ -44,6 +44,7 @@ export function Navigation() {
   const [isScrolled, setIsScrolled] = useState(false);
   const supabase = createClient();
   const pathname = usePathname();
+  const router = useRouter();
 
   useEffect(() => {
     const handleScroll = () => setIsScrolled(window.scrollY > 10);
@@ -54,12 +55,13 @@ export function Navigation() {
   const handleLogout = async () => {
     try {
       // 1. Cierre LOCAL (Cliente):
-      // Esto dispara el listener de useAuth y actualiza la UI instantáneamente a "No Logueado"
       await supabase.auth.signOut();
 
       // 2. Cierre SERVIDOR (Cookies):
       // Asegura que las cookies httpOnly se borren
       await signOutAction();
+      router.refresh();
+      router.push("/");
     } catch (error) {
       console.error("Error al cerrar sesión:", error);
     }

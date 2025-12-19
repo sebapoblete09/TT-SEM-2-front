@@ -65,22 +65,34 @@ export default function Materials_Section({ initialMaterials }: Props) {
       }
 
       // 3. Filtro Composición
+      // Dentro de Materials_Section.tsx -> useMemo
+
+      // 3. Filtro Composición (CORREGIDO)
       let matchesComposicion = true;
       if (selectedComposicion.length > 0) {
+        // Si el material no tiene composición, descartarlo
         if (!mat.composicion || mat.composicion.length === 0) {
           matchesComposicion = false;
         } else {
-          matchesComposicion = selectedComposicion.some((selected) => {
+          // Revisamos si ALGUN item seleccionado está presente en el material
+          // (Usamos .some si quieres lógica OR, o .every si quieres lógica AND.
+          //  Generalmente en ingredientes se prefiere .every para ser estricto)
+          matchesComposicion = selectedComposicion.every((selected) => {
             const selectedLower = selected.toLowerCase();
-            return mat.composicion?.some((matComp) =>
-              // matComp podría ser un objeto si cambiaste el tipo, asumo string por ahora
-              String(matComp).toLowerCase().includes(selectedLower)
-            );
+
+            // Buscamos dentro del array de composición del material
+            return mat.composicion?.some((matComp: any) => {
+              // AQUÍ ESTÁ EL CAMBIO CLAVE:
+              // Verificamos si es un string (dato viejo) o un objeto (dato nuevo)
+              const elementoNombre =
+                typeof matComp === "string" ? matComp : matComp.elemento; // Accedemos a la propiedad .elemento
+
+              return elementoNombre?.toLowerCase().includes(selectedLower);
+            });
           });
         }
       }
 
-      // 4. NUEVO: Filtro Herramientas (Faltaba implementarlo)
       let matchesHerramientas = true;
       if (selectedHerramientas.length > 0) {
         if (!mat.herramientas || mat.herramientas.length === 0) {

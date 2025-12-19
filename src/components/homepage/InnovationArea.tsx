@@ -1,4 +1,4 @@
-import { Lightbulb, Plus } from "lucide-react";
+import { Lightbulb, Plus, Target } from "lucide-react";
 import { Card, CardContent } from "../ui/card";
 import Image from "next/image";
 
@@ -31,13 +31,15 @@ export default function InnovationSection() {
               {/* LOGO 1: UTEM */}
               <div className="flex flex-col items-center group">
                 <div className="w-32 h-32 rounded-full bg-slate-50 border border-slate-100 flex items-center justify-center mb-4 transition-transform duration-300 group-hover:-translate-y-2 group-hover:shadow-lg">
-                  <Image
-                    src="/images/Utem.webp"
-                    alt="Logo UTEM"
-                    width={80} // Ajustado para que quepa bien en el circulo
-                    height={80}
-                    className="object-contain"
-                  />
+                  <a href={"https://www.utem.cl/"} target="_blank">
+                    <Image
+                      src="/images/Utem.webp"
+                      alt="Logo UTEM"
+                      width={80} // Ajustado para que quepa bien en el circulo
+                      height={80}
+                      className="object-contain"
+                    />
+                  </a>
                 </div>
                 <p className="text-sm font-semibold text-slate-700">UTEM</p>
               </div>
@@ -49,12 +51,14 @@ export default function InnovationSection() {
 
               {/* LOGO 2: CLUB INNOVA */}
               <div className="flex flex-col items-center group">
-                <div className="w-32 h-32 rounded-full bg-green-50 border border-green-100 flex items-center justify-center mb-4 transition-transform duration-300 group-hover:-translate-y-2 group-hover:shadow-lg hover:shadow-green-100">
-                  <Lightbulb className="h-14 w-14 text-green-600" />
-                </div>
-                <p className="text-sm font-semibold text-slate-700">
-                  Club Innova
-                </p>
+                <a href="https://innova.utem.cl/" target="_blank">
+                  <div className="w-32 h-32 rounded-full bg-green-50 border border-green-100 flex items-center justify-center mb-4 transition-transform duration-300 group-hover:-translate-y-2 group-hover:shadow-lg hover:shadow-green-100">
+                    <Lightbulb className="h-14 w-14 text-green-600" />
+                  </div>
+                  <p className="text-sm font-semibold text-slate-700">
+                    HUB INNOVACIÓN
+                  </p>
+                </a>
               </div>
             </div>
           </CardContent>

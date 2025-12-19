@@ -5,7 +5,7 @@ import Image from "next/image";
 import { Badge } from "@/components/ui/badge";
 import Link from "next/link";
 import { Material_Card, Material } from "@/types/materials";
-import { FlaskConical, ArrowRight, GitFork, Lock } from "lucide-react";
+import { FlaskConical, ArrowRight, GitFork, Lock, Beaker } from "lucide-react";
 import { EditMaterialDialog } from "../profile/EditMaterialDialog"; // <--- Importamos el modal
 
 interface MaterialCardProps {
@@ -21,6 +21,8 @@ export function MaterialCard({
 }: MaterialCardProps) {
   const hasComposition =
     material.composicion && material.composicion.length > 0;
+
+  const hasTools = material.herramientas && material.herramientas.length > 0;
 
   const isDerived =
     material.derivado_de &&
@@ -112,7 +114,7 @@ export function MaterialCard({
             <FlaskConical className="w-3 h-3" /> Composición
           </div>
 
-          <div className="flex flex-wrap gap-2">
+          <div className="flex flex-wrap gap-2 pb-4">
             {hasComposition ? (
               material.composicion.slice(0, 3).map((comp, idx) => (
                 <span
@@ -130,6 +132,34 @@ export function MaterialCard({
             {hasComposition && material.composicion.length > 3 && (
               <span className="text-xs text-slate-400 self-center">
                 +{material.composicion.length - 3}
+              </span>
+            )}
+          </div>
+        </div>
+
+        <div className="space-y-2">
+          <div className="flex items-center gap-2 text-xs font-semibold text-slate-400 uppercase tracking-wider">
+            <Beaker className="w-3 h-3" /> Herramientas
+          </div>
+
+          <div className="flex flex-wrap gap-2">
+            {hasTools ? (
+              material.herramientas.slice(0, 3).map((tool, idx) => (
+                <span
+                  key={idx}
+                  className="inline-flex items-center px-2 py-1 rounded-md text-xs font-medium bg-red-50 text-red-400 border border-teal-100"
+                >
+                  {tool}
+                </span>
+              ))
+            ) : (
+              <span className="text-xs text-slate-300 italic">
+                No especificada
+              </span>
+            )}
+            {hasTools && material.herramientas.length > 3 && (
+              <span className="text-xs text-slate-400 self-center">
+                +{material.herramientas.length - 3}
               </span>
             )}
           </div>
