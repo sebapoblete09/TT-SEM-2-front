@@ -12,7 +12,5 @@ export async function signOutAction() {
 
   // 2. Limpiar caché de toda la app (Layout principal)
   revalidatePath("/", "layout");
-
-  // 3. Redirigir al home
-  redirect("/");
+  return true;
 }

@@ -64,6 +64,8 @@ export function Navigation() {
       router.push("/");
     } catch (error) {
       console.error("Error al cerrar sesión:", error);
+      // Fallback de emergencia por si algo falla
+      window.location.href = "/login";
     }
   };
 
@@ -230,7 +232,10 @@ export function Navigation() {
                       <DropdownMenuSeparator className="bg-slate-100" />
                       <DropdownMenuItem
                         className="text-red-600 focus:text-red-600 focus:bg-red-50 cursor-pointer rounded-md gap-2"
-                        onClick={handleLogout}
+                        onClick={(e) => {
+                          e.preventDefault(); // Evita que el menú cierre la interacción antes de tiempo
+                          handleLogout();
+                        }}
                       >
                         <LogOut className="h-4 w-4" />
                         <span>Cerrar Sesión</span>
