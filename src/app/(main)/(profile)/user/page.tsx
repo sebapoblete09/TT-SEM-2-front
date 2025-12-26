@@ -60,6 +60,7 @@ export default async function ProfilePage() {
       id: material.id,
       nombre: material.nombre,
       descripcion: material.descripcion,
+      herramientas: material.herramientas,
       composicion: material.composicion,
       derivado_de: material.derivado_de,
       primera_imagen_galeria: material.galeria?.[0]?.url_imagen || "",
