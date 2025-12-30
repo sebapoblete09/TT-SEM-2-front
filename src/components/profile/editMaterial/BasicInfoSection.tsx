@@ -1,5 +1,5 @@
 import { useState } from "react";
-import { useFormContext, useFieldArray } from "react-hook-form"; // <--- Importamos useFieldArray
+import { useFormContext, useFieldArray } from "react-hook-form";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
 import { Button } from "@/components/ui/button";
@@ -23,7 +23,6 @@ interface Props {
 
 // =========================================================
 // 1. COMPONENTE PARA HERRAMIENTAS (Array de Strings)
-//    Mantiene la lógica original de Badges + Input temporal
 // =========================================================
 function ToolsInput() {
   const {
@@ -66,7 +65,7 @@ function ToolsInput() {
   };
 
   return (
-    <div>
+    <div className="bg-white p-4 rounded-xl border border-slate-200 shadow-sm  items-center gap-4">
       <label className="flex items-center gap-2 text-sm font-medium mb-1 text-slate-700">
         <PenTool className="w-3 h-3" /> Herramientas{" "}
         <span className="text-red-500">*</span>
@@ -131,7 +130,6 @@ function ToolsInput() {
 
 // =========================================================
 // 2. COMPONENTE PARA COMPOSICIÓN (Array de Objetos)
-//    Usa useFieldArray para manejar filas editables
 // =========================================================
 function CompositionInput() {
   const {
@@ -147,7 +145,7 @@ function CompositionInput() {
   });
 
   return (
-    <div>
+    <div className="bg-white p-4 rounded-xl border border-slate-200 shadow-sm  items-center gap-4">
       <div className="flex justify-between items-center mb-2">
         <label className="flex items-center gap-2 text-sm font-medium text-slate-700">
           <FlaskConical className="w-3 h-3" /> Composición{" "}
@@ -233,11 +231,9 @@ export function BasicInfoSection({ derivadoDe, colaboradores }: Props) {
   } = useFormContext<EditMaterialFormValues>();
 
   return (
-    <div className="space-y-6 border p-4 rounded-lg bg-slate-50">
-      <h3 className="font-semibold text-slate-700">Información General</h3>
-
+    <>
       {/* --- CAMPO NOMBRE --- */}
-      <div>
+      <div className="bg-white p-4 rounded-xl border border-slate-200 shadow-sm flex items-center gap-4">
         <label className="block text-sm font-medium mb-1">
           Nombre del Material <span className="text-red-500">*</span>
         </label>
@@ -253,7 +249,7 @@ export function BasicInfoSection({ derivadoDe, colaboradores }: Props) {
       </div>
 
       {/* --- CAMPO DESCRIPCIÓN --- */}
-      <div>
+      <div className="bg-white p-4 rounded-xl border border-slate-200 shadow-sm flex items-center gap-4">
         <label className="block text-sm font-medium mb-1">
           Descripción Corta
         </label>
@@ -274,7 +270,7 @@ export function BasicInfoSection({ derivadoDe, colaboradores }: Props) {
       </div>
 
       {/* --- GRID PARA HERRAMIENTAS Y COMPOSICIÓN --- */}
-      <div className="grid grid-cols-1 md:grid-cols-2 gap-8 items-start">
+      <div className="flex flex-col gap-8 items-start">
         {/* Componente específico para string[] (Herramientas) */}
         <ToolsInput />
 
@@ -328,6 +324,6 @@ export function BasicInfoSection({ derivadoDe, colaboradores }: Props) {
           </div>
         </div>
       )}
-    </div>
+    </>
   );
 }

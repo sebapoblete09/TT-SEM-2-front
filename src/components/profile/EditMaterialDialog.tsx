@@ -32,15 +32,17 @@ export function EditMaterialDialog({ material }: { material: Material }) {
       </DialogTrigger>
 
       {/* Contenido del Modal */}
-      <DialogContent className="sm:max-w-[900px] max-h-[90vh] overflow-y-auto">
-        <DialogHeader>
-          <DialogTitle>Editar Material: {material.nombre}</DialogTitle>
-          <DialogDescription>
+      <DialogContent className="w-[95vw] max-w-[800px] max-h-[90dvh] flex flex-col p-0 gap-0 overflow-hidden rounded-2xl">
+        <DialogHeader className="px-6 py-4 border-b border-slate-100 bg-white shrink-0 z-10">
+          <DialogTitle className="text-lg sm:text-xl break-words leading-tight pr-4">
+            Editar Material: {material.nombre}
+          </DialogTitle>
+          <DialogDescription className="text-sm">
             Realiza cambios en la información de tu material.
           </DialogDescription>
         </DialogHeader>
 
-        <div className="py-4">
+        <div className="flex-1 overflow-y-auto min-h-0 bg-slate-50/50 relative">
           <EditMaterialForm
             material={material}
             onSuccessClose={() => setOpen(false)}
