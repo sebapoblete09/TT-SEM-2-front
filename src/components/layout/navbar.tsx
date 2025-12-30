@@ -3,7 +3,7 @@
 import Link from "next/link";
 import Image from "next/image";
 import { useEffect, useState } from "react";
-import { useRouter, usePathname } from "next/navigation";
+import { useRouter, usePathname, redirect } from "next/navigation";
 import { Button } from "@/components/ui/button";
 import {
   DropdownMenu,
@@ -61,7 +61,7 @@ export function Navigation() {
       // Asegura que las cookies httpOnly se borren
       await signOutAction();
       router.refresh();
-      router.push("/");
+      redirect("/");
     } catch (error) {
       console.error("Error al cerrar sesión:", error);
       // Fallback de emergencia por si algo falla

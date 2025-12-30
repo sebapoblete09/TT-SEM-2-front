@@ -26,7 +26,7 @@ const getInitials = (name: string) =>
 
 export function MaterialModalContent({ material }: { material: Material }) {
   return (
-    // 1. Quitamos h-[60vh]. Dejamos que el contenido defina la altura.
+    // 1. Dejamos que el contenido defina la altura.
     <div className="flex flex-col w-full">
       {/* HEADER TABS (Sticky para que no se pierda al bajar) */}
       <div className="px-4 sm:px-6 py-2 border-b border-slate-200 sticky top-0 bg-white z-20 shadow-sm">
