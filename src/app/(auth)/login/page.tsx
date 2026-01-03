@@ -75,7 +75,7 @@ export default function Page() {
         <div className="absolute top-6 left-6 z-20">
           <Button
             variant="ghost"
-            onClick={() => router.back()}
+            onClick={() => router.push("/")}
             className="group flex items-center gap-2 text-slate-500 hover:text-slate-900 hover:bg-white/50 transition-all"
           >
             <ArrowLeft className="w-4 h-4 transition-transform group-hover:-translate-x-1" />
