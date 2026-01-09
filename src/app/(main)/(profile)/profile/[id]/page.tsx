@@ -49,8 +49,6 @@ export default async function PublicProfilePage({ params }: PageProps) {
   }
 
   // 3. Extracción y Mapeo de Datos
-  // Realizamos la transformación de datos aquí en el servidor para enviar
-  // al cliente solo lo que necesita (Material_Card).
 
   const usuario: usuario = perfilData.perfil;
   const estadisticas: estadisticas = perfilData.estadisticas;

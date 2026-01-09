@@ -158,6 +158,10 @@ export default function BasicInfoForm({ onNext }: BasicInfoFormProps) {
             <Input
               {...register("nombre")} // Conexión directa
               placeholder="Ej: Bioplástico de cáscara de naranja"
+              lang="es"
+              spellCheck={true}
+              autoCorrect="on"
+              autoCapitalize="sentences"
               className={`h-12 bg-slate-50 border-slate-200 transition-all ${
                 errors.nombre
                   ? "border-red-500 focus-visible:ring-red-500"

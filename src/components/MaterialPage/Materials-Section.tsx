@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useEffect, useMemo } from "react";
+import { useState, useEffect, useMemo, useRef } from "react";
 import FilterSection, { FilterOptions } from "./Filter-Section";
 import { MaterialCard } from "@/components/ui/materialCard";
 import { SearchX, Sparkles } from "lucide-react";
@@ -18,12 +18,16 @@ import HeroMaterial from "./Header";
 
 type Props = {
   initialMaterials: Material_Card[];
+  initialDerivados?: boolean; // Opcional
 };
 
-export default function Materials_Section({ initialMaterials }: Props) {
+export default function Materials_Section({
+  initialMaterials,
+  initialDerivados = false,
+}: Props) {
   // --- ESTADOS DE FILTRO ---
   const [searchTerm, setSearchTerm] = useState("");
-  const [isDerivados, setIsDerivados] = useState(false);
+  const [isDerivados, setIsDerivados] = useState(initialDerivados);
   const [selectedHerramientas, setSelectedHerramientas] = useState<string[]>(
     []
   );
@@ -34,6 +38,20 @@ export default function Materials_Section({ initialMaterials }: Props) {
     herramientas: [],
     composicion: [],
   });
+
+  // 1. Creamos una referencia para el contenedor de los resultados
+  const resultsRef = useRef<HTMLDivElement>(null);
+  useEffect(() => {
+    if (initialDerivados && resultsRef.current) {
+      // Un pequeño timeout asegura que el DOM esté listo
+      setTimeout(() => {
+        resultsRef.current?.scrollIntoView({
+          behavior: "smooth",
+          block: "start",
+        });
+      }, 100);
+    }
+  }, [initialDerivados]);
 
   useEffect(() => {
     const loadOptions = async () => {
@@ -64,9 +82,6 @@ export default function Materials_Section({ initialMaterials }: Props) {
         matchesDerivado = !!mat.derivado_de && mat.derivado_de !== emptyUUID;
       }
 
-      // 3. Filtro Composición
-      // Dentro de Materials_Section.tsx -> useMemo
-
       // 3. Filtro Composición (CORREGIDO)
       let matchesComposicion = true;
       if (selectedComposicion.length > 0) {
@@ -75,14 +90,11 @@ export default function Materials_Section({ initialMaterials }: Props) {
           matchesComposicion = false;
         } else {
           // Revisamos si ALGUN item seleccionado está presente en el material
-          // (Usamos .some si quieres lógica OR, o .every si quieres lógica AND.
-          //  Generalmente en ingredientes se prefiere .every para ser estricto)
           matchesComposicion = selectedComposicion.every((selected) => {
             const selectedLower = selected.toLowerCase();
 
             // Buscamos dentro del array de composición del material
             return mat.composicion?.some((matComp: any) => {
-              // AQUÍ ESTÁ EL CAMBIO CLAVE:
               // Verificamos si es un string (dato viejo) o un objeto (dato nuevo)
               const elementoNombre =
                 typeof matComp === "string" ? matComp : matComp.elemento; // Accedemos a la propiedad .elemento
@@ -119,8 +131,6 @@ export default function Materials_Section({ initialMaterials }: Props) {
     return result.sort((a, b) => {
       if (sortOrder === "a-z") return a.nombre.localeCompare(b.nombre);
       if (sortOrder === "z-a") return b.nombre.localeCompare(a.nombre);
-      // Para "newest", asumimos que el array inicial ya viene ordenado por fecha o usamos ID si es secuencial/uuidv7
-      // Si tienes un campo 'created_at' en el tipo, úsalo aquí. Si no, retornamos 0 (orden original).
       return 0;
     });
   }, [
@@ -138,7 +148,10 @@ export default function Materials_Section({ initialMaterials }: Props) {
         {/* HERO HEADER */}
         <HeroMaterial totalMaterials={initialMaterials.length} />
 
-        <div className="flex flex-col lg:flex-row gap-8 items-start mt-8">
+        <div
+          ref={resultsRef}
+          className="flex flex-col lg:flex-row gap-8 items-start mt-8"
+        >
           {/* SIDEBAR FILTROS */}
           <aside className="w-full lg:w-72 flex-shrink-0 relative lg:sticky lg:top-24 z-10">
             <ScrollReveal className="delay-100">
