@@ -49,9 +49,17 @@ export type PropertiesFormValues = z.infer<typeof propertiesSchema>;
 // --- PASO 3: COMPOSICIÓN QUÍMICA ---
 
 // Definimos el esquema de un solo ítem
+const quantityWithUnitRegex = /^[\d.,]+\s*[a-zA-Z%]+$/;
+
 const compositionItemSchema = z.object({
   elemento: z.string().min(1, "El nombre del elemento es requerido"),
-  cantidad: z.string().min(1, "La cantidad es requerida").or(z.literal("")), // Opcional: permite vacío si prefieres
+  cantidad: z
+    .string()
+    .min(1, "La cantidad es requerida")
+    .regex(
+      quantityWithUnitRegex,
+      "Debe incluir número y unidad (Ej: 10g, 500ml)"
+    ),
 });
 
 export const compositionSchema = z.object({

@@ -1,4 +1,5 @@
 import { MessageSquare, Search, Upload } from "lucide-react";
+import Link from "next/link";
 
 export default function Steps() {
   return (
@@ -22,13 +23,15 @@ export default function Steps() {
           {/* PASO 1 */}
           <div className="relative flex flex-col items-center text-center group z-10">
             <div className="relative mb-6">
-              <div className="w-24 h-24 rounded-full bg-green-50 flex items-center justify-center shadow-sm group-hover:scale-110 group-hover:bg-green-100 transition-all duration-300 relative z-20">
-                <Search className="h-10 w-10 text-green-600" />
-              </div>
+              <Link href="/materials">
+                <div className="w-24 h-24 rounded-full bg-green-50 flex items-center justify-center shadow-sm group-hover:scale-110 group-hover:bg-green-100 transition-all duration-300 relative z-20">
+                  <Search className="h-10 w-10 text-green-600" />
+                </div>
 
-              <div className="absolute -top-2 -right-2 w-8 h-8 rounded-full bg-slate-900 text-white flex items-center justify-center font-bold text-sm shadow-md ring-4 ring-white z-30">
-                1
-              </div>
+                <div className="absolute -top-2 -right-2 w-8 h-8 rounded-full bg-slate-900 text-white flex items-center justify-center font-bold text-sm shadow-md ring-4 ring-white z-30">
+                  1
+                </div>
+              </Link>
             </div>
 
             <h3 className="text-xl font-bold mb-3 text-slate-800">Explora</h3>
@@ -41,12 +44,15 @@ export default function Steps() {
           {/* PASO 2 */}
           <div className="relative flex flex-col items-center text-center group z-10">
             <div className="relative mb-6">
-              <div className="w-24 h-24 rounded-full bg-teal-50 flex items-center justify-center shadow-sm group-hover:scale-110 group-hover:bg-teal-100 transition-all duration-300 relative z-20">
-                <Upload className="h-10 w-10 text-teal-600" />
-              </div>
-              <div className="absolute -top-2 -right-2 w-8 h-8 rounded-full bg-slate-900 text-white flex items-center justify-center font-bold text-sm shadow-md ring-4 ring-white z-30">
-                2
-              </div>
+              <Link href="/materials">
+                <div className="w-24 h-24 rounded-full bg-teal-50 flex items-center justify-center shadow-sm group-hover:scale-110 group-hover:bg-teal-100 transition-all duration-300 relative z-20">
+                  <Upload className="h-10 w-10 text-teal-600" />
+                </div>
+
+                <div className="absolute -top-2 -right-2 w-8 h-8 rounded-full bg-slate-900 text-white flex items-center justify-center font-bold text-sm shadow-md ring-4 ring-white z-30">
+                  2
+                </div>
+              </Link>
             </div>
 
             <h3 className="text-xl font-bold mb-3 text-slate-800">Registra</h3>
@@ -59,12 +65,14 @@ export default function Steps() {
           {/* PASO 3 */}
           <div className="relative flex flex-col items-center text-center group z-10">
             <div className="relative mb-6">
-              <div className="w-24 h-24 rounded-full bg-blue-50 flex items-center justify-center shadow-sm group-hover:scale-110 group-hover:bg-blue-100 transition-all duration-300 relative z-20">
-                <MessageSquare className="h-10 w-10 text-blue-600" />
-              </div>
-              <div className="absolute -top-2 -right-2 w-8 h-8 rounded-full bg-slate-900 text-white flex items-center justify-center font-bold text-sm shadow-md ring-4 ring-white z-30">
-                3
-              </div>
+              <Link href="/materials?derivados=true">
+                <div className="w-24 h-24 rounded-full bg-blue-50 flex items-center justify-center shadow-sm group-hover:scale-110 group-hover:bg-blue-100 transition-all duration-300 relative z-20">
+                  <MessageSquare className="h-10 w-10 text-blue-600" />
+                </div>
+                <div className="absolute -top-2 -right-2 w-8 h-8 rounded-full bg-slate-900 text-white flex items-center justify-center font-bold text-sm shadow-md ring-4 ring-white z-30">
+                  3
+                </div>
+              </Link>
             </div>
 
             <h3 className="text-xl font-bold mb-3 text-slate-800">Colabora</h3>

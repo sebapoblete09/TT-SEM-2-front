@@ -102,7 +102,7 @@ export function Navigation() {
             className="flex items-center gap-3 group z-50 shrink-0"
           >
             <Image
-              src="/images/Utem.webp"
+              src="/images/UtemLogo.webp"
               alt="UTEM Logo"
               width={36}
               height={36}

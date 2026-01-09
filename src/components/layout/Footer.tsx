@@ -14,11 +14,11 @@ export default function Footer() {
             <div className="flex items-center gap-2 text-white font-bold text-xl">
               <div className="bg-white p-1 rounded-md">
                 <Image
-                  src="/images/Utem.webp"
+                  src="/images/UtemLogo.webp"
                   alt="UTEM"
-                  width={24}
-                  height={24}
-                  className="w-6 h-6"
+                  width={20}
+                  height={20}
+                  className="w-6 h-8"
                 />
               </div>
               <span>Biomateriales UTEM</span>
@@ -119,10 +119,10 @@ export default function Footer() {
               <li className="flex items-center gap-3">
                 <Mail className="w-4 h-4 text-green-500" />
                 <a
-                  href="mailto:spobletec@utem.cl"
+                  href="mailto:INNOVA@UTEM.CL"
                   className="hover:text-white transition-colors"
                 >
-                  contacto@utem.cl
+                  INNOVA@UTEM.CL
                 </a>
               </li>
             </ul>

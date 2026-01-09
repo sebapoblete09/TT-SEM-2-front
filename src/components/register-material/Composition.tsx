@@ -1,7 +1,7 @@
 "use client";
 
 import { useState } from "react";
-import { useFormContext, useFieldArray } from "react-hook-form"; // <--- Importamos useFieldArray
+import { useFormContext, useFieldArray } from "react-hook-form";
 import {
   Card,
   CardHeader,
@@ -14,7 +14,7 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import {
   Plus,
-  Trash2, // Cambiamos X por Trash2 para mejor semántica de borrado
+  Trash2,
   FlaskConical,
   ArrowLeft,
   ArrowRight,
@@ -32,46 +32,65 @@ export default function CompositionForm({
   onNext,
   onBack,
 }: CompositionFormProps) {
-  // Estado local para los inputs temporales (ahora es un objeto)
+  // Estado local para los inputs temporales
   const [newItem, setNewItem] = useState({ elemento: "", cantidad: "" });
+
+  // NUEVO: Estado para el mensaje de error visual (validación inmediata)
+  const [localError, setLocalError] = useState<string | null>(null);
 
   // 1. Conectamos al contexto global
   const {
-    control, // Necesario para useFieldArray
+    control,
     trigger,
     formState: { errors },
   } = useFormContext<RegisterMaterialFormValues>();
 
-  // 2. Usamos useFieldArray para manejar la lista de objetos
-  // Esto maneja automáticamente los IDs únicos y el estado del array
+  // 2. Usamos useFieldArray
   const { fields, append, remove } = useFieldArray({
     control,
     name: "composicion",
   });
 
+  // Regex para validar formato (Número + Unidad)
+  // Coincide con: 10g, 500ml, 10.5%, etc.
+  const quantityRegex = /^[\d.,]+\s*[a-zA-Z%]+$/;
+
   // --- LÓGICA DE AGREGAR ---
   const addItem = () => {
-    // Validamos que al menos tenga nombre el elemento antes de agregarlo
-    if (newItem.elemento.trim()) {
-      append({
-        elemento: newItem.elemento.trim(),
-        cantidad: newItem.cantidad.trim() || "n/a", // Si no pone cantidad, guardamos "n/a" o string vacío según prefieras
-      });
-      // Limpiamos los inputs
-      setNewItem({ elemento: "", cantidad: "" });
+    // Limpiamos errores previos al intentar agregar
+    setLocalError(null);
+
+    // 1. Validar que tenga nombre
+    if (!newItem.elemento.trim()) return;
+
+    // 2. NUEVO: Validar formato de cantidad antes de agregar
+    const cleanQuantity = newItem.cantidad.trim();
+
+    if (!quantityRegex.test(cleanQuantity)) {
+      setLocalError("Falta unidad (Ej: 10g, 500ml)");
+      return; // Detenemos la función, no agrega nada
     }
+
+    // 3. Si todo está bien, agregamos al array
+    append({
+      elemento: newItem.elemento.trim(),
+      cantidad: cleanQuantity,
+    });
+
+    // 4. Limpiamos inputs y errores
+    setNewItem({ elemento: "", cantidad: "" });
+    setLocalError(null);
   };
 
   // --- VALIDACIÓN AL AVANZAR ---
   const handleNextStep = async () => {
-    // Dispara la validación del campo 'composicion' (verificará min(1))
     const isValid = await trigger("composicion");
     if (isValid) {
       onNext();
     }
   };
 
-  // Helper para detectar errores (puede venir como array o root error)
+  // Helper para detectar errores
   const rootError =
     errors.composicion?.root?.message ||
     (typeof errors.composicion?.message === "string"
@@ -107,7 +126,7 @@ export default function CompositionForm({
               <Atom className="w-4 h-4" /> Agregar Ingrediente
             </Label>
 
-            {/* ERROR GENERAL (ej: "Debes agregar al menos uno") */}
+            {/* ERROR GENERAL ZOD */}
             {rootError && (
               <span className="text-xs text-red-500 font-medium animate-in fade-in">
                 {rootError}
@@ -131,19 +150,33 @@ export default function CompositionForm({
               />
             </div>
 
-            {/* Input Cantidad */}
-            <div className="w-1/3">
+            {/* Input Cantidad (CON VALIDACIÓN VISUAL) */}
+            <div className="w-1/3 flex flex-col relative">
               <Input
                 placeholder="Cant. (Ej: 500ml)"
                 value={newItem.cantidad}
-                onChange={(e) =>
-                  setNewItem({ ...newItem, cantidad: e.target.value })
-                }
+                onChange={(e) => {
+                  setNewItem({ ...newItem, cantidad: e.target.value });
+                  // Si el usuario escribe, quitamos el error rojo momentáneamente
+                  if (localError) setLocalError(null);
+                }}
                 onKeyDown={(e) =>
                   e.key === "Enter" && (e.preventDefault(), addItem())
                 }
-                className="bg-slate-50 border-slate-200 focus-visible:ring-amber-500 h-11"
+                // Si hay error local, borde rojo; si no, normal
+                className={`bg-slate-50 h-11 ${
+                  localError
+                    ? "border-red-500 focus-visible:ring-red-500"
+                    : "border-slate-200 focus-visible:ring-amber-500"
+                }`}
               />
+
+              {/* MENSAJE DE ERROR FLOTANTE */}
+              {localError && (
+                <span className="absolute -bottom-5 left-0 text-[10px] text-red-500 font-semibold animate-in slide-in-from-top-1">
+                  {localError}
+                </span>
+              )}
             </div>
 
             <Button
@@ -151,18 +184,17 @@ export default function CompositionForm({
               onClick={addItem}
               size="icon"
               className="bg-slate-900 hover:bg-slate-800 shrink-0 h-11 w-11 rounded-lg"
-              disabled={!newItem.elemento.trim()} // Deshabilitar si no hay nombre
+              disabled={!newItem.elemento.trim()}
             >
               <Plus className="h-5 w-5" />
             </Button>
           </div>
-          <p className="text-[10px] text-slate-400 ml-1">
-            * Ingresa el nombre y la medida (opcional). Presiona Enter o el
-            botón + para añadir.
+          <p className="text-[10px] text-slate-400 ml-1 mt-2">
+            * Ingresa el nombre y la medida (ej: 200gr, 10%).
           </p>
         </div>
 
-        {/* --- LISTA DE COMPONENTES (Tabla Visual) --- */}
+        {/* --- LISTA DE COMPONENTES --- */}
         <div
           className={`rounded-xl border min-h-[8rem] transition-colors overflow-hidden ${
             errors.composicion
@@ -202,11 +234,9 @@ export default function CompositionForm({
                       <span className="text-sm font-medium text-slate-700 truncate">
                         {field.elemento}
                       </span>
-                      {/* Mostramos la cantidad con estilo diferente */}
                       <span className="text-xs text-slate-400 font-medium">
-                        {field.cantidad && field.cantidad !== "n/a"
-                          ? field.cantidad
-                          : "Sin medida"}
+                        {/* Como ahora validamos antes de entrar, siempre debería tener valor */}
+                        {field.cantidad}
                       </span>
                     </div>
                   </div>

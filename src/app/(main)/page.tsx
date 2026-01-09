@@ -12,9 +12,6 @@ export default function Home() {
   return (
     <main className="">
       {" "}
-      {/* El Hero suele verse mejor si aparece de inmediato o con una animación diferente, 
-          pero si quieres que todo tenga el mismo efecto, envuélvelo también. 
-          A veces al Hero le quito el ScrollReveal para que cargue instantáneo. */}
       <ScrollReveal>
         <Hero />
       </ScrollReveal>

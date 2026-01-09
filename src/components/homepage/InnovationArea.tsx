@@ -14,8 +14,8 @@ export default function InnovationSection() {
           <CardContent className="pt-16 pb-16 px-6 md:px-12 relative z-10">
             <div className="text-center mb-12">
               <h2 className="text-3xl md:text-4xl font-extrabold mb-6 text-slate-900 tracking-tight">
-                Una Iniciativa del Área de{" "}
-                <span className="text-green-600">Innovación UTEM</span>
+                Una Iniciativa del{" "}
+                <span className="text-green-600">HUB de Innovación UTEM</span>
               </h2>
               <p className="text-lg text-slate-500 max-w-3xl mx-auto text-pretty leading-relaxed">
                 Este proyecto nace del compromiso de la Universidad Tecnológica
@@ -33,10 +33,10 @@ export default function InnovationSection() {
                 <div className="w-32 h-32 rounded-full bg-slate-50 border border-slate-100 flex items-center justify-center mb-4 transition-transform duration-300 group-hover:-translate-y-2 group-hover:shadow-lg">
                   <a href={"https://www.utem.cl/"} target="_blank">
                     <Image
-                      src="/images/Utem.webp"
+                      src="/images/UtemLogo.webp"
                       alt="Logo UTEM"
-                      width={80} // Ajustado para que quepa bien en el circulo
-                      height={80}
+                      width={40} // Ajustado para que quepa bien en el circulo
+                      height={40}
                       className="object-contain"
                     />
                   </a>

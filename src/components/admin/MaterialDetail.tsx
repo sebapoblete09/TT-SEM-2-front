@@ -278,8 +278,8 @@ export function MaterialCardItem({
             {!material.estado && !isCorrectionSent && (
               <>
                 <Button
-                  variant="outline"
-                  className="text-red-600 border-red-200 hover:bg-red-50 w-full sm:w-auto"
+                  variant="destructive"
+                  className=" border-red-200"
                   onClick={() => setShowRejectModal(true)}
                 >
                   Solicitar Corrección
