@@ -26,7 +26,7 @@ import {
 } from "lucide-react";
 
 // Importamos el tipo del schema global
-import { RegisterMaterialFormValues } from "./schemas";
+import { RegisterMaterialFormValues } from "../../schemas/schemas";
 
 interface BasicInfoFormProps {
   onNext: () => void;

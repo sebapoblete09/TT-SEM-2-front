@@ -74,16 +74,6 @@ export const metadata: Metadata = {
     ],
   },
 
-  // TWITTER CARD (Cómo se ve en X/Twitter)
-  twitter: {
-    card: "summary_large_image",
-    title: "Biomateriales UTEM",
-    description:
-      "Plataforma de investigación y recetas de biomateriales Open Source.",
-    images: ["/images/og-image.jpg"], // Reutilizamos la misma imagen
-    creator: "@utem", // Si la universidad tiene twitter
-  },
-
   // ROBOTS (Instrucciones para Google Bot)
   robots: {
     index: true, // Permitir indexar
@@ -99,7 +89,7 @@ export const metadata: Metadata = {
 
   // ICONOS
   icons: {
-    icon: "/favicon.ico",
+    icon: "/images/UtemLogo.webp",
     shortcut: "/favicon-16x16.png",
     apple: "/apple-touch-icon.png",
   },

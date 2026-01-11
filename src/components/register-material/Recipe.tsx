@@ -24,7 +24,7 @@ import {
 import Image from "next/image";
 
 // Importamos el tipo global
-import { RegisterMaterialFormValues } from "./schemas";
+import { RegisterMaterialFormValues } from "../../schemas/schemas";
 
 interface RecipeFormProps {
   onBack: () => void;

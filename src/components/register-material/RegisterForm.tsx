@@ -8,7 +8,7 @@ import { createMaterialAction } from "@/actions/materials";
 import {
   registerMaterialSchema,
   RegisterMaterialFormValues,
-} from "@/components/register-material/schemas";
+} from "@/schemas/schemas";
 
 // Componentes de Pasos
 import BasicInfoForm from "@/components/register-material/Basic";

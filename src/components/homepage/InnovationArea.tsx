@@ -35,13 +35,12 @@ export default function InnovationSection() {
                     <Image
                       src="/images/UtemLogo.webp"
                       alt="Logo UTEM"
-                      width={40} // Ajustado para que quepa bien en el circulo
-                      height={40}
+                      width={45} // Ajustado para que quepa bien en el circulo
+                      height={45}
                       className="object-contain"
                     />
                   </a>
                 </div>
-                <p className="text-sm font-semibold text-slate-700">UTEM</p>
               </div>
 
               {/* CONECTOR: Signo + */}
@@ -51,14 +50,17 @@ export default function InnovationSection() {
 
               {/* LOGO 2: CLUB INNOVA */}
               <div className="flex flex-col items-center group">
-                <a href="https://innova.utem.cl/" target="_blank">
-                  <div className="w-32 h-32 rounded-full bg-green-50 border border-green-100 flex items-center justify-center mb-4 transition-transform duration-300 group-hover:-translate-y-2 group-hover:shadow-lg hover:shadow-green-100">
-                    <Lightbulb className="h-14 w-14 text-green-600" />
-                  </div>
-                  <p className="text-sm font-semibold text-slate-700">
-                    HUB INNOVACIÓN
-                  </p>
-                </a>
+                <div className="w-32 h-32 rounded-full bg-slate-50 border border-slate-100 flex items-center justify-center mb-4 transition-transform duration-300 group-hover:-translate-y-2 group-hover:shadow-lg">
+                  <a href="https://innova.utem.cl/" target="_blank">
+                    <Image
+                      src="/images/innovaLogo.webp"
+                      alt="Logo UTEM"
+                      width={90} // Ajustado para que quepa bien en el circulo
+                      height={90}
+                      className="object-contain"
+                    />
+                  </a>
+                </div>
               </div>
             </div>
           </CardContent>

@@ -14,7 +14,7 @@ import {
   FlaskConical,
 } from "lucide-react";
 import { creador } from "@/types/materials";
-import { EditMaterialFormValues } from "@/components/register-material/schemas"; // O tu schema correspondiente
+import { EditMaterialFormValues } from "@/schemas/schemas"; // O tu schema correspondiente
 
 interface Props {
   derivadoDe?: string;

@@ -23,7 +23,7 @@ import {
   LucideIcon,
 } from "lucide-react";
 
-import { RegisterMaterialFormValues } from "./schemas";
+import { RegisterMaterialFormValues } from "../../schemas/schemas";
 
 interface PropertiesFormProps {
   onNext: () => void;

@@ -3,7 +3,7 @@ import { useFormContext, useFieldArray } from "react-hook-form"; // <--- Importa
 import { Textarea } from "@/components/ui/textarea";
 import { Button } from "@/components/ui/button";
 import { Plus, Trash2 } from "lucide-react";
-import { EditMaterialFormValues } from "@/components/register-material/schemas"; // Tu tipo inferido
+import { EditMaterialFormValues } from "@/schemas/schemas"; // Tu tipo inferido
 
 // Ya no recibe props de estado, es autónomo
 export function StepsSection() {

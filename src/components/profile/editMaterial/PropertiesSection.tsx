@@ -10,7 +10,7 @@ import {
   LucideIcon,
   Activity,
 } from "lucide-react";
-import { EditMaterialFormValues } from "@/components/register-material/schemas"; // Importa tu tipo de edición
+import { EditMaterialFormValues } from "@/schemas/schemas"; // Importa tu tipo de edición
 
 // =========================================================
 // SUB-COMPONENTE GENÉRICO (Mecánica, Perceptiva, Emocional)

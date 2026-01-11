@@ -3,7 +3,7 @@
 import { useState } from "react";
 import { useForm, FormProvider } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
-import { editMaterialSchema } from "@/components/register-material/schemas";
+import { editMaterialSchema } from "@/schemas/schemas";
 import { Material } from "@/types/materials";
 import { updateMaterialAction } from "@/actions/materials";
 import { toast } from "sonner";
