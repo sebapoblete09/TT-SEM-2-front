@@ -2,7 +2,7 @@ import Image from "next/image";
 import { useFormContext } from "react-hook-form";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
-import { EditMaterialFormValues } from "@/components/register-material/schemas"; // Tu tipo inferido
+import { EditMaterialFormValues } from "@/schemas/schemas"; // Tu tipo inferido
 
 export function GallerySection() {
   const { register, watch, setValue } =

@@ -21,7 +21,7 @@ import {
   Atom,
 } from "lucide-react";
 
-import { RegisterMaterialFormValues } from "./schemas";
+import { RegisterMaterialFormValues } from "../../schemas/schemas";
 
 interface CompositionFormProps {
   onNext: () => void;

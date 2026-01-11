@@ -112,9 +112,6 @@ export function Navigation() {
               <span className="font-bold text-lg text-slate-900 whitespace-nowrap">
                 Biomateriales
               </span>
-              <span className="text-[10px] text-slate-500 font-medium tracking-widest uppercase">
-                UTEM
-              </span>
             </div>
           </Link>
 
