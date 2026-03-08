@@ -6,7 +6,7 @@ import { Badge } from "@/components/ui/badge";
 import Link from "next/link";
 import { Material_Card, Material } from "@/types/materials";
 import { FlaskConical, ArrowRight, GitFork, Lock, Beaker } from "lucide-react";
-import { EditMaterialDialog } from "../profile/EditMaterialDialog"; // <--- Importamos el modal
+import { EditMaterialDialog } from "../profile/EditMaterialDialog"; 
 
 interface MaterialCardProps {
   material: Material_Card;

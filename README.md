@@ -91,4 +91,3 @@ Dashboard dedicado para el control de calidad del catálogo:
 
 🚀 Desarrollado para el HUB Innova UTEM
 
-This project is licensed under the MIT License - see the [LICENSE.md](LICENSE.md) file for details.
