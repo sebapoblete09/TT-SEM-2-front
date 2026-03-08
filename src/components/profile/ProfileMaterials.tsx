@@ -38,7 +38,6 @@ MaterialsProfileProps) {
         const element = document.getElementById(`card-${highlightId}`);
         if (element) {
           element.scrollIntoView({ behavior: "smooth", block: "center" });
-          // Opcional: Agregar una clase temporal para resaltar
           element.classList.add("ring-4", "ring-amber-400", "ring-offset-4");
           setTimeout(() => {
             element.classList.remove(
@@ -88,7 +87,7 @@ MaterialsProfileProps) {
 
   return (
     <section id="explore" className="animate-in fade-in duration-500">
-      {/* 1. TÍTULO Y CONTADOR MEJORADOS */}
+      {/* 1. TÍTULO Y CONTADOR  */}
       <div className="mb-6 flex items-center gap-3">
         <h2 className="text-2xl md:text-3xl font-bold text-slate-800 tracking-tight">
           {activeTab === "todos" && "Todos mis Materiales"}

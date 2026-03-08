@@ -104,41 +104,45 @@ export function MaterialModalContent({ material }: { material: Material }) {
           </div>
 
           {/* Composición y Herramientas */}
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-4 sm:gap-6">
-            <div className="bg-white p-4 rounded-xl border border-slate-200">
-              <h4 className="font-semibold text-sm text-teal-700 flex items-center gap-2 mb-3">
-                <FlaskConical className="w-4 h-4" /> Composición
-              </h4>
-              <div className="flex flex-wrap gap-2">
-                {material.composicion?.map((c, i) => (
-                  <Badge
-                    key={i}
-                    variant="secondary"
-                    className="bg-teal-50 text-teal-700 border border-teal-100 hover:bg-teal-100"
-                  >
-                    {c.elemento + " " + c.cantidad}
-                  </Badge>
-                ))}
-              </div>
-            </div>
+         <div className="grid grid-cols-1 md:grid-cols-2 gap-4 sm:gap-6">
+  {/* Sección Composición */}
+  <div className="bg-white p-4 rounded-xl border border-slate-200 overflow-hidden">
+    <h4 className="font-semibold text-sm text-teal-700 flex items-center gap-2 mb-3">
+      <FlaskConical className="w-4 h-4" /> Composición
+    </h4>
+    <div className="flex flex-wrap gap-2">
+      {material.composicion?.map((c, i) => (
+        <Badge
+          key={i}
+          variant="secondary"
+          className="bg-teal-50 text-teal-700 border border-teal-100 hover:bg-teal-100 max-w-full truncate block"
+          title={c.elemento + " " + c.cantidad} // Para ver el texto completo al pasar el mouse
+        >
+          {c.elemento + " " + c.cantidad}
+        </Badge>
+      ))}
+    </div>
+  </div>
 
-            <div className="bg-white p-4 rounded-xl border border-slate-200">
-              <h4 className="font-semibold text-sm text-slate-700 flex items-center gap-2 mb-3">
-                <Hammer className="w-4 h-4" /> Herramientas
-              </h4>
-              <div className="flex flex-wrap gap-2">
-                {material.herramientas?.map((h, i) => (
-                  <Badge
-                    key={i}
-                    variant="outline"
-                    className="bg-slate-50 border-slate-200 text-slate-600"
-                  >
-                    {h}
-                  </Badge>
-                ))}
-              </div>
-            </div>
-          </div>
+  {/* Sección Herramientas */}
+  <div className="bg-white p-4 rounded-xl border border-slate-200 overflow-hidden">
+    <h4 className="font-semibold text-sm text-slate-700 flex items-center gap-2 mb-3">
+      <Hammer className="w-4 h-4" /> Herramientas
+    </h4>
+    <div className="flex flex-wrap gap-2">
+      {material.herramientas?.map((h, i) => (
+        <Badge
+          key={i}
+          variant="outline"
+          className="bg-slate-50 border-slate-200 text-slate-600 max-w-full truncate block"
+          title={h}
+        >
+          {h}
+        </Badge>
+      ))}
+    </div>
+  </div>
+</div>
         </TabsContent>
 
         {/* --- TAB 2: PROPIEDADES (Colores Preservados) --- */}
@@ -215,7 +219,7 @@ export function MaterialModalContent({ material }: { material: Material }) {
             <h4 className="font-bold text-rose-700 mb-3 flex items-center gap-2">
               <Heart className="w-4 h-4" /> Emocionales
             </h4>
-            <div className="grid grid-cols-2 sm:grid-cols-3 gap-3">
+            <div className="grid grid-cols-1 gap-3">
               {material.prop_emocionales?.map(
                 (prop: prop_emocionales, index: number) => (
                   <div

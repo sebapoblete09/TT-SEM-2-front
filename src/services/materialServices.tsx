@@ -77,7 +77,7 @@ export const getDerivedMaterialsService = async (parentId: string) => {
 
 //// Obtener las listas para llenar el sidebar (Herramientas y Composición)
 export const getFilterServices = async () => {
-  const response = await fetch(`${BASE_URL}/materials/filters`, {
+  const response = await fetch(`https://tt-sem-2-back.onrender.com/materials/filters`, {
     method: "GET",
     cache: "no-store",
   });
