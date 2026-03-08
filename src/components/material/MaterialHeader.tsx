@@ -114,9 +114,13 @@ export default function MaterialHeader({ material }: { material: Material }) {
       </div>
 
       {/* 2. TÍTULO Y DESCRIPCIÓN */}
+      <span className="font-mono text-sm uppercase tracking-widest text-slate-400 opacity-80 mb-1">
+       ID:  {material.id}
+      </span>
       <h1 className="text-2xl sm:text-3xl md:text-5xl font-extrabold text-slate-900 mb-4 sm:mb-6 tracking-tight leading-tight break-words hyphens-auto">
         {material.nombre}
       </h1>
+      
 
       <p className="text-sm sm:text-base md:text-xl text-slate-600 leading-relaxed max-w-4xl mb-6 sm:mb-8 border-l-4 border-green-500 pl-4 sm:pl-6 italic">
         {material.descripcion}
