@@ -44,7 +44,7 @@ export default function Steps() {
           {/* PASO 2 */}
           <div className="relative flex flex-col items-center text-center group z-10">
             <div className="relative mb-6">
-              <Link href="/materials">
+              <Link href="/register-material">
                 <div className="w-24 h-24 rounded-full bg-teal-50 flex items-center justify-center shadow-sm group-hover:scale-110 group-hover:bg-teal-100 transition-all duration-300 relative z-20">
                   <Upload className="h-10 w-10 text-teal-600" />
                 </div>
